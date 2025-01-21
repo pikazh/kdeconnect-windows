@@ -1,0 +1,25 @@
+{
+    "$schema": "../kdeconnect.schema.json",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "albertvaka@gmail.com",
+                "Name": "Albert Vaca Cintora",
+                "Name[zh_CN]": "Albert Vaca Cintora"
+            }
+        ],
+        "Description": "Send and receive pings",
+        "Description[zh_CN]": "发送和接受ping",
+        "EnabledByDefault": true,
+        "Icon": "dialog-ok",
+        "License": "GPL",
+        "Name": "Ping",
+        "Name[zh_CN]": "Ping"
+    },
+    "X-KdeConnect-OutgoingPacketType": [
+        "kdeconnect.ping"
+    ],
+    "X-KdeConnect-SupportedPacketType": [
+        "kdeconnect.ping"
+    ]
+}
