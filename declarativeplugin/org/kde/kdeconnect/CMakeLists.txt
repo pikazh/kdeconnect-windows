@@ -1,7 +1,7 @@
 qt_add_qml_module(kdeconnectdeclarativeplugin
     URI "org.kde.kdeconnect"
     VERSION 1.0
-    #PLUGIN_TARGET kdeconnectdeclarativeplugin
+    PLUGIN_TARGET kdeconnectdeclarativeplugin_imp
     SOURCES
     devicesmodel.h
     devicesmodel.cpp
@@ -18,3 +18,7 @@ install(TARGETS kdeconnectdeclarativeplugin
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/kdeconnectdeclarativeplugin_imp.dll"
+    "${CMAKE_CURRENT_BINARY_DIR}/qmldir"
+    DESTINATION "${CMAKE_INSTALL_BINDIR}/org/kde/kdeconnect")

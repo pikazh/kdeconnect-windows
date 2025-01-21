@@ -1,8 +1,6 @@
 add_subdirectory(backends/lan)
 #add_subdirectory(backends/loopback)
 
-include(GenerateExportHeader)
-
 qt_add_library(kdeconnectcore SHARED
     ${backends_kdeconnect_SRCS}
     backends/linkprovider.cpp
@@ -35,9 +33,17 @@ qt_add_library(kdeconnectcore SHARED
     #pluginloader.cpp
 )
 
+include(GenerateExportHeader)
 generate_export_header(kdeconnectcore EXPORT_FILE_NAME kdeconnectcore_export.h)
 
 #target_include_directories(kdeconnectcore PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(kdeconnectcore PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(kdeconnectcore PRIVATE Qt::Core Qt::Network Qt::DBus OpenSSL::Crypto)
+
+include(GNUInstallDirs)
+install(TARGETS kdeconnectcore
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

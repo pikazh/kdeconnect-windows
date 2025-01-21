@@ -28,3 +28,10 @@ target_include_directories(kdeconnectinterfaces PUBLIC ${CMAKE_CURRENT_BINARY_DI
 target_include_directories(kdeconnectinterfaces PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(kdeconnectinterfaces PRIVATE Qt::Core Qt::Gui Qt::DBus)
+
+include(GNUInstallDirs)
+install(TARGETS kdeconnectinterfaces
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
