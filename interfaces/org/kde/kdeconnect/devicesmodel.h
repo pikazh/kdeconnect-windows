@@ -17,7 +17,6 @@ public:
     enum ModelRoles
     {
         NameModelRole = Qt::DisplayRole,
-        IconModelRole = Qt::DecorationRole,
         StatusModelRole = Qt::InitialSortOrderRole,
         IdModelRole = Qt::UserRole,
         IconNameRole,

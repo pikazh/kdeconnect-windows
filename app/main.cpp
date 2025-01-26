@@ -1,5 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+
+#include "core/dbushelper.h"
 #include "Windows.h"
 int main(int argc, char *argv[])
 {
@@ -9,6 +11,9 @@ int main(int argc, char *argv[])
     app.setOrganizationName("zyx");
     app.setApplicationName("KdeConnect");
 
+    DBusHelper dbusHelper;
+    dbusHelper.startDBusDaemon();
+
     QQmlApplicationEngine engine;
     QObject::connect(
         &engine,
@@ -16,6 +21,7 @@ int main(int argc, char *argv[])
         &app,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
-    engine.load(QUrl("qrc:/qml/Main.qml"));
+    //engine.load(QUrl("qrc:/qml/Main.qml"));
+    engine.loadFromModule("org.kde.kdeconnect.app", "Main");
     return app.exec();
 }

@@ -15,4 +15,7 @@ public:
 
     Q_SCRIPTABLE virtual void sendSimpleNotification(const QString &eventId, const QString &title, const QString &text, const QString &iconName) override;
 
+public Q_SLOTS:
+    virtual void quit() override;
+
 };

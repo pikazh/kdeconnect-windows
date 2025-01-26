@@ -74,7 +74,7 @@ struct DeviceType {
             type = toString();
         }
         QString status = (reachable ? (trusted ? QStringLiteral("connected") : QStringLiteral("disconnected")) : QStringLiteral("trusted"));
-        return type + status;
+        return QStringLiteral("qrc:/32/") + type + status + QStringLiteral(".svg");
     }
 
     constexpr DeviceType(Value value)

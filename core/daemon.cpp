@@ -62,10 +62,14 @@ void Daemon::init()
     if(!QDBusConnection::sessionBus().registerService(dbusServiceName))
     {
         qCritical(KDECONNECT_CORE) << "register dbus service " << dbusServiceName << "failed.";
+        QMetaObject::invokeMethod(this, &Daemon::quit, Qt::QueuedConnection);
+        return;
     }
     if(!QDBusConnection::sessionBus().registerObject(dbusObjectPath, this, QDBusConnection::ExportAllContents))
     {
         qCritical(KDECONNECT_CORE) << "register dbus object " << dbusObjectPath << "failed.";
+        QMetaObject::invokeMethod(this, &Daemon::quit, Qt::QueuedConnection);
+        return;
     }
 
     m_linkProviders.insert(new LanLinkProvider());
@@ -85,7 +89,7 @@ void Daemon::init()
 
     // Listen to new devices
     for (LinkProvider *a : std::as_const(m_linkProviders)) {
-        //connect(a, &LinkProvider::onConnectionReceived, this, &DaemonThread::onNewDeviceLink);
+        connect(a, &LinkProvider::onConnectionReceived, this, &Daemon::onNewDeviceLink);
         a->onStart();
     }
 }

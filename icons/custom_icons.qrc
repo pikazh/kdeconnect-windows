@@ -1,0 +1,16 @@
+<RCC>
+<qresource prefix="/32/">
+    <file alias="smartphoneconnected.svg">32/32-status-smartphoneconnected.svg</file>
+    <file alias="smartphonedisconnected.svg">32/32-status-smartphonedisconnected.svg</file>
+    <file alias="smartphonetrusted.svg">32/32-status-smartphonetrusted.svg</file>
+	<file alias="configure.svg">32/configure.svg</file>
+	<file alias="view-refresh.svg">32/view-refresh.svg</file>
+</qresource>
+<qresource prefix="/16/">
+	<file alias="configure.svg">16/configure.svg</file>
+</qresource>
+<qresource prefix="/app/">
+    <file alias="kdeconnect.svg">app/sc-apps-kdeconnect.svg</file>
+    <file alias="kdeconnect.png">app/128-apps-kdeconnect.png</file>
+</qresource>
+</RCC>

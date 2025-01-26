@@ -13,7 +13,7 @@ set_target_properties(kdeconnectd PROPERTIES
 )
 
 target_link_libraries(kdeconnectd
-    PRIVATE Qt::Core Qt::Gui Qt::Widgets Qt::Network Qt::DBus OpenSSL::Crypto kdeconnectcore
+    PRIVATE Qt::Core Qt::Gui Qt::Network Qt::DBus OpenSSL::Crypto kdeconnectcore
 )
 
 include(GNUInstallDirs)
@@ -28,5 +28,6 @@ qt_generate_deploy_app_script(
     OUTPUT_SCRIPT deploy_script
     NO_UNSUPPORTED_PLATFORM_ERROR
 )
+
 install(SCRIPT ${deploy_script})
 

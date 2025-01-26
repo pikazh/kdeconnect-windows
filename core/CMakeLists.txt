@@ -28,6 +28,8 @@ qt_add_library(kdeconnectcore SHARED
     kdeconnectplugin.cpp
     sslhelper.h
     sslhelper.cpp
+    dbushelper.h
+    dbushelper.cpp
 
     #pluginloader.h
     #pluginloader.cpp

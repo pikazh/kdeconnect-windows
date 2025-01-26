@@ -1,6 +1,7 @@
-#include <QIcon>
-
 #include "devicesmodel.h"
+#include "interfaces_debug.h"
+
+#include <QIcon>
 
 DevicesModel::DevicesModel(QObject *parent)
     : QAbstractListModel{parent}
@@ -19,6 +20,8 @@ DevicesModel::DevicesModel(QObject *parent)
                                                          this);
     connect(watcher, &QDBusServiceWatcher::serviceRegistered, this, &DevicesModel::refreshDeviceList);
     connect(watcher, &QDBusServiceWatcher::serviceUnregistered, this, &DevicesModel::clearDevices);
+
+    refreshDeviceList();
 }
 
 QVariant DevicesModel::data(const QModelIndex &index, int role) const
@@ -35,19 +38,12 @@ QVariant DevicesModel::data(const QModelIndex &index, int role) const
 
     switch(role)
     {
-    case IconModelRole:
-    {
-
-        QString icon = data(index, IconNameRole).toString();
-        return QIcon::fromTheme(icon);
-    }
     case IdModelRole:
         return device->id();
     case NameModelRole:
         return device->name();
     case Qt::ToolTipRole:
     {
-
         bool trusted = device->isPaired();
         bool reachable = device->isReachable();
         QString status = reachable?(trusted?tr("Device trusted and connected"):tr("Device not trusted")):tr("Device disconnected");
@@ -116,7 +112,7 @@ int DevicesModel::rowForDevice(const QString &id) const
     return -1;
 }
 
-void DevicesModel::onDeviceAdded(const QString &id)
+void DevicesModel:: onDeviceAdded(const QString &id)
 {
     if(rowForDevice(id) >= 0)
     {
@@ -159,7 +155,7 @@ void DevicesModel::refreshDeviceList()
     if(!m_dbusInterface->isValid())
     {
         clearDevices();
-        //qWarning(KDECONNECT_INTERFACE) << "dbus interface is not valid";
+        qWarning(KDECONNECT_INTERFACES) << "dbus interface is not valid";
         return;
     }
 
@@ -176,7 +172,7 @@ void DevicesModel::receiveDeviceList(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<QStringList> pendingDevicesIds = *watcher;
     if(pendingDevicesIds.isError())
     {
-        //qWarning(KDECONNECT_INTERFACE) << pendingDevicesIds.error();
+        qWarning(KDECONNECT_INTERFACES) << pendingDevicesIds.error();
     }
     else
     {
@@ -199,6 +195,7 @@ void DevicesModel::clearDevices()
     {
         beginRemoveRows(QModelIndex(), 0, m_deviceList.size()-1);
         qDeleteAll(m_deviceList);
+        m_deviceList.clear();
         endRemoveRows();
     }
 }

@@ -41,6 +41,7 @@ public Q_SLOTS:
     Q_SCRIPTABLE void setAnnouncedName(const QString &name);
     // Returns a list of ids. The respective devices can be manipulated using the dbus path: "/modules/kdeconnect/Devices/"+id
     Q_SCRIPTABLE QStringList devices(bool onlyReachable = false, bool onlyPaired = false) const;
+    virtual void quit() = 0;
 
 private Q_SLOTS:
     void onNewDeviceLink(DeviceLink *dl);

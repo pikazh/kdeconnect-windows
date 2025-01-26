@@ -1,18 +1,28 @@
+qt_add_resources(kdeconnect_custom_icons_SRCS ${CMAKE_SOURCE_DIR}/icons/custom_icons.qrc)
+
 qt_add_executable(kdeconnect-app
     main.cpp
+    ${kdeconnect_custom_icons_SRCS}
+)
+
+set(kdeconnect_app_qml_FILES
+    qml/Main.qml
+    qml/Settings.qml
 )
 
 qt_add_qml_module(kdeconnect-app
     URI "org.kde.kdeconnect.app"
     VERSION 1.0
     QML_FILES
-        Main.qml
+        ${kdeconnect_app_qml_FILES}
+
 )
 
 qt_add_resources(kdeconnect-app "qml"
     PREFIX "/qml"
     FILES
-        Main.qml)
+        ${kdeconnect_app_qml_FILES}
+)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
@@ -26,7 +36,14 @@ set_target_properties(kdeconnect-app PROPERTIES
 )
 
 target_link_libraries(kdeconnect-app
-    PRIVATE Qt::Quick Qt::QuickWidgets Qt::QuickControls2 Qt::Core Qt::DBus kdeconnectdeclarativeplugin
+    PRIVATE
+    Qt::Quick
+    Qt::QuickWidgets
+    Qt::QuickControls2
+    Qt::Core
+    Qt::DBus
+    kdeconnectinterfaces
+    kdeconnectcore
 )
 
 include(GNUInstallDirs)
@@ -45,6 +62,3 @@ qt_generate_deploy_qml_app_script(
 )
 
 install(SCRIPT ${deploy_script})
-
-
-

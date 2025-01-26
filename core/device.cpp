@@ -82,7 +82,7 @@ Device::Device(QObject *parent, DeviceLink *dl)
     addLink(dl);
 
     // Register in bus
-   // QDBusConnection::sessionBus().registerObject(dbusPath(), this, QDBusConnection::ExportScriptableContents | QDBusConnection::ExportAdaptors);
+    QDBusConnection::sessionBus().registerObject(dbusPath(), this, QDBusConnection::ExportAllContents);
 
     connect(this, &Device::pairingFailed, [](const QString &info){
         qWarning(KDECONNECT_CORE) << "Device pairing error" << info;

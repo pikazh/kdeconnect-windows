@@ -1,5 +1,5 @@
 #include "daemondbusinterface.h"
-#include "interface_debug.h"
+#include "interfaces_debug.h"
 
 DaemonDBusInterface::DaemonDBusInterface(QObject *parent)
     : OrgKdeKdeconnectDaemonInterface(DaemonDBusInterface::activatedService(), QStringLiteral("/modules/kdeconnect"), QDBusConnection::sessionBus(), parent)
@@ -14,7 +14,7 @@ QString DaemonDBusInterface::activatedService()
     auto interface = QDBusConnection::sessionBus().interface();
     auto reply = interface->startService(serviceName);
     if (!reply.isValid()) {
-        qWarning(KDECONNECT_INTERFACE) << "error activating kdeconnectd:" << reply.error();
+        qWarning(KDECONNECT_INTERFACES) << "error activating kdeconnectd:" << reply.error();
     }
 
     return serviceName;
