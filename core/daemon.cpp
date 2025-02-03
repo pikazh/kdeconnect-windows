@@ -5,10 +5,12 @@
 #include "kdeconnectconfig.h"
 #include "backends/lan/lanlinkprovider.h"
 
+Daemon* Daemon::s_instance = nullptr;
+
 void Daemon::onNewDeviceLink(DeviceLink *dl)
 {
     QString id = dl->deviceId();
-    qDebug(KDECONNECT_CORE) << "Device  " << id
+    qDebug(KDECONNECT_CORE) << "Device" << id
                             << "established new link.";
 
     if(m_devices.contains(id))
@@ -51,7 +53,8 @@ void Daemon::onDeviceStatusChanged()
 Daemon::Daemon(QObject *parent)
     : QObject(parent)
 {
-
+    Q_ASSERT(s_instance == nullptr);
+    s_instance = this;
 }
 
 void Daemon::init()
@@ -170,5 +173,3 @@ QStringList Daemon::devices(bool onlyReachable, bool onlyPaired) const
 
     return ret;
 }
-
-

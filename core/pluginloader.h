@@ -1,19 +1,12 @@
-/**
- * SPDX-FileCopyrightText: 2013 Albert Vaca <albertvaka@gmail.com>
- *
- * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
- */
-
 #ifndef PLUGINLOADER_H
 #define PLUGINLOADER_H
+
+#include "pluginmetadata.h"
+#include "kdeconnectcore_export.h"
 
 #include <QHash>
 #include <QObject>
 #include <QString>
-
-//#include <KPluginMetaData>
-
-#include "kdeconnectcore_export.h"
 
 class Device;
 class KdeConnectPlugin;
@@ -26,7 +19,7 @@ public:
 
     QStringList getPluginList() const;
     bool doesPluginExist(const QString &name) const;
-    KPluginMetaData getPluginInfo(const QString &name) const;
+    PluginMetaData getPluginInfo(const QString &name) const;
     KdeConnectPlugin *instantiatePluginForDevice(const QString &name, Device *device) const;
 
     QStringList incomingCapabilities() const;
@@ -36,7 +29,7 @@ public:
 private:
     PluginLoader();
 
-    //QHash<QString, KPluginMetaData> plugins;
+    QHash<QString, PluginMetaData> plugins;
 };
 
 #endif

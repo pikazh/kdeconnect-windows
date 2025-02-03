@@ -14,11 +14,14 @@ include_directories(${PROJECT_SOURCE_DIR})
 
 add_subdirectory(app)
 add_subdirectory(core)
+add_subdirectory(coreaddons)
 add_subdirectory(interfaces/org/kde/kdeconnect)
 add_subdirectory(daemon)
+add_subdirectory(notification)
 add_subdirectory(icons)
 add_subdirectory(plugins)
 
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/dbus/"
     DESTINATION ${CMAKE_INSTALL_BINDIR}
     PATTERN "${PROJECT_SOURCE_DIR}/dbus/*")
+

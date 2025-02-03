@@ -8,6 +8,7 @@
 #define NETWORKPACKET_H
 
 #include "networkpackettypes.h"
+#include "kdeconnectcore_export.h"
 
 #include <QIODevice>
 #include <QObject>
@@ -15,8 +16,6 @@
 #include <QString>
 #include <QUrl>
 #include <QVariant>
-
-#include "kdeconnectcore_export.h"
 
 class FileTransferJob;
 

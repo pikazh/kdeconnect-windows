@@ -46,5 +46,3 @@ void Server::close()
     QTcpServer::close();
     Q_EMIT closed();
 }
-
-#include "moc_server.cpp"

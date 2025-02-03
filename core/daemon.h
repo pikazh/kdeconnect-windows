@@ -16,6 +16,12 @@ public:
     explicit Daemon(QObject *parent = nullptr);
     void init();
 
+    static Daemon* instance()
+    {
+        Q_ASSERT(s_instance != nullptr);
+        return s_instance;
+    }
+
     QList<Device*> devicesList() const;
     Device* getDevice(const QString &deviceId) const;
 
@@ -52,5 +58,7 @@ private:
     QSet<LinkProvider *> m_linkProviders;
     // Every known device
     QMap<QString, Device *> m_devices;
+
+    static Daemon * s_instance;
 
 };

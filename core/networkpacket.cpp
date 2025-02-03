@@ -113,5 +113,3 @@ bool NetworkPacket::unserialize(const QByteArray &a, NetworkPacket *np)
 // {
 //     return new FileTransferJob(this, destination);
 // }
-
-#include "moc_networkpacket.cpp"

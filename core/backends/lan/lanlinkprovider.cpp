@@ -508,7 +508,7 @@ void LanLinkProvider::dataReceived()
 
 void LanLinkProvider::onLinkDestroyed(const QString &deviceId, DeviceLink *oldPtr)
 {
-    qCDebug(KDECONNECT_CORE) << "LanLinkProvider deviceLinkDestroyed" << deviceId;
+    qCDebug(KDECONNECT_CORE) << "LanLinkProvider deviceLink Destroyed" << deviceId;
     DeviceLink *link = m_links.take(deviceId);
     Q_ASSERT(link == oldPtr);
 }
@@ -584,5 +584,3 @@ void LanLinkProvider::addLink(QSslSocket *socket, const DeviceInfo &deviceInfo)
     }
     Q_EMIT onConnectionReceived(deviceLink);
 }
-
-#include "moc_lanlinkprovider.cpp"

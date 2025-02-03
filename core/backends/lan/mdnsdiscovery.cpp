@@ -56,5 +56,3 @@ void MdnsDiscovery::onNetworkChange()
     mdnsDiscoverer.stopDiscovering();
     mdnsDiscoverer.startDiscovering(kServiceType);
 }
-
-#include "moc_mdnsdiscovery.cpp"

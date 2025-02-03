@@ -116,7 +116,8 @@ void DevicesModel:: onDeviceAdded(const QString &id)
 {
     if(rowForDevice(id) >= 0)
     {
-        Q_ASSERT_X(false, "onDeviceAdded", "device existed");
+        qWarning(KDECONNECT_INTERFACES) << "device with id " << id
+                                        << "has already existed.";
         return;
     }
 

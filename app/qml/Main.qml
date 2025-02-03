@@ -129,17 +129,17 @@ ApplicationWindow {
                 }
 
                 highlighted: ListView.isCurrentItem
+
+                onClicked: {
+                    console.log("clicked")
+                }
+
                 MouseArea{
                     id: mouseArea
                     anchors.fill: parent
                     hoverEnabled: true
                     onPositionChanged: deviceList.currentIndex = index
                     onExited: deviceList.currentIndex = -1
-                    onClicked: {
-                        var component = Qt.createComponent(Qt.resolvedUrl("test.qml"))
-                        var window = component.createObject(window)
-                        window.show()
-                    }
                 }
             }
 

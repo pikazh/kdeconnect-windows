@@ -181,5 +181,3 @@ void KdeConnectPluginConfig::loadConfig()
     //                                       SLOT(slotConfigChanged()));
     Q_EMIT configChanged();
 }
-
-#include "moc_kdeconnectpluginconfig.cpp"

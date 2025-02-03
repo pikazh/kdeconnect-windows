@@ -22,7 +22,7 @@ class KDECONNECTCORE_EXPORT KdeConnectPlugin : public QObject
     Q_OBJECT
 
 public:
-    KdeConnectPlugin(QObject *parent);
+    KdeConnectPlugin(QObject *parent, const QVariantList &args);
     ~KdeConnectPlugin() override;
 
     const Device *device();
@@ -32,7 +32,7 @@ public:
 
     KdeConnectPluginConfig *config() const;
 
-    //virtual QString dbusPath() const;
+    virtual QString dbusPath() const;
 
     QString iconName() const;
 
@@ -53,7 +53,5 @@ public:
 private:
     const std::unique_ptr<KdeConnectPluginPrivate> d;
 };
-
-Q_DECLARE_INTERFACE(KdeConnectPlugin, "org.kde.kdeconnect.plugin.interface")
 
 #endif

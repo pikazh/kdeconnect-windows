@@ -80,11 +80,16 @@ DeviceType KdeConnectConfig::deviceType()
 {
     const QByteArrayList platforms = qgetenv("PLASMA_PLATFORM").split(':');
 
-    if (platforms.contains("phone")) {
+    if (platforms.contains("phone"))
+    {
         return DeviceType::Phone;
-    } else if (platforms.contains("tablet")) {
+    }
+    else if (platforms.contains("tablet"))
+    {
         return DeviceType::Tablet;
-    } else if (platforms.contains("mediacenter")) {
+    }
+    else if (platforms.contains("mediacenter"))
+    {
         return DeviceType::Tv;
     }
 

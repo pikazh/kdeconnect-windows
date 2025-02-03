@@ -258,5 +258,3 @@ void CompositeUploadJob::emitDescription(const QString &currentFileName)
     setProcessedAmount(Files, m_currentJobNum);
     setTotalAmount(Files, m_totalJobs);
 }
-
-#include "moc_compositeuploadjob.cpp"

@@ -120,5 +120,3 @@ void LanDeviceLink::dataReceived()
         Q_EMIT receivedPacket(packet);
     }
 }
-
-#include "moc_landevicelink.cpp"

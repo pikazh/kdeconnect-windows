@@ -16,5 +16,3 @@ DeviceLink::DeviceLink(const QString &deviceId, LinkProvider *parent)
     });
     this->priorityFromProvider = parent->priority();
 }
-
-#include "moc_devicelink.cpp"

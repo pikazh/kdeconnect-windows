@@ -138,6 +138,6 @@ private:
     DevicePrivate *d;
 };
 
-Q_DECLARE_METATYPE(Device *)
+Q_DECLARE_METATYPE(Device*)
 
 #endif // DEVICE_H

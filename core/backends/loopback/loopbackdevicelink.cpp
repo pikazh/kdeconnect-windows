@@ -35,5 +35,3 @@ DeviceInfo LoopbackDeviceLink::deviceInfo() const
 {
     return KdeConnectConfig::instance().deviceInfo();
 }
-
-#include "moc_loopbackdevicelink.cpp"

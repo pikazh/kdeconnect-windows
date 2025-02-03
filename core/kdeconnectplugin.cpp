@@ -5,7 +5,6 @@
  */
 
 #include "kdeconnectplugin.h"
-
 #include "core_debug.h"
 
 struct KdeConnectPluginPrivate {
@@ -16,17 +15,17 @@ struct KdeConnectPluginPrivate {
     QString iconName;
 };
 
-KdeConnectPlugin::KdeConnectPlugin(QObject *parent)
+KdeConnectPlugin::KdeConnectPlugin(QObject *parent, const QVariantList &args)
     : QObject(parent)
     , d(new KdeConnectPluginPrivate)
 {
-    // Q_ASSERT(args.length() == 4);
-    // d->m_device = qvariant_cast<Device *>(args.at(0));
-    // d->m_pluginName = args.at(1).toString();
+    Q_ASSERT(args.length() == 4);
+    d->m_device = qvariant_cast<Device *>(args.at(0));
+    d->m_pluginName = args.at(1).toString();
 
-    // const QStringList cap = args.at(2).toStringList();
-    // d->m_outgoingCapabilties = QSet(cap.begin(), cap.end());
-    // d->iconName = args.at(3).toString();
+    const QStringList cap = args.at(2).toStringList();
+    d->m_outgoingCapabilties = QSet(cap.begin(), cap.end());
+    d->iconName = args.at(3).toString();
 }
 
 KdeConnectPluginConfig *KdeConnectPlugin::config() const
@@ -36,6 +35,11 @@ KdeConnectPluginConfig *KdeConnectPlugin::config() const
         d->m_config = new KdeConnectPluginConfig(d->m_device->id(), d->m_pluginName);
     }
     return d->m_config;
+}
+
+QString KdeConnectPlugin::dbusPath() const
+{
+    return QString();
 }
 
 KdeConnectPlugin::~KdeConnectPlugin()
@@ -56,8 +60,8 @@ Device const *KdeConnectPlugin::device() const
 bool KdeConnectPlugin::sendPacket(NetworkPacket &np) const
 {
     if (!d->m_outgoingCapabilties.contains(np.type())) {
-        qCWarning(KDECONNECT_CORE) << metaObject()->className() << "tried to send an unsupported packet type" << np.type()
-                                   << ". Supported:" << d->m_outgoingCapabilties;
+        qCWarning(KDECONNECT_CORE) << metaObject()->className() << "tried to send an unsupported packet type " << np.type()
+        << ". Supported: " << d->m_outgoingCapabilties;
         return false;
     }
     //     qCWarning(KDECONNECT_CORE) << metaObject()->className() << "sends" << np.type() << ". Supported:" << d->mOutgoingTypes;
@@ -66,11 +70,10 @@ bool KdeConnectPlugin::sendPacket(NetworkPacket &np) const
 
 void KdeConnectPlugin::receivePacket(const NetworkPacket &np)
 {
-    qCWarning(KDECONNECT_CORE) << metaObject()->className() << "received a packet of type" << np.type() << "but doesn't implement receivePacket";
+    qCWarning(KDECONNECT_CORE) << metaObject()->className() << "received a packet of type " << np.type() << ", but doesn't implement receivePacket";
 }
+
 QString KdeConnectPlugin::iconName() const
 {
     return d->iconName;
 }
-
-#include "moc_kdeconnectplugin.cpp"
