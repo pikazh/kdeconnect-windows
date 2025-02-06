@@ -23,7 +23,7 @@ ApplicationWindow {
             }
 
             ToolButton{
-                icon.source: "qrc:/32/view-refresh.svg"
+                icon.name: 'view-refresh'
                 text: qsTr("Refresh")
                 ToolTip.text:  text
                 ToolTip.visible: hovered
@@ -97,11 +97,12 @@ ApplicationWindow {
                 id: delegate
                 height: 45
                 width: ListView.view.width
-                icon.source: iconName
+                icon.name: iconName
                 contentItem:Item {
-                    Image{
+                     Button{
                         id: img
-                        source: iconName
+                        flat: true
+                        icon.name: iconName
                         anchors {
                             verticalCenter: parent.verticalCenter
                         }
@@ -164,7 +165,7 @@ ApplicationWindow {
             }
 
             ToolButton{
-                icon.source: "qrc:/16/configure.svg"
+                icon.name: "configure"
                 ToolTip.text:  qsTr("Settings")
                 ToolTip.visible: hovered
                 onClicked: {

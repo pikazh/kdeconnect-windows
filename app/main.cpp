@@ -1,16 +1,19 @@
+#include "core/dbushelper.h"
+#include "icons.h"
+#include "notification.h"
 #include <QGuiApplication>
+#include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QTimer>
 
-#include "core/dbushelper.h"
-
 int main(int argc, char *argv[])
 {
+    Icons::initIcons();
     QGuiApplication app(argc, argv);
     app.setOrganizationDomain("KdeConnect");
     app.setOrganizationName("zyx");
     app.setApplicationName("KdeConnect");
-
+    app.setWindowIcon(QIcon(QStringLiteral(":/images/kdeconnect.ico")));
     DBusHelper dbusHelper;
     dbusHelper.startDBusDaemon();
 
@@ -21,19 +24,12 @@ int main(int argc, char *argv[])
         &app,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
-    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, [](QObject *object, const QUrl &url)
-                     {
-        qDebug() << url << "created";
 
-    });
-    QTimer timer;
-    timer.setInterval(3000);
-    QObject::connect(&timer, &QTimer::timeout, [&engine](){
-        qDebug() << engine.rootObjects();
-    });
-    timer.start();
+    Notification * notif = new Notification();
+    notif->setText(QStringLiteral("dsdsd"));
+    notif->notify();
+
     engine.loadFromModule("org.kde.kdeconnect.app", "Main");
-
-    app.setQuitOnLastWindowClosed(false);
+    //app.setQuitOnLastWindowClosed(false);
     return app.exec();
 }

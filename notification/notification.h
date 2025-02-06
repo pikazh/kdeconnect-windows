@@ -53,13 +53,24 @@ public:
     NotificationAction *addAction(const QString &label);
     void clearActions();
 
+    void setAutoDestroy(bool autoDestroy);
+    bool autoDestroy() const;
+
 public Q_SLOTS:
     void close();
     void notify();
+
+protected Q_SLOTS:
+    void onActionInvoked(Notification *notification, const QString &actionLabel);
+    void onNotifyFinished(Notification *notification);
+Q_SIGNALS:
+    void closed();
+
 protected:
     friend class NotifyInterface;
     friend class NotifyBySnore;
 
+    QList<NotificationAction*> actions() const;
     void activate(const QString &actionId);
     int id();
 
