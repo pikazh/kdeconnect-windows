@@ -1,11 +1,13 @@
 qt_add_executable(kdeconnect-app
     main.cpp
     kdeconnect.rc
+    kdeconnect.qrc
 )
 
 set(kdeconnect_app_qml_FILES
     qml/Main.qml
     qml/Settings.qml
+    qml/DeviceWindow.qml
 )
 
 qt_add_qml_module(kdeconnect-app
@@ -13,6 +15,7 @@ qt_add_qml_module(kdeconnect-app
     VERSION 1.0
     QML_FILES
         ${kdeconnect_app_qml_FILES}
+
 )
 
 qt_add_resources(kdeconnect-app "qml"
@@ -49,6 +52,7 @@ target_link_libraries(kdeconnect-app
     kdeconnectcore
     notification
     icons
+    SingleApplication::SingleApplication
 )
 
 include(GNUInstallDirs)

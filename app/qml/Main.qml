@@ -5,7 +5,7 @@ import QtQuick.Controls
 import org.kde.kdeconnect
 
 ApplicationWindow {
-    id: window
+    id: mainWindow
     width: 640
     height: 480
     minimumWidth: 300
@@ -14,8 +14,8 @@ ApplicationWindow {
     title: qsTr("KdeConnect")
 
     header: ToolBar{
-        height: 40
-        contentItem: RowLayout {
+        RowLayout {
+            anchors.fill: parent
             Label{
                 text: qsTr("Devices")
                 font.pixelSize: 16
@@ -41,6 +41,7 @@ ApplicationWindow {
             Rectangle {
                 width: ListView.view.width
                 height: childrenRect.height
+                color: "darkgrey"
 
                 required property string section
 
@@ -99,9 +100,10 @@ ApplicationWindow {
                 width: ListView.view.width
                 icon.name: iconName
                 contentItem:Item {
-                     Button{
+                    Button{
                         id: img
                         flat: true
+                        hoverEnabled: false
                         icon.name: iconName
                         anchors {
                             verticalCenter: parent.verticalCenter
@@ -129,29 +131,28 @@ ApplicationWindow {
                     }
                 }
 
-                highlighted: ListView.isCurrentItem
-
-                onClicked: {
-                    console.log("clicked")
-                }
+                //highlighted: ListView.isCurrentItem
 
                 MouseArea{
                     id: mouseArea
                     anchors.fill: parent
-                    hoverEnabled: true
-                    onPositionChanged: deviceList.currentIndex = index
-                    onExited: deviceList.currentIndex = -1
+                    onDoubleClicked: {
+                        deviceWindow.addDeviceTab()
+                    }
+
+                    //onEntered: deviceList.currentIndex = index
+                    //onExited: deviceList.currentIndex = -1
                 }
             }
 
-            highlight: highlightBar
+            //highlight: highlightBar
         }
 
     }
 
     footer: ToolBar{
-        height: 40
-        contentItem: RowLayout {
+        RowLayout {
+            anchors.fill: parent
             Label{
                 text: announcedNameProperty.value
                 Layout.fillWidth: true
@@ -170,7 +171,7 @@ ApplicationWindow {
                 ToolTip.visible: hovered
                 onClicked: {
                     var windowComponent = Qt.createComponent(Qt.resolvedUrl("Settings.qml"))
-                    var win = windowComponent.createObject(window)
+                    var win = windowComponent.createObject(mainWindow)
                     windowComponent.destroy();
                     win.show()
                 }
@@ -180,9 +181,9 @@ ApplicationWindow {
 
     Settings {
         id: settings
-        property alias windowX: window.x
-        property alias windowY: window.y
-        property alias windowWidth: window.width
-        property alias windowHeight: window.height
+        property alias windowX: mainWindow.x
+        property alias windowY: mainWindow.y
+        property alias windowWidth: mainWindow.width
+        property alias windowHeight: mainWindow.height
     }
 }

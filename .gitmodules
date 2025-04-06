@@ -1,0 +1,6 @@
+[submodule "third_party/singleapplication"]
+	path = third_party/singleapplication
+	url = https://github.com/itay-grudev/SingleApplication.git
+[submodule "third_party/snoretoast"]
+	path = third_party/snoretoast
+	url = https://github.com/KDE/snoretoast.git
