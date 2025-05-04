@@ -1,9 +1,11 @@
 qt_add_library(kdeconnect_battery SHARED
+    kdeconnect_battery.json
     batteryplugin-win.h
     batteryplugin-win.cpp
     plugin_battery_debug.h
     plugin_battery_debug.cpp
-    kdeconnect_battery.json
+    batterymonitor.h
+    batterymonitor.cpp
 )
 
 target_link_libraries(kdeconnect_battery PRIVATE Qt::Core Qt::Network kdeconnectcore)

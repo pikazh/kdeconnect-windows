@@ -1,76 +1,30 @@
-# This file is used to ignore files which are generated
-# ----------------------------------------------------------------------------
-
-*~
-*.autosave
-*.a
-*.core
-*.moc
-*.o
-*.obj
-*.orig
-*.rej
-*.so
-*.so.*
-*_pch.h.cpp
-*_resource.rc
-*.qm
-.#*
-*.*#
-#core
-!core/
-tags
-.DS_Store
-.directory
-*.debug
-Makefile*
-*.prl
-*.app
-moc_*.cpp
-ui_*.h
-qrc_*.cpp
 Thumbs.db
-*.res
-*.rc
-/.qmake.cache
-/.qmake.stash
+.user
+.directory
+resources/CMakeFiles
+*~
+*.swp
 
-# qtcreator generated files
-*.pro.user*
-CMakeLists.txt.user*
+# Project Files
+*.pro.user
+CMakeLists.txt.user
+CMakeLists.txt.user.*
+CMakeSettings.json
+/CMakeFiles
+CMakeCache.txt
+/.project
+/.settings
+/.idea
+/.vscode
+/.vs
+cmake-build-*/
+Debug
+compile_commands.json
 
-# xemacs temporary files
-*.flc
-
-# Vim temporary files
-.*.swp
-
-# Visual Studio generated files
-*.ib_pdb_index
-*.idb
-*.ilk
-*.pdb
-*.sln
-*.suo
-*.vcproj
-*vcproj.*.*.user
-*.ncb
-*.sdf
-*.opensdf
-*.vcxproj
-*vcxproj.*
-
-# MinGW generated files
-*.Debug
-*.Release
-
-# Python byte code
-*.pyc
-
-# Binaries
-# --------
-#*.dll
-#*.exe
-
-# Build directory
+# Build dirs
 build
+/build-*
+
+# Install dirs
+install
+/install-*

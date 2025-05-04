@@ -12,18 +12,19 @@ qt_add_executable(kdeconnect-app
     ui/mainwindow.cpp
     ui/mainwindow.h
     ui/mainwindow.ui
+    ui/devicewindow.h
+    ui/devicewindow.cpp
     ui/devicelistmodel.h
     ui/devicelistmodel.cpp
-    ui/pages/BasePage.h
-    ui/pages/BasePageContainer.h
-    ui/pages/BasePageProvider.h
+	
     ui/widgets/PageContainer.h
     ui/widgets/PageContainer_p.h
     ui/widgets/PageContainer.cpp
     ui/widgets/IconLabel.h
     ui/widgets/IconLabel.cpp
-    ui/devicewindow.h
-    ui/devicewindow.cpp
+    ui/widgets/imagewidget.h
+    ui/widgets/imagewidget.cpp
+    
     ui/pages/devicepairpageprovider.h
     ui/pages/devicepairpageprovider.cpp
     ui/pages/pairpage.h
@@ -34,14 +35,16 @@ qt_add_executable(kdeconnect-app
     ui/pages/mprisremotepage.ui
     ui/pages/mprisremotepage.h
     ui/pages/mprisremotepage.cpp
+    ui/pages/BasePage.h
+    ui/pages/BasePageContainer.h
+    ui/pages/BasePageProvider.h
 
     plugin/pluginwrapperbase.h
     plugin/pluginwrapperbase.cpp
     plugin/mprisremotepluginwrapper.h
     plugin/mprisremotepluginwrapper.cpp
-    ui/widgets/imagewidget.h
-    ui/widgets/imagewidget.cpp
-
+    plugin/batterypluginwrapper.h
+    plugin/batterypluginwrapper.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

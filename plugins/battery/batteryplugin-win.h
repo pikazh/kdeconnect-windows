@@ -1,8 +1,6 @@
 #pragma once
 
-#include <QObject>
-#include <QTimer>
-
+#include "batterymonitor.h"
 #include "core/plugins/kdeconnectplugin.h"
 
 #define PACKET_TYPE_BATTERY QStringLiteral("kdeconnect.battery")
@@ -20,29 +18,29 @@ public:
         ThresholdNone = 0,
         ThresholdBatteryLow = 1,
     };
+
     BatteryPlugin(QObject *parent, const QVariantList &args);
 
     int charge() const { return m_remoteCharge; }
     bool isCharging() const { return m_isRemoteCharging; }
 
-    virtual void onPluginEnabled() override;
-
 protected:
+    virtual void onPluginEnabled() override;
+    virtual void onPluginDisabled() override;
+
     virtual void receivePacket(const NetworkPacket &np) override;
 
+    BatteryMonitor *batteryMonitor();
+
 Q_SIGNALS:
-    void refreshed(bool isCharging, int charge);
+    void refreshed(int charge, bool isCharging);
 
 protected Q_SLOTS:
-    void checkAndNotifyChargeInfo();
+    void localBatteryInfoUpdated();
 
 private:
-    int m_localCharge = -1;
-    bool m_isLocalCharging = false;
-
+    const int m_chargeThreshold = 15;
     int m_remoteCharge = -1;
     bool m_isRemoteCharging = false;
-
-    const int m_chargeThreshold = 15;
-    QTimer *m_checkChargeInfoTimer;
+    static int g_instanceCount;
 };
