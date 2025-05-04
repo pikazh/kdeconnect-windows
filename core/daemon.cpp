@@ -1,5 +1,3 @@
-#include <QDBusConnection>
-
 #include "daemon.h"
 #include "core_debug.h"
 #include "kdeconnectconfig.h"
@@ -7,15 +5,25 @@
 
 Daemon* Daemon::s_instance = nullptr;
 
+class DaemonPrivate
+{
+public:
+    // Different ways to find devices and connect to them
+    QSet<LinkProvider *> m_linkProviders;
+
+    // Every known device
+    QMap<QString, Device *> m_devices;
+};
+
 void Daemon::onNewDeviceLink(DeviceLink *dl)
 {
     QString id = dl->deviceId();
     qDebug(KDECONNECT_CORE) << "Device" << id
                             << "established new link.";
 
-    if(m_devices.contains(id))
+    if(d->m_devices.contains(id))
     {
-        Device* device = m_devices[id];
+        Device* device = d->m_devices[id];
         bool wasReachable = device->isReachable();
         device->addLink(dl);
 
@@ -28,7 +36,9 @@ void Daemon::onNewDeviceLink(DeviceLink *dl)
     else
     {
         qDebug(KDECONNECT_CORE) << "It is a new device: " << dl->deviceInfo().name;
-        Device *device = new Device(this, dl);
+        Device *device = new Device(this, dl->deviceInfo(), false);
+        device->addLink(dl);
+
         addDevice(device);
     }
 }
@@ -52,46 +62,37 @@ void Daemon::onDeviceStatusChanged()
 
 Daemon::Daemon(QObject *parent)
     : QObject(parent)
+    , d(new DaemonPrivate)
 {
     Q_ASSERT(s_instance == nullptr);
     s_instance = this;
 }
 
+Daemon::~Daemon()
+{
+
+}
+
 void Daemon::init()
 {
-    const QString dbusServiceName = QStringLiteral("org.kde.kdeconnect");
-    const QString dbusObjectPath = QStringLiteral("/modules/kdeconnect");
-
-    if(!QDBusConnection::sessionBus().registerService(dbusServiceName))
-    {
-        qCritical(KDECONNECT_CORE) << "register dbus service " << dbusServiceName << "failed.";
-        QMetaObject::invokeMethod(this, &Daemon::quit, Qt::QueuedConnection);
-        return;
-    }
-    if(!QDBusConnection::sessionBus().registerObject(dbusObjectPath, this, QDBusConnection::ExportAllContents))
-    {
-        qCritical(KDECONNECT_CORE) << "register dbus object " << dbusObjectPath << "failed.";
-        QMetaObject::invokeMethod(this, &Daemon::quit, Qt::QueuedConnection);
-        return;
-    }
-
-    m_linkProviders.insert(new LanLinkProvider());
+    d->m_linkProviders.insert(new LanLinkProvider());
 
     // Read remembered paired devices
     const QStringList &list = KdeConnectConfig::instance().trustedDevices();
     for (const QString &id : list) {
-        Device *d = new Device(this, id);
-        // prune away devices with malformed certificates
-        if (d->hasInvalidCertificate()) {
-            qCDebug(KDECONNECT_CORE) << "Certificate for device " << id << "illegal, deleting the device";
-            KdeConnectConfig::instance().removeTrustedDevice(id);
-        } else {
+        DeviceInfo info = KdeConnectConfig::instance().getTrustedDevice(id);
+        if (info.isCertificateValid()) {
+            Device *d = new Device(this, info, true);
             addDevice(d);
+        } else {
+            qCDebug(KDECONNECT_CORE)
+                << "Certificate for device " << id << "illegal, deleting the device";
+            KdeConnectConfig::instance().removeTrustedDevice(id);
         }
     }
 
     // Listen to new devices
-    for (LinkProvider *a : std::as_const(m_linkProviders)) {
+    for (LinkProvider *a : std::as_const(d->m_linkProviders)) {
         connect(a, &LinkProvider::onConnectionReceived, this, &Daemon::onNewDeviceLink);
         a->onStart();
     }
@@ -99,12 +100,12 @@ void Daemon::init()
 
 QList<Device *> Daemon::devicesList() const
 {
-    return m_devices.values();
+    return d->m_devices.values();
 }
 
 Device *Daemon::getDevice(const QString &deviceId) const
 {
-    for(Device* device : std::as_const(m_devices))
+    for(Device* device : std::as_const(d->m_devices))
     {
         if(device->id() == deviceId)
         {
@@ -122,7 +123,7 @@ void Daemon::addDevice(Device *device)
     connect(device, &Device::pairStateChanged, this, &Daemon::onDeviceStatusChanged);
 
     // todo: add notification
-    m_devices[id] = device;
+    d->m_devices[id] = device;
 
     Q_EMIT deviceAdded(id);
     Q_EMIT deviceListChanged();
@@ -130,7 +131,7 @@ void Daemon::addDevice(Device *device)
 
 void Daemon::removeDevice(Device *device)
 {
-    m_devices.remove(device->id());
+    d->m_devices.remove(device->id());
     Q_EMIT deviceRemoved(device->id());
     Q_EMIT deviceListChanged();
 
@@ -139,7 +140,7 @@ void Daemon::removeDevice(Device *device)
 
 void Daemon::forceOnNetworkChange()
 {
-    for(LinkProvider* linkProvider : std::as_const(m_linkProviders))
+    for(LinkProvider* linkProvider : std::as_const(d->m_linkProviders))
     {
         linkProvider->onNetworkChange();
     }
@@ -161,7 +162,7 @@ void Daemon::setAnnouncedName(const QString &name)
 QStringList Daemon::devices(bool onlyReachable, bool onlyPaired) const
 {
     QStringList ret;
-    for(Device* dev: std::as_const(m_devices))
+    for(Device* dev: std::as_const(d->m_devices))
     {
         if(onlyReachable && !dev->isReachable())
             continue;

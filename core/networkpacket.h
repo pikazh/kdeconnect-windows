@@ -12,17 +12,13 @@
 
 #include <QIODevice>
 #include <QObject>
-#include <QSharedPointer>
 #include <QString>
 #include <QUrl>
 #include <QVariant>
 
-class FileTransferJob;
-
 class KDECONNECTCORE_EXPORT NetworkPacket
 {
     Q_GADGET
-    Q_PROPERTY(QString id READ id MEMBER m_id)
     Q_PROPERTY(QString type READ type MEMBER m_type)
     Q_PROPERTY(QVariantMap body READ body MEMBER m_body)
     Q_PROPERTY(QVariantMap payloadTransferInfo READ payloadTransferInfo MEMBER m_payloadTransferInfo)
@@ -38,10 +34,6 @@ public:
     QByteArray serialize() const;
     static bool unserialize(const QByteArray &json, NetworkPacket *out);
 
-    inline QString id() const
-    {
-        return m_id;
-    }
     inline QString type() const
     {
         return m_type;
@@ -55,7 +47,8 @@ public:
     template<typename T>
     T get(const QString &key, const T &defaultValue = {}) const
     {
-        return m_body.value(key, defaultValue).template value<T>(); // Important note: Awesome template syntax is awesome
+        return m_body.value(key, QVariant::fromValue(defaultValue))
+            .template value<T>(); // Important note: Awesome template syntax is awesome
     }
     template<typename T>
     void set(const QString &key, const T &value)
@@ -67,25 +60,11 @@ public:
         return m_body.contains(key);
     }
 
-    QSharedPointer<QIODevice> payload() const
-    {
-        return m_payload;
-    }
-    void setPayload(const QSharedPointer<QIODevice> &device, qint64 payloadSize)
-    {
-        m_payload = device;
-        m_payloadSize = payloadSize;
-        Q_ASSERT(m_payloadSize >= -1);
-    }
-    bool hasPayload() const
-    {
-        return (m_payloadSize != 0);
-    }
+    bool hasPayload() const { return (m_payloadSize != 0); }
     qint64 payloadSize() const
     {
         return m_payloadSize;
     } //-1 means it is an endless stream
-    //FileTransferJob *createPayloadTransferJob(const QUrl &destination) const;
 
     // To be called by a particular DeviceLink
     QVariantMap payloadTransferInfo() const
@@ -102,11 +81,9 @@ public:
     }
 
 private:
-    QString m_id;
     QString m_type;
     QVariantMap m_body;
 
-    QSharedPointer<QIODevice> m_payload;
     qint64 m_payloadSize;
     QVariantMap m_payloadTransferInfo;
 };

@@ -7,7 +7,8 @@
 #include "linkprovider.h"
 #include "core/core_debug.h"
 
-LinkProvider::LinkProvider()
+LinkProvider::LinkProvider(QObject *parent)
+    : QObject(parent)
 {
 }
 

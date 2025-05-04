@@ -9,7 +9,6 @@
 
 #include "core/device.h"
 #include "core/networkpacket.h"
-#include "core/pairstate.h"
 
 #include <QTimer>
 
@@ -19,14 +18,12 @@ class KDECONNECTCORE_EXPORT PairingHandler : public QObject
 public:
     const static int pairingTimeoutMsec = 30 * 1000; // 30 seconds of timeout
 
-    PairingHandler(Device *parent, PairState initialState);
+    PairingHandler(Device *parent, Device::PairState initialState);
 
     void packetReceived(const NetworkPacket &np);
 
-    PairState pairState()
-    {
-        return m_pairState;
-    }
+    Device::PairState pairState() { return m_pairState; }
+    QString verificationKey() const;
 
 public Q_SLOTS:
     bool requestPairing();
@@ -44,8 +41,10 @@ private:
     void pairingDone();
 
     QTimer m_pairingTimeout;
+    long m_pairingTimestamp;
+
     Device *m_device;
-    PairState m_pairState;
+    Device::PairState m_pairState;
 
 private Q_SLOTS:
     void pairingTimeout();

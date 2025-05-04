@@ -8,12 +8,14 @@
 #include "backends/linkprovider.h"
 #include "device.h"
 
+class DaemonPrivate;
 class KDECONNECTCORE_EXPORT Daemon : public QObject
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.kde.kdeconnect.daemon")
 public:
     explicit Daemon(QObject *parent = nullptr);
+    virtual ~Daemon();
+
     void init();
 
     static Daemon* instance()
@@ -39,7 +41,6 @@ Q_SIGNALS:
     void deviceVisibilityChanged(const QString &id, bool isVisible);
     void deviceListChanged(); // Emitted when any of deviceAdded, deviceRemoved or deviceVisibilityChanged is emitted
     void announcedNameChanged(const QString &announcedName);
-    void customDevicesChanged(const QStringList &customDevices);
 
 public Q_SLOTS:
     Q_SCRIPTABLE void forceOnNetworkChange();
@@ -54,11 +55,6 @@ private Q_SLOTS:
     void onDeviceStatusChanged();
 
 private:
-    // Different ways to find devices and connect to them
-    QSet<LinkProvider *> m_linkProviders;
-    // Every known device
-    QMap<QString, Device *> m_devices;
-
-    static Daemon * s_instance;
-
+    std::unique_ptr<DaemonPrivate> d;
+    static Daemon* s_instance;
 };

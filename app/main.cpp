@@ -1,58 +1,23 @@
-#include "core/dbushelper.h"
-#include "icons.h"
-#include "notification.h"
+#include <QLocale>
+#include <QTranslator>
 
-#include <QGuiApplication>
-#include <QIcon>
-#include <QQmlApplicationEngine>
-#include <QTimer>
-#include <QSystemTrayIcon>
-#include <singleapplication.h>
-#include <QQmlComponent>
-#include <QQmlContext>
+#include "application.h"
 
 int main(int argc, char *argv[])
 {
-    Icons::initIcons();
+    Application app(argc, argv);
 
-    QGuiApplication app(argc, argv);
-    SingleApplication single_instance_guard(argc, argv);
-    //SingleApplication::instanceStarted()
-    //todo: create or show main window when another instance started
+    QTranslator translator;
+    const QStringList uiLanguages = QLocale::system().uiLanguages();
+    for (const QString &locale : uiLanguages) {
+        const QString baseName = "XConnect_" + QLocale(locale).name();
+        if (translator.load(":/i18n/" + baseName)) {
+            app.installTranslator(&translator);
+            break;
+        }
+    }
 
-    QIcon appIcon = QIcon(QStringLiteral(":/images/kdeconnect.ico"));
-    app.setOrganizationDomain("KdeConnect");
-    app.setOrganizationName("zyx");
-    app.setApplicationName("KdeConnect");
-    app.setWindowIcon(appIcon);
-    DBusHelper dbusHelper;
-    dbusHelper.startDBusDaemon();
-
-    QQmlEngine engine;
-    // QQmlApplicationEngine engine;
-    // QObject::connect(
-    //     &engine,
-    //     &QQmlApplicationEngine::objectCreationFailed,
-    //     &app,
-    //     []() { QCoreApplication::exit(-1); },
-    //     Qt::QueuedConnection);
-
-    Notification * notif = new Notification();
-    notif->setText(QStringLiteral("dsdsd"));
-    notif->notify();
-
-    QQmlComponent mainWindowComponent(&engine, "org.kde.kdeconnect.app", "Main");
-    QQmlComponent deviceWindowcomponent(&engine, "org.kde.kdeconnect.app", "DeviceWindow");
-
-    QObject *mainWindow = mainWindowComponent.create();
-    QObject *deviceWindow = deviceWindowcomponent.create();
-    engine.rootContext()->setContextProperty("deviceWindow", deviceWindow);
-
-    QSystemTrayIcon sysTrayIcon;
-    sysTrayIcon.setIcon(appIcon);
-    sysTrayIcon.setToolTip(QStringLiteral("KDE Connect"));
-    sysTrayIcon.show();
-    //engine.loadFromModule("org.kde.kdeconnect.app", "Main");
-    //app.setQuitOnLastWindowClosed(false);
+    app.init();
+    app.showMainWindow();
     return app.exec();
 }

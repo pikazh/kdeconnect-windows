@@ -1,0 +1,25 @@
+{
+    "$schema": "../kdeconnect.schema.json",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "albertvaka@gmail.com",
+                "Name": "Albert Vaca Cintora",
+                "Name[zh_CN]": "Albert Vaca Cintora"
+            }
+        ],
+        "Description": "Show your device battery on your computer",
+        "Description[zh_CN]": "在电脑上显示配对设备的电池电量",
+        "EnabledByDefault": true,
+        "Icon": "preferences-system-power-management",
+        "License": "GPL",
+        "Name": "Battery monitor",
+        "Name[zh_CN]": "电池监视器"
+    },
+    "X-KdeConnect-OutgoingPacketType": [
+        "kdeconnect.battery"
+    ],
+    "X-KdeConnect-SupportedPacketType": [
+        "kdeconnect.battery"
+    ]
+}

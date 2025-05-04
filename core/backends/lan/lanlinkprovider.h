@@ -25,7 +25,7 @@ class KDECONNECTCORE_EXPORT LanLinkProvider : public LinkProvider
     Q_OBJECT
 
 public:
-    LanLinkProvider();
+    LanLinkProvider(QObject *parent = nullptr);
     ~LanLinkProvider() override;
 
     QString name() override
@@ -71,6 +71,7 @@ private:
     QList<QHostAddress> getBroadcastAddresses();
     void sendUdpIdentityPacket(QUdpSocket &socket, const QList<QHostAddress> &addresses);
     void broadcastUdpIdentityPacket();
+    bool isProtocolDowngrade(const QString &deviceId, int protocolVersion) const;
 
     Server *m_server;
     QUdpSocket m_udpSocket;

@@ -5,15 +5,9 @@
  */
 
 #include "landevicelink.h"
-
-//#include <KLocalizedString>
-
 #include "core/backends/linkprovider.h"
 #include "core/core_debug.h"
-//#include "daemon.h"
-//#include "kdeconnectconfig.h"
 #include "lanlinkprovider.h"
-//#include "plugins/share/shareplugin.h"
 
 LanDeviceLink::LanDeviceLink(const DeviceInfo &deviceInfo, LanLinkProvider *parent, QSslSocket *socket)
     : DeviceLink(deviceInfo.id, parent)
@@ -56,6 +50,13 @@ QHostAddress LanDeviceLink::hostAddress() const
 
 bool LanDeviceLink::sendPacket(NetworkPacket &np)
 {
+    int written = m_socket->write(np.serialize());
+
+    // Actually we can't detect if a packet is received or not. We keep TCP
+    //"ESTABLISHED" connections that look legit (return true when we use them),
+    // but that are actually broken (until keepalive detects that they are down).
+    return (written != -1);
+    /*
     if (np.payload()) {
         // Device *device = Daemon::instance()->getDevice(deviceId());
         // if (device == nullptr) {
@@ -81,13 +82,9 @@ bool LanDeviceLink::sendPacket(NetworkPacket &np)
 
         return true;
     } else {
-        int written = m_socket->write(np.serialize());
-
-        // Actually we can't detect if a packet is received or not. We keep TCP
-        //"ESTABLISHED" connections that look legit (return true when we use them),
-        // but that are actually broken (until keepalive detects that they are down).
-        return (written != -1);
+        
     }
+*/
 }
 
 void LanDeviceLink::dataReceived()
@@ -100,21 +97,11 @@ void LanDeviceLink::dataReceived()
         // qCDebug(KDECONNECT_CORE) << "LanDeviceLink dataReceived" << serializedPacket;
 
         if (packet.hasPayloadTransferInfo()) {
-            // qCDebug(KDECONNECT_CORE) << "HasPayloadTransferInfo";
-            const QVariantMap transferInfo = packet.payloadTransferInfo();
-
-            QSharedPointer<QSslSocket> socket(new QSslSocket);
-
-            LanLinkProvider::configureSslSocket(socket.data(), deviceId(), true);
-
-            // emit readChannelFinished when the socket gets disconnected. This seems to be a bug in upstream QSslSocket.
-            // Needs investigation and upstreaming of the fix. QTBUG-62257
-            connect(socket.data(), &QAbstractSocket::disconnected, socket.data(), &QAbstractSocket::readChannelFinished);
-
-            const QString address = m_socket->peerAddress().toString();
-            const quint16 port = transferInfo[QStringLiteral("port")].toInt();
-            socket->connectToHostEncrypted(address, port, QIODevice::ReadWrite);
-            packet.setPayload(socket, packet.payloadSize());
+            QVariantMap transferInfo = packet.payloadTransferInfo();
+            QString address = m_socket->peerAddress().toString();
+            //const quint16 port = transferInfo[QStringLiteral("port")].toInt();
+            transferInfo[QStringLiteral("host")] = address;
+            packet.setPayloadTransferInfo(transferInfo);
         }
 
         Q_EMIT receivedPacket(packet);

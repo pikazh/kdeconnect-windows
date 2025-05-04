@@ -24,7 +24,7 @@
 //#include "daemon.h"
 //#include "dbushelper.h"
 #include "deviceinfo.h"
-//#include "pluginloader.h"
+#include "plugins/pluginloader.h"
 #include "sslhelper.h"
 
 const QFile::Permissions strictPermissions = QFile::ReadOwner | QFile::WriteOwner | QFile::ReadUser | QFile::WriteUser;
@@ -125,15 +125,15 @@ QSslKey KdeConnectConfig::privateKey()
 
 DeviceInfo KdeConnectConfig::deviceInfo()
 {
-    //const auto incoming = PluginLoader::instance()->incomingCapabilities();
-    //const auto outgoing = PluginLoader::instance()->outgoingCapabilities();
+    const auto incoming = PluginLoader::instance()->incomingCapabilities();
+    const auto outgoing = PluginLoader::instance()->outgoingCapabilities();
     return DeviceInfo(deviceId(),
                       certificate(),
                       name(),
                       deviceType(),
                       NetworkPacket::s_protocolVersion,
-                      QSet<QString>(  /*incoming.begin(), incoming.end()*/),
-                      QSet<QString>(  /*outgoing.begin(), outgoing.end()*/));
+                      QSet(incoming.begin(), incoming.end()),
+                      QSet(outgoing.begin(), outgoing.end()));
 }
 
 QSsl::KeyAlgorithm KdeConnectConfig::privateKeyAlgorithm()
@@ -149,7 +149,7 @@ QSsl::KeyAlgorithm KdeConnectConfig::privateKeyAlgorithm()
 QDir KdeConnectConfig::baseConfigDir()
 {
     QString configPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-    QString kdeconnectConfigPath = QDir(configPath).absoluteFilePath(QStringLiteral("kdeconnect"));
+    QString kdeconnectConfigPath = QDir(configPath).absoluteFilePath(QStringLiteral("kdeconnectx"));
     return QDir(kdeconnectConfigPath);
 }
 
@@ -164,6 +164,7 @@ void KdeConnectConfig::addTrustedDevice(const DeviceInfo &deviceInfo)
     d->m_trustedDevices->beginGroup(deviceInfo.id);
     d->m_trustedDevices->setValue(QStringLiteral("name"), deviceInfo.name);
     d->m_trustedDevices->setValue(QStringLiteral("type"), deviceInfo.type.toString());
+    d->m_trustedDevices->setValue(QStringLiteral("protocolVersion"), deviceInfo.protocolVersion);
     QString certString = QString::fromLatin1(deviceInfo.certificate.toPem());
     d->m_trustedDevices->setValue(QStringLiteral("certificate"), certString);
     d->m_trustedDevices->endGroup();
@@ -182,6 +183,7 @@ void KdeConnectConfig::updateTrustedDeviceInfo(const DeviceInfo &deviceInfo)
     d->m_trustedDevices->beginGroup(deviceInfo.id);
     d->m_trustedDevices->setValue(QStringLiteral("name"), deviceInfo.name);
     d->m_trustedDevices->setValue(QStringLiteral("type"), deviceInfo.type.toString());
+    d->m_trustedDevices->setValue(QStringLiteral("protocolVersion"), deviceInfo.protocolVersion);
     d->m_trustedDevices->endGroup();
     d->m_trustedDevices->sync();
 }
@@ -192,6 +194,14 @@ QSslCertificate KdeConnectConfig::getTrustedDeviceCertificate(const QString &id)
     QString certString = d->m_trustedDevices->value(QStringLiteral("certificate"), QString()).toString();
     d->m_trustedDevices->endGroup();
     return QSslCertificate(certString.toLatin1());
+}
+
+int KdeConnectConfig::getTrustedDeviceProtocolVersion(const QString &id)
+{
+    d->m_trustedDevices->beginGroup(id);
+    int protocolVersion = d->m_trustedDevices->value(QStringLiteral("protocolVersion"), 0).toInt();
+    d->m_trustedDevices->endGroup();
+    return protocolVersion;
 }
 
 DeviceInfo KdeConnectConfig::getTrustedDevice(const QString &id)
@@ -356,8 +366,8 @@ void KdeConnectConfig::generateCertificate(const QString &certPath)
 {
     qCDebug(KDECONNECT_CORE) << "Generating certificate";
 
-    QString uuid = QUuid::createUuid().toString();
-    //DBusHelper::filterNonExportableCharacters(uuid);
+    QString uuid = QUuid::createUuid().toString(QUuid::Id128).toLower();
+    DeviceInfo::filterNonExportableCharacters(uuid);
     qCDebug(KDECONNECT_CORE) << "My id:" << uuid;
 
     d->m_certificate = SslHelper::generateSelfSignedCertificate(d->m_privateKey, uuid);

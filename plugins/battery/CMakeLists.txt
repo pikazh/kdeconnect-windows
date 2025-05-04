@@ -1,0 +1,16 @@
+qt_add_library(kdeconnect_battery SHARED
+    batteryplugin-win.h
+    batteryplugin-win.cpp
+    plugin_battery_debug.h
+    plugin_battery_debug.cpp
+    kdeconnect_battery.json
+)
+
+target_link_libraries(kdeconnect_battery PRIVATE Qt::Core Qt::Network kdeconnectcore)
+
+include(GNUInstallDirs)
+install(TARGETS kdeconnect_battery
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/kdeconnect_plugins"
+)

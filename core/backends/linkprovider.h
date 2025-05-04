@@ -19,7 +19,7 @@ class KDECONNECTCORE_EXPORT LinkProvider : public QObject
     Q_OBJECT
 
 public:
-    LinkProvider();
+    LinkProvider(QObject *parent = nullptr);
 
     virtual QString name() = 0;
     virtual int priority() = 0;

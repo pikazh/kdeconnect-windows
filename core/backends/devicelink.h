@@ -14,7 +14,7 @@
 
 class LinkProvider;
 
-class DeviceLink : public QObject
+class KDECONNECTCORE_EXPORT DeviceLink : public QObject
 {
     Q_OBJECT
 public:

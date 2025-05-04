@@ -2,31 +2,47 @@ qt_add_executable(kdeconnect-app
     main.cpp
     kdeconnect.rc
     kdeconnect.qrc
+    application.h
+    application.cpp
+    devicemanager.h
+    devicemanager.cpp
+    app_debug.h
+    app_debug.cpp
+
+    ui/mainwindow.cpp
+    ui/mainwindow.h
+    ui/mainwindow.ui
+    ui/devicelistmodel.h
+    ui/devicelistmodel.cpp
+    ui/pages/BasePage.h
+    ui/pages/BasePageContainer.h
+    ui/pages/BasePageProvider.h
+    ui/widgets/PageContainer.h
+    ui/widgets/PageContainer_p.h
+    ui/widgets/PageContainer.cpp
+    ui/widgets/IconLabel.h
+    ui/widgets/IconLabel.cpp
+    ui/devicewindow.h
+    ui/devicewindow.cpp
+    ui/pages/devicepairpageprovider.h
+    ui/pages/devicepairpageprovider.cpp
+    ui/pages/pairpage.h
+    ui/pages/pairpage.cpp
+    ui/pages/pairpage.ui
+    ui/pages/devicepluginpagesprovider.h
+    ui/pages/devicepluginpagesprovider.cpp
+    ui/pages/mprisremotepage.ui
+    ui/pages/mprisremotepage.h
+    ui/pages/mprisremotepage.cpp
+
+    plugin/pluginwrapperbase.h
+    plugin/pluginwrapperbase.cpp
+    plugin/mprisremotepluginwrapper.h
+    plugin/mprisremotepluginwrapper.cpp
+    ui/widgets/imagewidget.h
+    ui/widgets/imagewidget.cpp
+
 )
-
-set(kdeconnect_app_qml_FILES
-    qml/Main.qml
-    qml/Settings.qml
-    qml/DeviceWindow.qml
-)
-
-qt_add_qml_module(kdeconnect-app
-    URI "org.kde.kdeconnect.app"
-    VERSION 1.0
-    QML_FILES
-        ${kdeconnect_app_qml_FILES}
-
-)
-
-qt_add_resources(kdeconnect-app "qml"
-    PREFIX "/qml"
-    FILES
-        ${kdeconnect_app_qml_FILES}
-)
-
-qt_add_resources(kdeconnect-app "images"
-    PREFIX "/images"
-    FILES kdeconnect.ico)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
@@ -39,20 +55,16 @@ set_target_properties(kdeconnect-app PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
+target_include_directories(kdeconnect-app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
 target_link_libraries(kdeconnect-app
     PRIVATE
-    Qt::Quick
-    Qt::QuickWidgets
-    Qt::QuickControls2
-    Qt::Core
-    Qt::Gui
-    Qt::DBus
-    Qt::Svg
-    kdeconnectinterfaces
+    Qt6::Core
+    Qt6::Widgets
+    SingleApplication::SingleApplication
     kdeconnectcore
     notification
     icons
-    SingleApplication::SingleApplication
 )
 
 include(GNUInstallDirs)
@@ -62,12 +74,3 @@ install(TARGETS kdeconnect-app
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-qt_generate_deploy_qml_app_script(
- TARGET kdeconnect-app
- OUTPUT_SCRIPT deploy_script
- MACOS_BUNDLE_POST_BUILD
- NO_UNSUPPORTED_PLATFORM_ERROR
- DEPLOY_USER_QML_MODULES_ON_UNSUPPORTED_PLATFORM
-)
-
-install(SCRIPT ${deploy_script})

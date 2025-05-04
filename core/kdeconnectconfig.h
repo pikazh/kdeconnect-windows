@@ -46,6 +46,7 @@ public:
     void updateTrustedDeviceInfo(const DeviceInfo &deviceInfo);
     DeviceInfo getTrustedDevice(const QString &id);
     QSslCertificate getTrustedDeviceCertificate(const QString &id);
+    int getTrustedDeviceProtocolVersion(const QString &id);
 
     void setDeviceProperty(const QString &deviceId, const QString &name, const QString &value);
     QString getDeviceProperty(const QString &deviceId, const QString &name, const QString &defaultValue = QString());

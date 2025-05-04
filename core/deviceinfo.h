@@ -53,30 +53,6 @@ struct DeviceType {
         return QStringLiteral("unknown");
     }
 
-    QString icon() const
-    {
-        return iconForStatus(true, false);
-    }
-
-    QString iconForStatus(bool reachable, bool trusted) const
-    {
-        QString type;
-        switch (value) {
-        case DeviceType::Unknown:
-        case DeviceType::Phone:
-            type = QStringLiteral("smartphone");
-            break;
-        case DeviceType::Desktop: // We don't have desktop icon yet
-        case DeviceType::Laptop:
-            type = QStringLiteral("laptop");
-            break;
-        default:
-            type = toString();
-        }
-        QString status = (reachable ? (trusted ? QStringLiteral("connected") : QStringLiteral("disconnected")) : QStringLiteral("trusted"));
-        return type + status;
-    }
-
     constexpr DeviceType(Value value)
         : value(value)
     {
@@ -120,6 +96,13 @@ struct DeviceInfo {
     {
     }
 
+    bool isCertificateValid()
+    {
+        QDateTime now = QDateTime::currentDateTime();
+        return !certificate.isNull() && certificate.effectiveDate() < now
+               && certificate.expiryDate() > now;
+    }
+
     NetworkPacket toIdentityPacket()
     {
         NetworkPacket np(PACKET_TYPE_IDENTITY);
@@ -148,15 +131,30 @@ struct DeviceInfo {
 
     static QString filterName(QString input)
     {
-        static const QRegularExpression NAME_INVALID_CHARACTERS_REGEX(QStringLiteral("[\"',;:.!?()\\[\\]<>]"));
+        const QRegularExpression NAME_INVALID_CHARACTERS_REGEX(
+            QStringLiteral("[\"',;:.!?()\\[\\]<>]"));
         constexpr int MAX_DEVICE_NAME_LENGTH = 32;
         return input.remove(NAME_INVALID_CHARACTERS_REGEX).left(MAX_DEVICE_NAME_LENGTH);
     }
 
+    static void filterNonExportableCharacters(QString &s)
+    {
+        static QRegularExpression regexp(QStringLiteral("[^A-Za-z0-9_]"),
+                                         QRegularExpression::CaseInsensitiveOption);
+        s.replace(regexp, QLatin1String("_"));
+    }
+
     static bool isValidIdentityPacket(NetworkPacket *np)
     {
-        return np->type() == PACKET_TYPE_IDENTITY && !filterName(np->get(QLatin1String("deviceName"), QString())).isEmpty()
-            && !np->get(QLatin1String("deviceId"), QString()).isEmpty();
+        return np->type() == PACKET_TYPE_IDENTITY
+               && !filterName(np->get(QLatin1String("deviceName"), QString())).isEmpty()
+               && isValidDeviceId(np->get(QLatin1String("deviceId"), QString()));
+    }
+
+    static bool isValidDeviceId(const QString &deviceId)
+    {
+        static const QRegularExpression DEVICE_ID_REGEX(QStringLiteral("^[a-zA-Z0-9_-]{32,38}$"));
+        return DEVICE_ID_REGEX.match(deviceId).hasMatch();
     }
 };
 
