@@ -19,3 +19,10 @@ target_link_libraries(icons
         Qt::Core
         Qt::Gui
 )
+
+include(GNUInstallDirs)
+install(TARGETS icons
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

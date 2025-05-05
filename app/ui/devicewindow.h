@@ -1,9 +1,13 @@
 #pragma once
 
+#include <QAction>
 #include <QMainWindow>
+#include <QToolBar>
 
 #include "device.h"
-#include "deviceextras.h"
+#include "plugin/batterypluginwrapper.h"
+#include "plugin/clipboardpluginwrapper.h"
+#include "plugin/sftppluginwrapper.h"
 #include "ui/pages/BasePageContainer.h"
 #include "ui/widgets/PageContainer.h"
 
@@ -23,8 +27,10 @@ public:
     Device::Ptr device() { return m_device; }
 
 protected:
-    void loadPagesByPairStatus();
+    void updateUI();
+    void createToolBar();
 
+    void reloadPages();
     template<typename T>
     void loadPages();
 
@@ -32,13 +38,25 @@ protected:
 
 protected Q_SLOTS:
     void titleUpdateDeviceBatteryInfo();
+    void updateSftpButtonState();
+    void updateClipBoardButtonState();
+
+    void updateVisiblePages();
 
 Q_SIGNALS:
     void aboutToClose();
 
 private:
-    Device::Ptr m_device;
-    DeviceExtras *m_deviceExtras = nullptr;
-    PageContainer *m_container = nullptr;
     bool m_isPaired = false;
+    Device::Ptr m_device;
+
+    BatteryPluginWrapper *m_batteryPluginWrapper = nullptr;
+    SftpPluginWrapper *m_sftpPluginWrapper = nullptr;
+    ClipboardPluginWrapper *m_clipboardPluginWrapper = nullptr;
+
+    PageContainer *m_container = nullptr;
+
+    QToolBar *m_mainToolBar = nullptr;
+    QAction *m_sftpAction = nullptr;
+    QAction *m_sendClipboardAction = nullptr;
 };

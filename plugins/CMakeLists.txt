@@ -1,3 +1,5 @@
 add_subdirectory(ping)
 add_subdirectory(battery)
 add_subdirectory(mprisremote)
+add_subdirectory(sftp)
+add_subdirectory(clipboard)

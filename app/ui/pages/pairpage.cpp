@@ -39,6 +39,11 @@ PairPage::PairPage(Device::Ptr device, QWidget *parent)
     uiResetPairState();
 }
 
+PairPage::~PairPage()
+{
+    delete ui;
+}
+
 QIcon PairPage::icon() const
 {
     return QIcon::fromTheme(QStringLiteral("network-connect"));

@@ -15,6 +15,7 @@ public:
     virtual ~PluginWrapperBase() override = default;
 
     void init();
+    bool isPluginLoaded() const { return m_sourcePlugin != nullptr; }
 
 protected:
     KdeConnectPlugin *sourcePlugin() const { return m_sourcePlugin; }
@@ -39,10 +40,30 @@ protected:
         }
     }
 
+    void invokeMethod(const char *methodName)
+    {
+        auto plugin = sourcePlugin();
+        if (plugin != nullptr) {
+            QMetaObject::invokeMethod(plugin, methodName, Qt::DirectConnection);
+        }
+    }
+
+    template<typename T>
+    void invokeMethod(const char *methodName, T p1)
+    {
+        auto plugin = sourcePlugin();
+        if (plugin != nullptr) {
+            QMetaObject::invokeMethod(plugin, methodName, Qt::DirectConnection, Q_ARG(T, p1));
+        }
+    }
+
     virtual void connectPluginSignals(KdeConnectPlugin *plugin) {}
 
+Q_SIGNALS:
+    void pluginLoadedChange(bool loaded);
+
 private Q_SLOTS:
-    void pluginsReloaded();
+    void reloadPlugin();
 
 private:
     KdeConnectPlugin *getPlugin(PluginId pluginId);

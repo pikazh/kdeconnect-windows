@@ -10,8 +10,8 @@
 
 PluginLoader *PluginLoader::instance()
 {
-    static PluginLoader *instance = new PluginLoader();
-    return instance;
+    static PluginLoader instance;
+    return &instance;
 }
 
 PluginLoader::PluginLoader()
@@ -49,10 +49,7 @@ KdeConnectPlugin *PluginLoader::instantiatePluginForDevice(const QString &plugin
     }
 
     const QStringList outgoingInterfaces = data.value(QStringLiteral("X-KdeConnect-OutgoingPacketType"), QStringList());
-    const QVariantList args{QVariant::fromValue<Device *>(device),
-                            data.name(),
-                            outgoingInterfaces,
-                            data.iconName()};
+    const QVariantList args{QVariant::fromValue<Device *>(device), data.id(), outgoingInterfaces};
 
     KdeConnectPlugin* plugin = PluginFactory::instantiatePlugin<KdeConnectPlugin>(data, device, args);
     if(plugin != nullptr)
@@ -122,8 +119,8 @@ QSet<QString> PluginLoader::pluginsForCapabilities(const QSet<QString> &incoming
 
             if (!capabilitiesIntersect)
             {
-                qInfo(KDECONNECT_CORE) << "Not loading plugin " << service.id()
-                                       << ", because device doesn't support it";
+                qWarning(KDECONNECT_CORE) << "Not loading plugin " << service.id()
+                                          << ", because peer device doesn't support it";
                 continue;
             }
         }

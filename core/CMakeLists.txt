@@ -29,8 +29,6 @@ qt_add_library(kdeconnectcore SHARED
     deviceinfo.h
     device.h
     device.cpp
-    deviceextras.h
-    deviceextras.cpp
     kdeconnectconfig.h
     kdeconnectconfig.cpp
     jsonutils.h

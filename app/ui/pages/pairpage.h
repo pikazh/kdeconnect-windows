@@ -14,7 +14,7 @@ class PairPage : public QWidget, public BasePage
     Q_OBJECT
 public:
     explicit PairPage(Device::Ptr device, QWidget *parent = nullptr);
-    virtual ~PairPage() = default;
+    virtual ~PairPage() override;
 
     virtual QString displayName() const override { return tr("Device Pair"); }
     virtual QIcon icon() const override;

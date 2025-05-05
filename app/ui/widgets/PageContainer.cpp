@@ -140,7 +140,7 @@ const QList<BasePage*>& PageContainer::getPages() const
 void PageContainer::refreshContainer()
 {
     m_proxyModel->invalidate();
-    if (!m_currentPage->shouldDisplay()) {
+    if (m_currentPage == nullptr || !m_currentPage->shouldDisplay()) {
         auto index = m_proxyModel->index(0, 0);
         if (index.isValid()) {
             m_pageList->setCurrentIndex(index);

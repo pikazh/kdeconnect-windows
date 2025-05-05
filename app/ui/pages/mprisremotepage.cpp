@@ -40,6 +40,17 @@ MprisRemotePage::MprisRemotePage(Device::Ptr device, QWidget *parent)
                      this,
                      &MprisRemotePage::onPluginPlayerListChanged);
 
+    QObject::connect(m_pluginWrapper,
+                     &MprisRemotePluginWrapper::pluginLoadedChange,
+                     this,
+                     [this](bool loaded) {
+                         if (loaded) {
+                             m_pluginWrapper->requestPlayerList();
+                         } else {
+                             uiUpdateWidgetsState();
+                         }
+                     });
+
     m_updatePlayingPosTimer->setInterval(1000);
     m_updatePlayingPosTimer->start();
     QObject::connect(m_updatePlayingPosTimer,
@@ -67,6 +78,11 @@ MprisRemotePage::MprisRemotePage(Device::Ptr device, QWidget *parent)
     m_pluginWrapper->requestPlayerList();
 
     uiUpdateWidgetsState();
+}
+
+MprisRemotePage::~MprisRemotePage()
+{
+    delete ui;
 }
 
 void MprisRemotePage::uiUpdateWidgetsState()
@@ -273,7 +289,7 @@ bool MprisRemotePage::apply()
 
 bool MprisRemotePage::shouldDisplay() const
 {
-    return true;
+    return m_pluginWrapper->isPluginLoaded();
 }
 
 void MprisRemotePage::retranslate()

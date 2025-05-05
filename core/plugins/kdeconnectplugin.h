@@ -32,9 +32,7 @@ public:
 
     KdeConnectPluginConfig *config() const;
 
-    QString pluginName() const;
-
-    QString iconName() const;
+    QString pluginId() const;
 
     bool isEnabled() { return m_isEnabled; }
 

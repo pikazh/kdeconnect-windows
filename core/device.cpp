@@ -451,13 +451,3 @@ QString Device::verificationKey() const
 {
     return d->m_pairingHandler->verificationKey();
 }
-
-QString Device::pluginIconName(const QString &pluginName)
-{
-    auto it = d->m_plugins.constFind(pluginName);
-    if (it != d->m_plugins.constEnd()) {
-        return it.value()->iconName();
-    }
-
-    return QString();
-}

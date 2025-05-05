@@ -271,10 +271,10 @@ QDir KdeConnectConfig::deviceConfigDir(const QString &deviceId)
     return QDir(deviceConfigPath);
 }
 
-QDir KdeConnectConfig::pluginConfigDir(const QString &deviceId, const QString &pluginName)
+QDir KdeConnectConfig::pluginConfigDir(const QString &deviceId, const QString &pluginId)
 {
     QString deviceConfigPath = baseConfigDir().absoluteFilePath(deviceId);
-    QString pluginConfigDir = QDir(deviceConfigPath).absoluteFilePath(pluginName);
+    QString pluginConfigDir = QDir(deviceConfigPath).absoluteFilePath(pluginId);
     return QDir(pluginConfigDir);
 }
 

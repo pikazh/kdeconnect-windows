@@ -35,6 +35,9 @@ protected:
 Q_SIGNALS:
     void refreshed(int charge, bool isCharging);
 
+protected:
+    void sendLocalBatteryInfo();
+
 protected Q_SLOTS:
     void localBatteryInfoUpdated();
 

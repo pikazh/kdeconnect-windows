@@ -6,7 +6,7 @@ PluginWrapperBase::PluginWrapperBase(Device::Ptr device, PluginId pluginId, QObj
     , m_deviceWeakPtr(device)
     , m_sourcePluginId(pluginId)
 {
-    QObject::connect(device.get(), SIGNAL(pluginsChanged()), this, SLOT(pluginsReloaded()));
+    QObject::connect(device.get(), SIGNAL(pluginsChanged()), this, SLOT(reloadPlugin()));
 }
 
 void PluginWrapperBase::init()
@@ -29,7 +29,12 @@ KdeConnectPlugin *PluginWrapperBase::getPlugin(PluginId pluginId)
     return plugin;
 }
 
-void PluginWrapperBase::pluginsReloaded()
+void PluginWrapperBase::reloadPlugin()
 {
-    m_sourcePlugin = getPlugin(m_sourcePluginId);
+    auto plugin = getPlugin(m_sourcePluginId);
+    if (m_sourcePlugin != plugin) {
+        m_sourcePlugin = plugin;
+
+        emit pluginLoadedChange(m_sourcePlugin != nullptr);
+    }
 }

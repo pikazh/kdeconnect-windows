@@ -21,13 +21,10 @@ struct KdeConnectPluginConfigPrivate;
 class KDECONNECTCORE_EXPORT KdeConnectPluginConfig : public QObject
 {
     Q_OBJECT
-
-    Q_PROPERTY(QString deviceId READ deviceId WRITE setDeviceId NOTIFY deviceIdChanged)
-    Q_PROPERTY(QString pluginName READ pluginName WRITE setPluginName NOTIFY configChanged)
-
 public:
-    explicit KdeConnectPluginConfig(QObject *parent = nullptr);
-    explicit KdeConnectPluginConfig(const QString &deviceId, const QString &pluginName, QObject *parent = nullptr);
+    explicit KdeConnectPluginConfig(const QString &deviceId,
+                                    const QString &pluginId,
+                                    QObject *parent = nullptr);
     ~KdeConnectPluginConfig() override;
 
     /**
@@ -51,25 +48,13 @@ public:
 
     QVariantList getList(const QString &key, const QVariantList &defaultValue = {});
 
-    QString deviceId();
-    void setDeviceId(const QString &deviceId);
-
-    QString pluginName();
-    void setPluginName(const QString &pluginName);
-
-private Q_SLOTS:
-    void slotConfigChanged();
+    void notifyConfigChanged();
 
 Q_SIGNALS:
     void configChanged();
-    void deviceIdChanged(const QString &value);
 
 private:
-    void loadConfig();
-
     std::unique_ptr<KdeConnectPluginConfigPrivate> d;
-    QString m_deviceId;
-    QString m_pluginName;
 };
 
 #endif

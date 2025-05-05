@@ -8,6 +8,8 @@ enum class PluginId {
     Ping = 0,
     BatteryMonitor,
     MprisRemote,
+    Sftp,
+    ClipBoard,
 };
 
 QString KDECONNECTCORE_EXPORT pluginIdString(PluginId name);

@@ -45,6 +45,10 @@ qt_add_executable(kdeconnect-app
     plugin/mprisremotepluginwrapper.cpp
     plugin/batterypluginwrapper.h
     plugin/batterypluginwrapper.cpp
+    plugin/sftppluginwrapper.h
+    plugin/sftppluginwrapper.cpp
+    plugin/clipboardpluginwrapper.h
+    plugin/clipboardpluginwrapper.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -62,8 +66,9 @@ target_include_directories(kdeconnect-app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(kdeconnect-app
     PRIVATE
-    Qt6::Core
-    Qt6::Widgets
+    Qt::Core
+    Qt::Gui
+    Qt::Widgets
     SingleApplication::SingleApplication
     kdeconnectcore
     notification
@@ -76,4 +81,3 @@ install(TARGETS kdeconnect-app
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-

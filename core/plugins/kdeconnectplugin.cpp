@@ -9,37 +9,35 @@
 
 struct KdeConnectPluginPrivate {
     Device *m_device;
-    QString m_pluginName;
+    QString m_pluginId;
     QSet<QString> m_outgoingCapabilties;
     KdeConnectPluginConfig *m_config = nullptr;
-    QString iconName;
 };
 
 KdeConnectPlugin::KdeConnectPlugin(QObject *parent, const QVariantList &args)
     : QObject(parent)
     , d(new KdeConnectPluginPrivate)
 {
-    Q_ASSERT(args.length() == 4);
+    Q_ASSERT(args.length() == 3);
     d->m_device = qvariant_cast<Device *>(args.at(0));
-    d->m_pluginName = args.at(1).toString();
+    d->m_pluginId = args.at(1).toString();
 
     const QStringList cap = args.at(2).toStringList();
     d->m_outgoingCapabilties = QSet(cap.begin(), cap.end());
-    d->iconName = args.at(3).toString();
 }
 
 KdeConnectPluginConfig *KdeConnectPlugin::config() const
 {
     // Create on demand, because not every plugin will use it
     if (!d->m_config) {
-        d->m_config = new KdeConnectPluginConfig(d->m_device->id(), d->m_pluginName);
+        d->m_config = new KdeConnectPluginConfig(d->m_device->id(), d->m_pluginId);
     }
     return d->m_config;
 }
 
-QString KdeConnectPlugin::pluginName() const
+QString KdeConnectPlugin::pluginId() const
 {
-    return d->m_pluginName;
+    return d->m_pluginId;
 }
 
 KdeConnectPlugin::~KdeConnectPlugin()
@@ -72,9 +70,4 @@ bool KdeConnectPlugin::sendPacket(NetworkPacket &np) const
 void KdeConnectPlugin::receivePacket(const NetworkPacket &np)
 {
     qCWarning(KDECONNECT_CORE) << metaObject()->className() << "received a packet of type " << np.type() << ", but doesn't implement receivePacket";
-}
-
-QString KdeConnectPlugin::iconName() const
-{
-    return d->iconName;
 }

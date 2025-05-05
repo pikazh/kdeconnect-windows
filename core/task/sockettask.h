@@ -39,7 +39,7 @@ protected Q_SLOTS:
     virtual void dataReceived();
 
 private:
-    QSharedPointer<QSslSocket> m_socket;
+    shared_qobject_ptr<QSslSocket> m_socket;
     QString m_peerHost;
     quint16 m_peerPort = 0;
     QString m_peerDeviceId;

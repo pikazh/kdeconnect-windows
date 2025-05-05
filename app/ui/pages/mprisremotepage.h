@@ -17,7 +17,7 @@ class MprisRemotePage : public QWidget, public BasePage
     Q_OBJECT
 public:
     explicit MprisRemotePage(Device::Ptr device, QWidget *parent = nullptr);
-    virtual ~MprisRemotePage() = default;
+    virtual ~MprisRemotePage() override;
 
     virtual QString displayName() const override { return tr("Multimedia control"); }
     virtual QIcon icon() const override;

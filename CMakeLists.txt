@@ -27,4 +27,10 @@ add_subdirectory(notification)
 add_subdirectory(icons)
 add_subdirectory(plugins)
 
+qt_generate_deploy_app_script(
+    TARGET kdeconnect-app
+    OUTPUT_SCRIPT deploy_script
+    NO_UNSUPPORTED_PLATFORM_ERROR
+)
+install(SCRIPT ${deploy_script})
 

@@ -21,7 +21,7 @@ BatteryMonitor *BatteryPlugin::batteryMonitor()
     return &batteryMonitor;
 }
 
-void BatteryPlugin::localBatteryInfoUpdated()
+void BatteryPlugin::sendLocalBatteryInfo()
 {
     auto batteryMon = batteryMonitor();
 
@@ -36,6 +36,11 @@ void BatteryPlugin::localBatteryInfoUpdated()
         status.set(QStringLiteral("thresholdEvent"), (int) ThresholdNone);
     }
     sendPacket(status);
+}
+
+void BatteryPlugin::localBatteryInfoUpdated()
+{
+    sendLocalBatteryInfo();
 }
 
 BatteryPlugin::BatteryPlugin(QObject *parent, const QVariantList &args)
@@ -55,6 +60,8 @@ void BatteryPlugin::onPluginEnabled()
     if (++g_instanceCount == 1) {
         batteryMon->start();
     }
+
+    sendLocalBatteryInfo();
 }
 
 void BatteryPlugin::onPluginDisabled()

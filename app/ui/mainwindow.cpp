@@ -5,6 +5,7 @@
 #include "devicemanager.h"
 #include "kdeconnectconfig.h"
 
+#include <QCloseEvent>
 #include <QInputDialog>
 #include <QString>
 
@@ -14,6 +15,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    setAttribute(Qt::WA_DeleteOnClose);
+
     ui->setupUi(this);
 
     ui->refreshDeviceListButton->setIcon(RETRIEVE_THEME_ICON("view-refresh"));
@@ -48,8 +51,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     auto localDeviceName = KdeConnectConfig::instance().name();
     ui->deviceNameLabel->setText(localDeviceName);
-
-    //QMetaObject::connectSlotsByName(this);
 }
 
 MainWindow::~MainWindow()
@@ -140,4 +141,10 @@ void MainWindow::changeButtonStateForDevice(Device::Ptr dev)
         ui->pingButton->setEnabled(false);
         ui->pluginConfigButton->setEnabled(false);
     }
+}
+
+void MainWindow::closeEvent(QCloseEvent *evt)
+{
+    emit aboutToClose();
+    evt->accept();
 }

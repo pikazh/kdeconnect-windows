@@ -32,6 +32,11 @@ protected:
     Device::Ptr retrieveDeviceObjFromDeviceList(const QModelIndex &index);
     void changeButtonStateForDevice(Device::Ptr dev);
 
+    virtual void closeEvent(QCloseEvent *) override;
+
+Q_SIGNALS:
+    void aboutToClose();
+
 private:
     Ui::MainWindow *ui;
 
