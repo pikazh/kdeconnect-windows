@@ -33,6 +33,7 @@ private:
     quint64 m_readSize = 0;
     bool m_aborted = false;
     bool m_errorOccured = false;
+    bool m_connected = false;
     QString m_errorStr;
     QString m_albumArtDir;
     QCryptographicHash m_hashCal;

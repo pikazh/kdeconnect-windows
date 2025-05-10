@@ -64,6 +64,8 @@ void AlbumArtDownloadTask::socketDisconnected()
 
     if (m_aborted) {
         emitAborted();
+    } else if (!m_connected) {
+        emitFailed(tr("Can not create SSL connection with server."));
     } else if (m_errorOccured) {
         emitFailed(m_errorStr);
     } else {
@@ -79,6 +81,7 @@ void AlbumArtDownloadTask::socketDisconnected()
 
 void AlbumArtDownloadTask::socketEncrypted()
 {
+    m_connected = true;
     m_hashCal.reset();
     m_readSize = 0;
 
