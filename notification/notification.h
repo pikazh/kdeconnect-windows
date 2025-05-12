@@ -1,7 +1,7 @@
 #pragma once
 
 #include "notification_export.h"
-#include "notifyinterface.h"
+#include "notificationplugin.h"
 
 #include <memory>
 #include <QObject>
@@ -16,17 +16,18 @@ class NOTIFICATION_EXPORT NotificationAction: public QObject
     Q_OBJECT
 public:
     explicit NotificationAction(QObject *parent = nullptr);
-    explicit NotificationAction(const QString &label, QObject *parent = nullptr);
-    virtual ~NotificationAction();
+    explicit NotificationAction(const QString &text, QObject *parent = nullptr);
+    virtual ~NotificationAction() override;
 
-    QString label() const;
-    void setLabel(const QString &label);
+    QString text() const;
+    void setText(const QString &label);
 
 Q_SIGNALS:
     void activated();
 
 protected:
     friend class Notification;
+    friend class NotifyBySnore;
 
     void setId(const QString &id);
     QString id() const;
@@ -39,7 +40,7 @@ class NOTIFICATION_EXPORT Notification: public QObject
     Q_OBJECT
 public:
     explicit Notification(QObject *parent = nullptr);
-    virtual ~Notification();
+    virtual ~Notification() override;
 
     QString title() const;
     void setTitle(const QString &title);
@@ -49,6 +50,9 @@ public:
 
     QPixmap pixmap() const;
     void setPixmap(const QPixmap &pixmap);
+
+    QString iconName() const;
+    void setIconName(const QString &iconName);
 
     NotificationAction *addAction(const QString &label);
     void clearActions();
@@ -60,21 +64,20 @@ public Q_SLOTS:
     void close();
     void notify();
 
-protected Q_SLOTS:
-    void onActionInvoked(Notification *notification, const QString &actionLabel);
-    void onNotifyFinished(Notification *notification);
 Q_SIGNALS:
     void closed();
 
 protected:
-    friend class NotifyInterface;
+    friend class NotificationManager;
+    friend class NotificationPlugin;
     friend class NotifyBySnore;
 
     QList<NotificationAction*> actions() const;
     void activate(const QString &actionId);
-    int id();
+    int id() const;
+    void ref();
+    void deRef();
 
 private:
     std::unique_ptr<NotificationPrivate> const d;
-    NotifyInterface *notifyInterface;
 };

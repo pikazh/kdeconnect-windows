@@ -21,9 +21,11 @@ public:
     virtual ~Application() override;
 
     void init();
+    DeviceManager *deviceManager() const;
+
+public Q_SLOTS:
     void showMainWindow();
     void showDeviceWindow(Device::Ptr device);
-    DeviceManager *deviceManager() const;
 
 protected:
     void createSystemTrayIcon();

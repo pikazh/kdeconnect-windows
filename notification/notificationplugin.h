@@ -1,23 +1,19 @@
-#ifndef NOTIFYINTERFACE_H
-#define NOTIFYINTERFACE_H
+#pragma once
 
 #include <QObject>
 #include <QTextDocumentFragment>
 
 class Notification;
 
-class NotifyInterface: public QObject
+class NotificationPlugin : public QObject
 {
     Q_OBJECT
 public:
-    explicit NotifyInterface(QObject *parent = nullptr)
-        : QObject(parent)
-    {
+    using QObject::QObject;
 
-    }
-
+    virtual void init() {}
     virtual void notify(Notification *notification) = 0;
-    virtual void close(Notification *notification) = 0;
+    virtual void close(Notification *notification) { emit finished(notification); }
 
 protected:
     static inline QString stripRichText(const QString &s)
@@ -26,8 +22,6 @@ protected:
     }
 
 Q_SIGNALS:
-    void actionInvoked(Notification *notification, const QString &action);
+    void actionInvoked(Notification *notification, const QString &actionId);
     void finished(Notification *notification);
 };
-
-#endif // NOTIFYINTERFACE_H

@@ -1,23 +1,25 @@
 #include "notification.h"
-#include "notifybysnore.h"
+#include "notificationmanager.h"
 
 #include <QList>
 
 struct NotificationActionPrivate
 {
-    QString label;
+    QString text;
     QString id;
 };
 
 struct NotificationPrivate
 {
-    int id = 0;
+    int id = -1;
+    int ref = 0;
     QString title;
     QString text;
     QPixmap pixmap;
+    QString iconName;
     QList<NotificationAction*> actions;
-    bool closed = false;
     bool autoDestroy = true;
+
     int actionIdCounter = 0;
 
     static int notificationIdCounter;
@@ -31,28 +33,27 @@ NotificationAction::NotificationAction(QObject *parent)
 {
 }
 
-NotificationAction::NotificationAction(const QString &label, QObject *parent)
+NotificationAction::NotificationAction(const QString &text, QObject *parent)
     : QObject(parent)
     , d(new NotificationActionPrivate)
 {
-    setLabel(label);
+    setText(text);
 }
 
 NotificationAction::~NotificationAction()
 {
-
+    
 }
 
-QString NotificationAction::label() const
+QString NotificationAction::text() const
 {
-    return d->label;
+    return d->text;
 }
 
-void NotificationAction::setLabel(const QString &label)
+void NotificationAction::setText(const QString &text)
 {
-    if(d->label != label)
-    {
-        d->label = label;
+    if (d->text != text) {
+        d->text = text;
     }
 }
 
@@ -70,15 +71,12 @@ Notification::Notification(QObject *parent)
     : QObject(parent)
     , d(new NotificationPrivate)
 {
-    d->id = ++d->notificationIdCounter;
-    notifyInterface = new NotifyBySnore(this);
-
-    connect(notifyInterface, &NotifyInterface::actionInvoked, this, &Notification::onActionInvoked);
-    connect(notifyInterface, &NotifyInterface::finished, this, &Notification::onNotifyFinished);
+    d->id = d->notificationIdCounter++;
 }
 
 Notification::~Notification()
 {
+    clearActions();
     close();
 }
 
@@ -118,10 +116,20 @@ void Notification::setPixmap(const QPixmap &pixmap)
     d->pixmap = pixmap;
 }
 
+QString Notification::iconName() const
+{
+    return d->iconName;
+}
+
+void Notification::setIconName(const QString &iconName)
+{
+    d->iconName = iconName;
+}
+
 NotificationAction *Notification::addAction(const QString &label)
 {
     NotificationAction *action = new NotificationAction(label);
-    action->setId(QString::number(++d->actionIdCounter));
+    action->setId(QString::number(d->actionIdCounter++));
     d->actions << action;
     return action;
 }
@@ -147,43 +155,51 @@ QList<NotificationAction *> Notification::actions() const
     return d->actions;
 }
 
-void Notification::close()
+void Notification::activate(const QString &actionId)
 {
-    if(!d->closed)
-    {
-        notifyInterface->close(this);
-    }
-}
-
-void Notification::notify()
-{
-    notifyInterface->notify(this);
-}
-
-void Notification::onActionInvoked(Notification *notification, const QString &actionLabel)
-{
-    Q_ASSERT(notification == this);
-    for(auto action : actions())
-    {
-        if(action->label() == actionLabel)
-        {
+    for (auto i = 0; i < d->actions.size(); ++i) {
+        auto action = d->actions.at(i);
+        if (action->id() == actionId) {
             Q_EMIT action->activated();
             break;
         }
     }
 }
 
-void Notification::onNotifyFinished(Notification *notification)
+void Notification::ref()
 {
-    Q_ASSERT(notification == this);
-    d->closed = true;
-    if(autoDestroy())
-    {
-        deleteLater();
+    d->ref++;
+}
+
+void Notification::deRef()
+{
+    Q_ASSERT(d->ref > 0);
+    --d->ref;
+    if (d->ref == 0) {
+        d->id = -1;
+        close();
     }
 }
 
-int Notification::id()
+void Notification::close()
+{
+    if (d->id >= 0) {
+        NotificationManager::instance()->close(this);
+    } else if (d->id == -1) {
+        d->id = -2;
+        emit closed();
+        if (autoDestroy()) {
+            deleteLater();
+        }
+    }
+}
+
+void Notification::notify()
+{
+    NotificationManager::instance()->notify(this);
+}
+
+int Notification::id() const
 {
     return d->id;
 }

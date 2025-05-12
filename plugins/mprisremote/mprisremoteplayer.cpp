@@ -64,6 +64,7 @@ void MprisRemotePlayer::parseNetworkPacket(const NetworkPacket &np)
     if (newAlbumArtUrl != m_albumArtUrl) {
         // album art changed
         m_albumArtUrl = newAlbumArtUrl;
+        m_dlAlbumArtRetryTime = 0;
         auto indexItem = m_albumArtCache->indexItem(m_albumArtUrl);
         if (indexItem.fetchStatus == AlbumArtCache::IndexItem::Status::NOT_FETCHED
             || indexItem.fetchStatus == AlbumArtCache::IndexItem::Status::FAILED) {
@@ -226,7 +227,9 @@ void MprisRemotePlayer::onAlbumArtFetchFinished(const QString albumArtUrl)
         if (indexItem.fetchStatus == AlbumArtCache::IndexItem::Status::SUCCESS) {
             setLocalAlbumArtUrl(indexItem.file);
         } else {
-            m_plugin->requestAlbumArt(identity(), m_albumArtUrl);
+            if (++m_dlAlbumArtRetryTime < 3) {
+                m_plugin->requestAlbumArt(identity(), m_albumArtUrl);
+            }
         }
     }
 }

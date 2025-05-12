@@ -65,6 +65,7 @@ public:
 
 protected Q_SLOTS:
     void onAlbumDlTaskFinished(Task::Ptr task);
+    void onAlbumDlTaskFailed(Task::Ptr task, QString reason);
 
 Q_SIGNALS:
     void albumArtFetchFinished(const QString albumArtUrl);

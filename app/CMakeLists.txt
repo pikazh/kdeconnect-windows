@@ -8,6 +8,8 @@ qt_add_executable(kdeconnect-app
     devicemanager.cpp
     app_debug.h
     app_debug.cpp
+    devicepairnotify.h
+    devicepairnotify.cpp
 
     ui/mainwindow.cpp
     ui/mainwindow.h
@@ -30,6 +32,9 @@ qt_add_executable(kdeconnect-app
     ui/pages/pairpage.h
     ui/pages/pairpage.cpp
     ui/pages/pairpage.ui
+    ui/pages/remoteinputpage.h
+    ui/pages/remoteinputpage.cpp
+    ui/pages/remoteinputpage.ui
     ui/pages/devicepluginpagesprovider.h
     ui/pages/devicepluginpagesprovider.cpp
     ui/pages/mprisremotepage.ui
@@ -49,6 +54,11 @@ qt_add_executable(kdeconnect-app
     plugin/sftppluginwrapper.cpp
     plugin/clipboardpluginwrapper.h
     plugin/clipboardpluginwrapper.cpp
+    plugin/remotekeyboardpluginwrapper.h
+    plugin/remotekeyboardpluginwrapper.cpp
+    plugin/remotemousepadpluginwrapper.h
+    plugin/remotemousepadpluginwrapper.cpp
+
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

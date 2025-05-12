@@ -23,7 +23,7 @@ class KDECONNECTCORE_EXPORT KdeConnectPlugin : public QObject
     Q_OBJECT
 public:
     KdeConnectPlugin(QObject *parent, const QVariantList &args);
-    ~KdeConnectPlugin() override;
+    virtual ~KdeConnectPlugin() override;
 
     const Device *device();
     Device const *device() const;

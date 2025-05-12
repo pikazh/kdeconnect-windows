@@ -7,19 +7,10 @@
 #include <QIcon>
 #include <QLocalSocket>
 
-int NotifyBySnore::instanceCount = 0;
-
 NotifyBySnore::NotifyBySnore(QObject *parent)
-    :NotifyInterface(parent)
+    : NotificationPlugin(parent)
 {
-    QString pipeName = QCoreApplication::instance()->applicationName()
-    + QLatin1Char('\\') + QString::number(++instanceCount);
-    m_server.listen(pipeName);
-
-    if(instanceCount == 1)
-    {
-        installAppShortCut();
-    }
+    m_server.listen(QString::number(qHash(QCoreApplication::applicationDirPath())));
 
     connect(&m_server, &QLocalServer::newConnection, this, [this]() {
         QLocalSocket *responseSocket = m_server.nextPendingConnection();
@@ -27,27 +18,34 @@ NotifyBySnore::NotifyBySnore(QObject *parent)
             const QByteArray rawNotificationResponse = responseSocket->readAll();
             responseSocket->deleteLater();
 
-            const QString notificationResponse = QString::fromWCharArray(reinterpret_cast<const wchar_t *>(rawNotificationResponse.constData()),
-                                                                         rawNotificationResponse.size() / sizeof(wchar_t));
-            qCDebug(NOTIFICATIONS_MOD) << notificationResponse;
+            const QString notificationResponse
+                = QString::fromWCharArray(reinterpret_cast<const wchar_t *>(
+                                              rawNotificationResponse.constData()),
+                                          rawNotificationResponse.size() / sizeof(wchar_t));
+            qDebug(NOTIFICATIONS_MOD) << notificationResponse;
 
             QMap<QString, QStringView> notificationResponseMap;
-            for (const auto str : QStringView(notificationResponse).split(QLatin1Char(';'), Qt::SkipEmptyParts))
-            {
+            for (const auto str :
+                 QStringView(notificationResponse).split(QLatin1Char(';'), Qt::SkipEmptyParts)) {
                 const int equalIndex = str.indexOf(QLatin1Char('='));
-                notificationResponseMap.insert(str.sliced(0, equalIndex).toString(), str.sliced(equalIndex + 1));
+                notificationResponseMap.insert(str.sliced(0, equalIndex).toString(),
+                                               str.sliced(equalIndex + 1));
             }
 
-            const QString responseAction = notificationResponseMap[QStringLiteral("action")].toString();
-            const int responseNotificationId = notificationResponseMap[QStringLiteral("notificationId")].toInt();
+            const QString responseAction = notificationResponseMap[QStringLiteral("action")]
+                                               .toString();
+            const int responseNotificationId
+                = notificationResponseMap[QStringLiteral("notificationId")].toInt();
 
             qCDebug(NOTIFICATIONS_MOD) << "The notification ID is : " << responseNotificationId;
 
-            if(m_notification == nullptr || responseNotificationId != m_notification->id())
-            {
+            auto it = m_notifications.find(responseNotificationId);
+            if (it == m_notifications.end()) {
                 qCWarning(NOTIFICATIONS_MOD) << "Received a response for an unknown notification.";
                 return;
             }
+
+            Notification *n = it.value();
 
             switch (SnoreToastActions::getAction(responseAction.toStdWString())) {
             case SnoreToastActions::Actions::Clicked:
@@ -68,8 +66,9 @@ NotifyBySnore::NotifyBySnore(QObject *parent)
 
             case SnoreToastActions::Actions::ButtonClicked: {
                 qCDebug(NOTIFICATIONS_MOD) << "User clicked an action button in the toast.";
-                const QString responseButton = notificationResponseMap[QStringLiteral("button")].toString();
-                Q_EMIT actionInvoked(m_notification, responseButton);
+                const QString responseButton = notificationResponseMap[QStringLiteral("button")]
+                                                   .toString();
+                Q_EMIT actionInvoked(n, responseButton);
                 break;
             }
 
@@ -82,12 +81,13 @@ NotifyBySnore::NotifyBySnore(QObject *parent)
             }
 
             default:
-                qCWarning(NOTIFICATIONS_MOD) << "Unexpected behaviour with the toast. Please file a bug report / feature request.";
+                qCWarning(NOTIFICATIONS_MOD) << "Unexpected behaviour with the toast. Please file "
+                                                "a bug report / feature request.";
                 break;
             }
 
             // Action Center callbacks are not yet supported so just close the notification once done
-            NotifyBySnore::close(m_notification);
+            this->close(n);
         });
     });
 }
@@ -95,6 +95,11 @@ NotifyBySnore::NotifyBySnore(QObject *parent)
 NotifyBySnore::~NotifyBySnore()
 {
     m_server.close();
+}
+
+void NotifyBySnore::init()
+{
+    installAppShortCut();
 }
 
 void NotifyBySnore::notify(Notification *notification)
@@ -109,20 +114,22 @@ void NotifyBySnore::close(Notification *notification)
 {
     qCDebug(NOTIFICATIONS_MOD) << "Requested to close notification with ID:" << notification->id();
 
+    m_notifications.remove(notification->id());
     const QStringList snoretoastArgsList{QStringLiteral("-close"), QString::number(notification->id()), QStringLiteral("-appID"), QCoreApplication::instance()->applicationName()};
 
-    qCDebug(NOTIFICATIONS_MOD) << "Closing notification; SnoreToast process arguments:" << snoretoastArgsList;
-    QProcess::startDetached(SnoreToastExecName(), snoretoastArgsList);
+    //qCDebug(NOTIFICATIONS_MOD) << "Closing notification; SnoreToast process arguments:" << snoretoastArgsList;
+    QProcess::startDetached(SnoreToastExecPath(), snoretoastArgsList);
 
     Q_EMIT finished(notification);
 }
 
 void NotifyBySnore::notifyDeferred(Notification *notification)
 {
-    m_notification = notification;
+    m_notifications[notification->id()] = notification;
 
-    const QString notificationTitle = ((!notification->title().isEmpty()) ?
-                                           notification->title() : QCoreApplication::instance()->applicationName());
+    const QString notificationTitle = ((!notification->title().isEmpty())
+                                           ? notification->title()
+                                           : QCoreApplication::instance()->applicationName());
     QStringList snoretoastArgsList{QStringLiteral("-id"),
                                    QString::number(notification->id()),
                                    QStringLiteral("-t"),
@@ -141,11 +148,15 @@ void NotifyBySnore::notifyDeferred(Notification *notification)
     {
         iconPath += QString::number(notification->pixmap().cacheKey());
         hasIcon = notification->pixmap().save(iconPath, "PNG");
-    }
-    else
-    {
+    } else if (!notification->iconName().isEmpty()) {
+        iconPath += notification->iconName();
+        QIcon icon = QIcon::fromTheme(notification->iconName());
+        if (!icon.isNull()) {
+            hasIcon = icon.pixmap(64, 64).save(iconPath, "PNG");
+        }
+    } else {
         iconPath += QStringLiteral("app");
-        QGuiApplication* guiApp = dynamic_cast<QGuiApplication*>(qApp);
+        QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(QCoreApplication::instance());
         if(guiApp != nullptr)
         {
             hasIcon = guiApp->windowIcon().pixmap(1024, 1024).save(iconPath, "PNG");
@@ -169,48 +180,65 @@ void NotifyBySnore::notifyDeferred(Notification *notification)
         QStringList actionLabels;
         for (NotificationAction *action : actions)
         {
-            actionLabels << action->label();
+            action->setId(action->text());
+            actionLabels << action->text();
         }
 
         snoretoastArgsList << QStringLiteral("-b") << actionLabels.join(QLatin1Char(';'));
     }
 
-    QProcess *snoretoastProcess = new QProcess(this);
-    connect(snoretoastProcess, &QProcess::readyReadStandardError, [snoretoastProcess, snoretoastArgsList]() {
-        const auto data = snoretoastProcess->readAllStandardError();
-        qCDebug(NOTIFICATIONS_MOD) << "SnoreToast process stderr:" << snoretoastArgsList << data;
-    });
-    connect(snoretoastProcess, &QProcess::readyReadStandardOutput, [snoretoastProcess, snoretoastArgsList]() {
-        const auto data = snoretoastProcess->readAllStandardOutput();
-        qCDebug(NOTIFICATIONS_MOD) << "SnoreToast process stdout:" << snoretoastArgsList << data;
-    });
-    connect(snoretoastProcess, &QProcess::errorOccurred, this, [snoretoastProcess, snoretoastArgsList](QProcess::ProcessError error) {
-        qCWarning(NOTIFICATIONS_MOD) << "SnoreToast process errored:" << snoretoastArgsList << error;
-        snoretoastProcess->deleteLater();
-    });
+    QProcess *snoretoastProcess = new QProcess();
+    connect(snoretoastProcess,
+            &QProcess::readyReadStandardError,
+            this,
+            [snoretoastProcess, snoretoastArgsList]() {
+                const auto data = snoretoastProcess->readAllStandardError();
+                qCDebug(NOTIFICATIONS_MOD)
+                    << "SnoreToast process stderr:" << snoretoastArgsList << data;
+            });
+    connect(snoretoastProcess,
+            &QProcess::readyReadStandardOutput,
+            this,
+            [snoretoastProcess, snoretoastArgsList]() {
+                const auto data = snoretoastProcess->readAllStandardOutput();
+                qCDebug(NOTIFICATIONS_MOD)
+                    << "SnoreToast process stdout:" << snoretoastArgsList << data;
+            });
+    connect(snoretoastProcess,
+            &QProcess::errorOccurred,
+            this,
+            [snoretoastProcess, snoretoastArgsList, iconPath](QProcess::ProcessError error) {
+                qCWarning(NOTIFICATIONS_MOD)
+                    << "SnoreToast process errored:" << snoretoastArgsList << error;
+                snoretoastProcess->deleteLater();
+                QFile::remove(iconPath);
+            });
     connect(snoretoastProcess,
             &QProcess::finished,
             this,
-            [this, snoretoastProcess, snoretoastArgsList](int exitCode, QProcess::ExitStatus exitStatus) {
+            [snoretoastProcess, snoretoastArgsList, iconPath](int exitCode,
+                                                              QProcess::ExitStatus exitStatus) {
                 qCDebug(NOTIFICATIONS_MOD) << "SnoreToast process finished:" << snoretoastArgsList;
                 qCDebug(NOTIFICATIONS_MOD) << "code:" << exitCode << "status:" << exitStatus;
                 snoretoastProcess->deleteLater();
+                QFile::remove(iconPath);
             });
 
     qCDebug(NOTIFICATIONS_MOD) << "SnoreToast process starting:" << snoretoastArgsList;
-    snoretoastProcess->start(SnoreToastExecName(), snoretoastArgsList);
+    snoretoastProcess->start(SnoreToastExecPath(), snoretoastArgsList);
 }
 
-QString NotifyBySnore::SnoreToastExecName()
+QString NotifyBySnore::SnoreToastExecPath()
 {
-    return QStringLiteral("snoretoast.exe");
+    return QCoreApplication::applicationDirPath() + QDir::separator()
+           + QStringLiteral("snoretoast.exe");
 }
 
 void NotifyBySnore::installAppShortCut()
 {
-    const QString appId = QCoreApplication::instance()->applicationName();
+    const QString appId = QCoreApplication::applicationName();
     QProcess proc;
-    proc.start(SnoreToastExecName(),
-               { QStringLiteral("-install"), appId, QCoreApplication::instance()->applicationFilePath(), appId });
+    proc.start(SnoreToastExecPath(),
+               {QStringLiteral("-install"), appId, QCoreApplication::applicationFilePath(), appId});
     proc.waitForFinished();
 }

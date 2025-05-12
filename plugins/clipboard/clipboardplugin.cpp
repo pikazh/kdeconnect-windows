@@ -82,8 +82,8 @@ void ClipboardPlugin::sendConnectPacket()
 
 void ClipboardPlugin::receivePacket(const NetworkPacket &np)
 {
-    QString content = np.get<QString>(QStringLiteral("content"));
     if (np.type() == PACKET_TYPE_CLIPBOARD) {
+        QString content = np.get<QString>(QStringLiteral("content"));
         ClipboardListener::instance()->setText(content);
     } else if (np.type() == PACKET_TYPE_CLIPBOARD_CONNECT) {
         qint64 packetTime = np.get<qint64>(QStringLiteral("timestamp"));
@@ -94,6 +94,7 @@ void ClipboardPlugin::receivePacket(const NetworkPacket &np)
         }
 
         if (np.has(QStringLiteral("content"))) {
+            QString content = np.get<QString>(QStringLiteral("content"));
             ClipboardListener::instance()->setText(content);
         }
     }

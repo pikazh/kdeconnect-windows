@@ -59,7 +59,6 @@ protected Q_SLOTS:
 private:
     Ui::MprisRemotePage *ui;
     ImageWidget *m_albumArtWidget = nullptr;
-    Device::Ptr m_device;
     MprisRemotePluginWrapper *m_pluginWrapper = nullptr;
     QTimer *m_updatePlayingPosTimer = nullptr;
     int m_lastVolume = 0;

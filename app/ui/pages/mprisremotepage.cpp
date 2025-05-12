@@ -9,7 +9,6 @@
 MprisRemotePage::MprisRemotePage(Device::Ptr device, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::MprisRemotePage)
-    , m_device(device)
     , m_pluginWrapper(new MprisRemotePluginWrapper(device, this))
     , m_updatePlayingPosTimer(new QTimer(this))
 {

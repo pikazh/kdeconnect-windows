@@ -14,6 +14,8 @@ QHash<PluginId, QString> initPluginNameHashTable()
     pluginNames.insert(PluginId::SystemVolume, QStringLiteral("System volume"));
     pluginNames.insert(PluginId::Presenter, QStringLiteral("Presenter"));
     pluginNames.insert(PluginId::VirtualInput, QStringLiteral("Virtual input"));
+    pluginNames.insert(PluginId::RemoteMousePad, QStringLiteral("RemoteControl"));
+    pluginNames.insert(PluginId::RemoteKeyboard, QStringLiteral("Remote keyboard from the desktop"));
 
     return pluginNames;
 }

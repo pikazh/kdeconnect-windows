@@ -68,6 +68,7 @@ private:
     QString m_artist;
     QString m_album;
     QString m_albumArtUrl;
+    int m_dlAlbumArtRetryTime = 0;
     // hold a strong reference so that the file doesn't get deleted while in use
     QSharedPointer<AlbumArtCache::LocalFile> m_localAlbumArtUrl;
 

@@ -20,6 +20,12 @@ AlbumArtCache::AlbumArtCache(QObject *parent)
                      &TaskScheduler::taskFinished,
                      this,
                      &AlbumArtCache::onAlbumDlTaskFinished);
+
+    QObject::connect(m_taskSchedule,
+                     &TaskScheduler::taskFailed,
+                     this,
+                     &AlbumArtCache::onAlbumDlTaskFailed);
+
     m_taskSchedule->start();
     m_localCacheIndex.setMaxCost(100 * 1024);
     m_cacheDir.setPath(
@@ -74,6 +80,16 @@ void AlbumArtCache::onAlbumDlTaskFinished(Task::Ptr task)
 
             Q_EMIT albumArtFetchFinished(albumArtUrl);
         }
+    }
+}
+
+void AlbumArtCache::onAlbumDlTaskFailed(Task::Ptr task, QString reason)
+{
+    AlbumArtDownloadTask *taskPtr = qobject_cast<AlbumArtDownloadTask *>(task.get());
+    if (taskPtr != nullptr) {
+        QString albumArtUrl = taskPtr->property("albumArtUrl").toString();
+        qWarning(KDECONNECT_PLUGIN_MPRISREMOTE)
+            << "download album art with albumArtUrl:" << albumArtUrl << "failed:" << reason;
     }
 }
 

@@ -1,33 +1,36 @@
 #ifndef NOTIFYBYSNORE_H
 #define NOTIFYBYSNORE_H
 
-#include "notifyinterface.h"
+#include "notificationplugin.h"
 
+#include <QHash>
 #include <QLocalServer>
 #include <QProcess>
 #include <QTemporaryDir>
 
-class NotifyBySnore: public NotifyInterface
+class NotifyBySnore : public NotificationPlugin
 {
     Q_OBJECT
 public:
     explicit NotifyBySnore(QObject *parent = nullptr);
-    virtual ~NotifyBySnore();
+    virtual ~NotifyBySnore() override;
 
+    virtual void init() override;
     virtual void notify(Notification *notification) override;
     virtual void close(Notification *notification) override;
 
     void installAppShortCut();
 
-protected:
+protected Q_SLOTS:
     void notifyDeferred(Notification *notification);
-    static QString SnoreToastExecName();
+
+protected:
+    static QString SnoreToastExecPath();
 
 private:
     QLocalServer m_server;
     QTemporaryDir m_iconDir;
-    Notification *m_notification;
-    static int instanceCount;
+    QHash<int, Notification *> m_notifications;
 };
 
 #endif // NOTIFYBYSNORE_H

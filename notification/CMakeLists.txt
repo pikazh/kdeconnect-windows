@@ -1,12 +1,14 @@
 qt_add_library(notification SHARED
-    notification.h
-    notification.cpp
-    notifyinterface.h
-    notifybysnore.h
-    notifybysnore.cpp
-    notifyinterface.h
     notification_debug.h
     notification_debug.cpp
+    notification.h
+    notification.cpp
+    notificationmanager.h
+    notificationmanager.cpp
+
+    notificationplugin.h
+    notifybysnore.h
+    notifybysnore.cpp
 )
 
 include(GenerateExportHeader)

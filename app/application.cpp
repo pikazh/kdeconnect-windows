@@ -1,4 +1,5 @@
 #include "application.h"
+#include "devicepairnotify.h"
 #include "icons.h"
 #include "kdeconnectconfig.h"
 
@@ -10,6 +11,7 @@ Application::Application(int &argc, char **argv)
     : QApplication(argc, argv)
     , m_deviceManager(new DeviceManager(this))
 {
+    new DevicePairNotify(m_deviceManager, this);
     QObject::connect(this, SIGNAL(aboutToQuit()), this, SLOT(cleanUp()));
 }
 
@@ -51,6 +53,8 @@ void Application::showDeviceWindow(Device::Ptr device)
     if (it == m_deviceWindows.constEnd()) {
         DeviceWindow *deviceWindow = new DeviceWindow(device);
         deviceWindow->show();
+        deviceWindow->raise();
+        deviceWindow->activateWindow();
         m_deviceWindows.insert(deviceId, deviceWindow);
         QObject::connect(deviceWindow, SIGNAL(aboutToClose()), this, SLOT(deviceWindowClosing()));
     } else {
