@@ -10,7 +10,9 @@
 #include <QEnableSharedFromThis>
 #include <QHostAddress>
 #include <QObject>
+#include <QSettings>
 #include <QString>
+#include <memory>
 
 #include "QObjectPtr.h"
 #include "backends/devicelink.h"
@@ -69,11 +71,9 @@ public:
     Q_SCRIPTABLE QStringList loadedPlugins() const;
     Q_SCRIPTABLE bool hasPlugin(const QString &pluginId) const;
 
-    Q_SCRIPTABLE QString pluginsConfigFile() const;
-
     KdeConnectPlugin *plugin(const QString &pluginId) const;
     Q_SCRIPTABLE void setPluginEnabled(const QString &pluginId, bool enabled);
-    Q_SCRIPTABLE bool isPluginEnabled(const QString &pluginId) const;
+    Q_SCRIPTABLE bool isPluginEnabled(const QString &pluginId);
 
     QStringList supportedPlugins() const;
 
@@ -85,6 +85,9 @@ protected:
     void removeLink(DeviceLink *link);
 
     bool updateDeviceInfo(const DeviceInfo &deviceInfo);
+
+    QString pluginsConfigFile() const;
+    QSettings *settingConfig();
 
 public Q_SLOTS:
     /// sends a @p np packet to the device
@@ -117,8 +120,8 @@ Q_SIGNALS:
     Q_SCRIPTABLE void typeChanged(const QString &type);
 
 private:
-    class DevicePrivate;
-    DevicePrivate *d;
+    struct DevicePrivate;
+    std::unique_ptr<DevicePrivate> d;
 };
 
 Q_DECLARE_METATYPE(Device*)

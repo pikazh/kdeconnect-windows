@@ -67,11 +67,40 @@ QString NotificationAction::id() const
     return d->id;
 }
 
+QString Notification::standardEventToIconName(Notification::StandardEvent event)
+{
+    QString iconName;
+    switch (event) {
+    case Notification::StandardEvent::Warning:
+        iconName = QStringLiteral("dialog-warning");
+        break;
+    case Notification::StandardEvent::Error:
+        iconName = QStringLiteral("dialog-error");
+        break;
+    case Notification::StandardEvent::Catastrophe:
+        iconName = QStringLiteral("dialog-error");
+        break;
+    case Notification::StandardEvent::Notification: // fall through
+    default:
+        iconName = QStringLiteral("dialog-information");
+        break;
+    }
+    return iconName;
+}
+
 Notification::Notification(QObject *parent)
     : QObject(parent)
     , d(new NotificationPrivate)
 {
     d->id = d->notificationIdCounter++;
+}
+
+Notification::Notification(StandardEvent eventId, QObject *parent)
+    : QObject(parent)
+    , d(new NotificationPrivate)
+{
+    d->id = d->notificationIdCounter++;
+    setIconName(standardEventToIconName(eventId));
 }
 
 Notification::~Notification()

@@ -14,18 +14,11 @@
 #include <QSslKey>
 #include <QVector>
 
-class Device::DevicePrivate
+struct Device::DevicePrivate
 {
-public:
     DevicePrivate(const DeviceInfo &deviceInfo)
         : m_deviceInfo(deviceInfo)
     {
-    }
-
-    ~DevicePrivate()
-    {
-        qDeleteAll(m_deviceLinks);
-        m_deviceLinks.clear();
     }
 
     DeviceInfo m_deviceInfo;
@@ -35,13 +28,14 @@ public:
 
     QMultiMap<QString, KdeConnectPlugin *> m_pluginsByIncomingCapability;
     QSet<QString> m_supportedPlugins;
-    PairingHandler *m_pairingHandler;
+    PairingHandler *m_pairingHandler = nullptr;
+    QSettings *m_settings = nullptr;
 };
 
 Device::Device(QObject *parent, const DeviceInfo &deviceInfo, bool isPaired)
     : QObject(parent)
+    , d(new Device::DevicePrivate(deviceInfo))
 {
-    d = new Device::DevicePrivate(deviceInfo);
     d->m_pairingHandler = new PairingHandler(this,
                                              isPaired ? PairState::Paired : PairState::NotPaired);
 
@@ -70,7 +64,7 @@ Device::~Device()
         p->disable();
     }
     qDeleteAll(d->m_plugins);
-    delete d;
+    qDeleteAll(d->m_deviceLinks);
 }
 
 QString Device::id() const
@@ -285,6 +279,17 @@ bool Device::updateDeviceInfo(const DeviceInfo &newDeviceInfo)
     return hasChanges;
 }
 
+QSettings *Device::settingConfig()
+{
+    if (isPaired()) {
+        if (d->m_settings == nullptr) {
+            d->m_settings = new QSettings(pluginsConfigFile(), QSettings::IniFormat, this);
+        }
+    }
+
+    return d->m_settings;
+}
+
 void Device::linkDestroyed(QObject *o)
 {
     removeLink(static_cast<DeviceLink *>(o));
@@ -389,30 +394,28 @@ KdeConnectPlugin *Device::plugin(const QString &pluginId) const
 
 void Device::setPluginEnabled(const QString &pluginId, bool enabled)
 {
-    if (!PluginLoader::instance()->doesPluginExist(pluginId)) {
-        qWarning(KDECONNECT_CORE) << "Tried to enable a plugin that doesn't exist: " << pluginId;
-        return;
+    auto settings = settingConfig();
+    if (settings != nullptr) {
+        settings->beginGroup(QLatin1StringView("Plugins"));
+        settings->setValue(pluginId, enabled);
+        settings->endGroup();
     }
-
-    QSettings pluginStates(pluginsConfigFile(), QSettings::IniFormat);
-    pluginStates.beginGroup(QLatin1StringView("Plugins"));
-    const QString enabledKey = pluginId + QStringLiteral("Enabled");
-    pluginStates.setValue(enabledKey, enabled);
-    pluginStates.endGroup();
-    pluginStates.sync();
 }
 
-bool Device::isPluginEnabled(const QString &pluginId) const
+bool Device::isPluginEnabled(const QString &pluginId)
 {
-    QSettings pluginStates(pluginsConfigFile(), QSettings::IniFormat);
-    pluginStates.beginGroup(QLatin1StringView("Plugins"));
-    const QString enabledKey = pluginId + QStringLiteral("Enabled");
-    QString val = pluginStates.value(enabledKey, QVariant()).toString();
-    pluginStates.endGroup();
-    if(val.isEmpty())
-        return PluginLoader::instance()->getPluginInfo(pluginId).isEnabledByDefault();
-    else
-        return val == QLatin1StringView("true");
+    auto settings = settingConfig();
+    if (settings != nullptr) {
+        settings->beginGroup(QLatin1StringView("Plugins"));
+        QString val = settings->value(pluginId, QVariant()).toString();
+        settings->endGroup();
+        if (val.isEmpty())
+            return PluginLoader::instance()->getPluginInfo(pluginId).isEnabledByDefault();
+        else
+            return val == QLatin1StringView("true");
+    }
+
+    return false;
 }
 
 QString Device::encryptionInfo() const

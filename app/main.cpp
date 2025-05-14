@@ -6,12 +6,11 @@
 
 int main(int argc, char *argv[])
 {
+    Application app(argc, argv);
     SingleApplication single(argc, argv);
     if (!single.isPrimary()) {
         return 0;
     }
-
-    Application app(argc, argv);
 
     QObject::connect(&single, &SingleApplication::instanceStarted, &app, [&app]() {
         app.showMainWindow();

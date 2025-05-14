@@ -228,6 +228,7 @@ void MprisRemotePlayer::onAlbumArtFetchFinished(const QString albumArtUrl)
             setLocalAlbumArtUrl(indexItem.file);
         } else {
             if (++m_dlAlbumArtRetryTime < 3) {
+                qDebug(KDECONNECT_PLUGIN_MPRISREMOTE) << "retrying to down" << m_albumArtUrl;
                 m_plugin->requestAlbumArt(identity(), m_albumArtUrl);
             }
         }

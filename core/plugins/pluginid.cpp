@@ -6,6 +6,7 @@ QHash<PluginId, QString> initPluginNameHashTable()
 {
     QHash<PluginId, QString> pluginNames;
     pluginNames.insert(PluginId::Ping, QStringLiteral("Ping"));
+    pluginNames.insert(PluginId::FindMyPhone, QStringLiteral("Ring my phone"));
     pluginNames.insert(PluginId::BatteryMonitor, QStringLiteral("Battery monitor"));
     pluginNames.insert(PluginId::MprisRemote, QStringLiteral("MprisRemote"));
     pluginNames.insert(PluginId::MprisController, QStringLiteral("Multimedia control receiver"));

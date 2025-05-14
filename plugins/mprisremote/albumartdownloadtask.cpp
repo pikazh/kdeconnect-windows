@@ -26,6 +26,36 @@ void AlbumArtDownloadTask::onAbort()
     closeSocket();
 }
 
+void AlbumArtDownloadTask::finisheTask()
+{
+    if (m_albumArtFile.isOpen()) {
+        m_albumArtFile.close();
+
+        if (m_aborted || m_errorOccured) {
+            m_albumArtFile.remove();
+        }
+    }
+
+    if (m_aborted) {
+        emitAborted();
+    } else if (m_errorOccured) {
+        emitFailed(m_errorStr);
+    } else {
+        QString newFileName = QString("%1_%2").arg(m_hashCal.result().toHex()).arg(m_readSize);
+        QDir cacheDir(m_albumArtDir);
+        if (!cacheDir.exists(newFileName) || cacheDir.remove(newFileName)) {
+            m_albumArtFile.rename(m_albumArtDir + QDir::separator() + newFileName);
+        }
+
+        emitSucceeded();
+    }
+}
+
+void AlbumArtDownloadTask::socketConnected()
+{
+    m_connected = true;
+}
+
 void AlbumArtDownloadTask::sslErrors(const QList<QSslError> &errors)
 {
     for (const QSslError &error : errors) {
@@ -54,34 +84,20 @@ void AlbumArtDownloadTask::connectError(QAbstractSocket::SocketError socketError
         qWarning(KDECONNECT_PLUGIN_MPRISREMOTE)
             << "connectError:" << socketError << ", error str:" << m_errorStr;
     }
+
+    if (!m_connected) {
+        finisheTask();
+    }
 }
 
 void AlbumArtDownloadTask::socketDisconnected()
 {
-    if (m_albumArtFile.isOpen()) {
-        m_albumArtFile.close();
-    }
-
-    if (m_aborted) {
-        emitAborted();
-    } else if (!m_connected) {
-        emitFailed(tr("Can not create SSL connection with server."));
-    } else if (m_errorOccured) {
-        emitFailed(m_errorStr);
-    } else {
-        QString newFileName = QString("%1_%2").arg(m_hashCal.result().toHex()).arg(m_readSize);
-        QDir cacheDir(m_albumArtDir);
-        if (!cacheDir.exists(newFileName) || cacheDir.remove(newFileName)) {
-            m_albumArtFile.rename(m_albumArtDir + QDir::separator() + newFileName);
-        }
-
-        emitSucceeded();
-    }
+    m_connected = false;
+    finisheTask();
 }
 
 void AlbumArtDownloadTask::socketEncrypted()
 {
-    m_connected = true;
     m_hashCal.reset();
     m_readSize = 0;
 
@@ -91,7 +107,7 @@ void AlbumArtDownloadTask::socketEncrypted()
         m_errorOccured = true;
         m_errorStr = QString(tr("Can not open file %1 for writing ablum art."))
                          .arg(m_albumArtFile.fileName());
-        qCritical(KDECONNECT_PLUGIN_MPRISREMOTE) << m_errorStr;
+        qWarning(KDECONNECT_PLUGIN_MPRISREMOTE) << m_errorStr;
 
         closeSocket();
     }

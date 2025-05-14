@@ -56,7 +56,7 @@ protected:
 private Q_SLOTS:
     void onClipboardChanged(const QString &content,
                             ClipboardListener::ClipboardContentType contentType);
-    void onConfigChanged();
+    void reloadConfig();
 
 private:
     bool m_autoShare;

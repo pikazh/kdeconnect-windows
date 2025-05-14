@@ -10,7 +10,7 @@
 NotifyBySnore::NotifyBySnore(QObject *parent)
     : NotificationPlugin(parent)
 {
-    m_server.listen(QString::number(qHash(QCoreApplication::applicationDirPath())));
+    m_server.listen(QString::number(qHash(qGuiApp->applicationDirPath())));
 
     connect(&m_server, &QLocalServer::newConnection, this, [this]() {
         QLocalSocket *responseSocket = m_server.nextPendingConnection();
@@ -115,7 +115,10 @@ void NotifyBySnore::close(Notification *notification)
     qCDebug(NOTIFICATIONS_MOD) << "Requested to close notification with ID:" << notification->id();
 
     m_notifications.remove(notification->id());
-    const QStringList snoretoastArgsList{QStringLiteral("-close"), QString::number(notification->id()), QStringLiteral("-appID"), QCoreApplication::instance()->applicationName()};
+    const QStringList snoretoastArgsList{QStringLiteral("-close"),
+                                         QString::number(notification->id()),
+                                         QStringLiteral("-appID"),
+                                         qGuiApp->applicationName()};
 
     //qCDebug(NOTIFICATIONS_MOD) << "Closing notification; SnoreToast process arguments:" << snoretoastArgsList;
     QProcess::startDetached(SnoreToastExecPath(), snoretoastArgsList);
@@ -125,11 +128,16 @@ void NotifyBySnore::close(Notification *notification)
 
 void NotifyBySnore::notifyDeferred(Notification *notification)
 {
+    auto it = m_notifications.find(notification->id());
+    if (it != m_notifications.end()) {
+        close(it.value());
+    }
+
     m_notifications[notification->id()] = notification;
 
     const QString notificationTitle = ((!notification->title().isEmpty())
                                            ? notification->title()
-                                           : QCoreApplication::instance()->applicationName());
+                                           : qGuiApp->applicationDisplayName());
     QStringList snoretoastArgsList{QStringLiteral("-id"),
                                    QString::number(notification->id()),
                                    QStringLiteral("-t"),
@@ -137,7 +145,7 @@ void NotifyBySnore::notifyDeferred(Notification *notification)
                                    QStringLiteral("-m"),
                                    stripRichText(notification->text()),
                                    QStringLiteral("-appID"),
-                                   QCoreApplication::instance()->applicationName(),
+                                   qGuiApp->applicationName(),
                                    QStringLiteral("-pipename"),
                                    m_server.fullServerName()};
 
@@ -152,15 +160,11 @@ void NotifyBySnore::notifyDeferred(Notification *notification)
         iconPath += notification->iconName();
         QIcon icon = QIcon::fromTheme(notification->iconName());
         if (!icon.isNull()) {
-            hasIcon = icon.pixmap(64, 64).save(iconPath, "PNG");
+            hasIcon = icon.pixmap(1024, 1024).save(iconPath, "PNG");
         }
     } else {
         iconPath += QStringLiteral("app");
-        QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(QCoreApplication::instance());
-        if(guiApp != nullptr)
-        {
-            hasIcon = guiApp->windowIcon().pixmap(1024, 1024).save(iconPath, "PNG");
-        }
+        hasIcon = qGuiApp->windowIcon().pixmap(1024, 1024).save(iconPath, "PNG");
     }
 
     if (hasIcon)
@@ -236,7 +240,7 @@ QString NotifyBySnore::SnoreToastExecPath()
 
 void NotifyBySnore::installAppShortCut()
 {
-    const QString appId = QCoreApplication::applicationName();
+    const QString appId = qGuiApp->applicationName();
     QProcess proc;
     proc.start(SnoreToastExecPath(),
                {QStringLiteral("-install"), appId, QCoreApplication::applicationFilePath(), appId});

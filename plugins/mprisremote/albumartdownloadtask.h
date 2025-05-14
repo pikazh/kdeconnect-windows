@@ -21,7 +21,10 @@ public:
 protected:
     virtual void onAbort() override;
 
+    void finisheTask();
+
 protected Q_SLOTS:
+    virtual void socketConnected() override;
     virtual void connectError(QAbstractSocket::SocketError socketError) override;
     virtual void sslErrors(const QList<QSslError> &errors) override;
     virtual void socketDisconnected() override;

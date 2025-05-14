@@ -17,19 +17,18 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    virtual ~MainWindow() override;
 
 protected Q_SLOTS:
     void on_modifyDeviceNameButton_clicked();
     void on_pairButton_clicked();
-    void on_pingButton_clicked();
-    void on_pluginConfigButton_clicked();
+    void on_openDevicePageButton_clicked();
     void on_refreshDeviceListButton_clicked();
+    void onDeviceListCurrentRowChanged(const QModelIndex &current);
     void on_deviceList_activated(const QModelIndex &index);
-    void on_deviceList_pressed(const QModelIndex &index);
 
 protected:
-    Device::Ptr retrieveDeviceObjFromDeviceList(const QModelIndex &index);
+    Device::Ptr deviceObjFromDeviceList(const QModelIndex &index);
     void changeButtonStateForDevice(Device::Ptr dev);
 
     virtual void closeEvent(QCloseEvent *) override;

@@ -1,4 +1,5 @@
 add_subdirectory(ping)
+add_subdirectory(findmyphone)
 add_subdirectory(battery)
 add_subdirectory(mprisremote)
 add_subdirectory(mpriscontrol)

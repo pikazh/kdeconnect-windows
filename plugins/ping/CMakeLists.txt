@@ -6,7 +6,7 @@ qt_add_library(kdeconnect_ping SHARED
     kdeconnect_ping.json
 )
 
-target_link_libraries(kdeconnect_ping PRIVATE Qt::Core Qt::Network kdeconnectcore)
+target_link_libraries(kdeconnect_ping PRIVATE Qt::Gui Qt::Core Qt::Network kdeconnectcore notification)
 
 include(GNUInstallDirs)
 install(TARGETS kdeconnect_ping

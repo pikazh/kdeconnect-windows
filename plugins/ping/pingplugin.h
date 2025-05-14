@@ -13,6 +13,7 @@ class PingPlugin : public KdeConnectPlugin
 public:
     PingPlugin(QObject *parent, const QVariantList &args);
 
+public Q_SLOTS:
     void sendPing();
     void sendPing(const QString &customMessage);
 

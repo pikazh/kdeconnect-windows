@@ -6,6 +6,7 @@
 
 enum class PluginId {
     Ping = 0,
+    FindMyPhone,
     BatteryMonitor,
     MprisRemote,
     MprisController,

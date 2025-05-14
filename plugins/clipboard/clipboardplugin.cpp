@@ -18,11 +18,9 @@ ClipboardPlugin::ClipboardPlugin(QObject *parent, const QVariantList &args)
             &ClipboardListener::clipboardChanged,
             this,
             &ClipboardPlugin::onClipboardChanged);
-    connect(config(),
-            &KdeConnectPluginConfig::configChanged,
-            this,
-            &ClipboardPlugin::onConfigChanged);
-    onConfigChanged();
+    connect(config(), &KdeConnectPluginConfig::configChanged, this, &ClipboardPlugin::reloadConfig);
+
+    reloadConfig();
 }
 
 void ClipboardPlugin::onPluginEnabled()
@@ -46,10 +44,10 @@ void ClipboardPlugin::onClipboardChanged(const QString &content,
     sendClipboard(content);
 }
 
-void ClipboardPlugin::onConfigChanged()
+void ClipboardPlugin::reloadConfig()
 {
-    m_autoShare = config()->getBool(QStringLiteral("autoShare"), true);
-    m_sharePasswords = config()->getBool(QStringLiteral("sendPassword"), true);
+    m_autoShare = config()->getBool(QStringLiteral("autoShare"), false);
+    m_sharePasswords = config()->getBool(QStringLiteral("sendPassword"), false);
 }
 
 void ClipboardPlugin::sendClipboard()

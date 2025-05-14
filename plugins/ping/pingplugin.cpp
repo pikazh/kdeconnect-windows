@@ -1,15 +1,17 @@
 #include "pingplugin.h"
 #include "core/plugins/pluginfactory.h"
+#include "notification.h"
 #include "plugin_ping_debug.h"
 
 K_PLUGIN_CLASS_WITH_JSON(PingPlugin, "kdeconnect_ping.json")
 
 void PingPlugin::receivePacket(const NetworkPacket &np)
 {
-    // Daemon::instance()->sendSimpleNotification(QStringLiteral("pingReceived"),
-    //                                            device()->name(),
-    //                                            np.get<QString>(QStringLiteral("message"), tr("Ping!")),
-    //                                            QStringLiteral("dialog-ok"));
+    Notification *n = new Notification();
+    n->setText(np.get<QString>(QStringLiteral("message"), tr("Ping!")));
+    n->setTitle(device()->name());
+    n->setIconName(QStringLiteral("dialog-ok-apply"));
+    n->notify();
 }
 
 PingPlugin::PingPlugin(QObject *parent, const QVariantList &args)

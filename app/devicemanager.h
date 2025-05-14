@@ -18,6 +18,9 @@ public:
     Device::Ptr getDevice(const QString &deviceId) const;
     QList<Device::Ptr> devicesList() const;
 
+public Q_SLOTS:
+    void refreshNetwokState();
+
 protected:
     void addDevice(Device::Ptr device);
     void removeDevice(Device::Ptr d);

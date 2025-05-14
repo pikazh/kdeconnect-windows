@@ -58,6 +58,14 @@ QList<Device::Ptr> DeviceManager::devicesList() const
     return m_devices.values();
 }
 
+void DeviceManager::refreshNetwokState()
+{
+    for (LinkProvider *a : std::as_const(m_linkProviders)) {
+        qCDebug(KDECONNECT_APP) << "Sending onNetworkChange to:" << a->name();
+        a->onNetworkChange();
+    }
+}
+
 void DeviceManager::addDevice(Device::Ptr device)
 {
     QString id = device->id();

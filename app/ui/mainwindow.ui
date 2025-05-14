@@ -79,6 +79,13 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
+       <widget class="QPushButton" name="openDevicePageButton">
+        <property name="text">
+         <string>Open</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="pairButton">
         <property name="text">
          <string>Pair</string>
@@ -86,18 +93,17 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pingButton">
-        <property name="text">
-         <string>Send Ping</string>
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pluginConfigButton">
-        <property name="text">
-         <string>Plugin Settings</string>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
         </property>
-       </widget>
+       </spacer>
       </item>
      </layout>
     </item>

@@ -14,6 +14,8 @@ DeviceWindow::DeviceWindow(Device::Ptr device, QWidget *parent)
     , m_batteryPluginWrapper(new BatteryPluginWrapper(device, this))
     , m_sftpPluginWrapper(new SftpPluginWrapper(device, this))
     , m_clipboardPluginWrapper(new ClipboardPluginWrapper(device, this))
+    , m_pingPluginWrapper(new PingPluginWrapper(device, this))
+    , m_findMyPhonePluginWrapper(new FindMyPhonePluginWrapper(device, this))
 {
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle(device->name());
@@ -25,6 +27,7 @@ DeviceWindow::DeviceWindow(Device::Ptr device, QWidget *parent)
         }
 
         reloadPages();
+        updatePluginSettingsButtonState();
     });
 
     QObject::connect(m_device.get(),
@@ -36,6 +39,9 @@ DeviceWindow::DeviceWindow(Device::Ptr device, QWidget *parent)
     m_batteryPluginWrapper->init();
     m_sftpPluginWrapper->init();
     m_clipboardPluginWrapper->init();
+    m_pingPluginWrapper->init();
+    m_findMyPhonePluginWrapper->init();
+
     QObject::connect(m_batteryPluginWrapper,
                      &BatteryPluginWrapper::refreshed,
                      this,
@@ -54,6 +60,14 @@ DeviceWindow::DeviceWindow(Device::Ptr device, QWidget *parent)
                      &ClipboardPluginWrapper::pluginLoadedChange,
                      this,
                      &DeviceWindow::updateClipBoardButtonState);
+    QObject::connect(m_pingPluginWrapper,
+                     &PingPluginWrapper::pluginLoadedChange,
+                     this,
+                     &DeviceWindow::updatePingButtonState);
+    QObject::connect(m_findMyPhonePluginWrapper,
+                     &FindMyPhonePluginWrapper::pluginLoadedChange,
+                     this,
+                     &DeviceWindow::updateFindMyPhoneButtonState);
 
     reloadPages();
     updateUI();
@@ -78,14 +92,41 @@ void DeviceWindow::createToolBar()
 
     m_sendClipboardAction = new QAction(m_mainToolBar);
     m_sendClipboardAction->setText(tr("Send Clipboard"));
-    m_sendClipboardAction->setIcon(RETRIEVE_THEME_ICON("klipper"));
+    m_sendClipboardAction->setIcon(RETRIEVE_THEME_ICON("klipper-symbolic"));
     QObject::connect(m_sendClipboardAction,
                      &QAction::triggered,
                      m_clipboardPluginWrapper,
                      &ClipboardPluginWrapper::sendClipboard);
 
+    m_pingAction = new QAction(m_mainToolBar);
+    m_pingAction->setText(tr("Send Ping"));
+    m_pingAction->setIcon(RETRIEVE_THEME_ICON("hands-free"));
+    QObject::connect(m_pingAction,
+                     &QAction::triggered,
+                     m_pingPluginWrapper,
+                     &PingPluginWrapper::sendPing);
+
+    m_findMyPhoneAction = new QAction(m_mainToolBar);
+    m_findMyPhoneAction->setText(tr("Ring device"));
+    m_findMyPhoneAction->setIcon(RETRIEVE_THEME_ICON("irc-voice"));
+    QObject::connect(m_findMyPhoneAction,
+                     &QAction::triggered,
+                     m_findMyPhonePluginWrapper,
+                     &FindMyPhonePluginWrapper::ring);
+
+    m_pluginSettingsAction = new QAction(m_mainToolBar);
+    m_pluginSettingsAction->setText(tr("Plugin Settings"));
+    m_pluginSettingsAction->setIcon(RETRIEVE_THEME_ICON("configure"));
+    QObject::connect(m_pluginSettingsAction,
+                     &QAction::triggered,
+                     this,
+                     &DeviceWindow::showPluginSettingsWindow);
+
     m_mainToolBar->addAction(m_sftpAction);
     m_mainToolBar->addAction(m_sendClipboardAction);
+    m_mainToolBar->addAction(m_pingAction);
+    m_mainToolBar->addAction(m_findMyPhoneAction);
+    m_mainToolBar->addAction(m_pluginSettingsAction);
 }
 
 bool DeviceWindow::selectPage(QString pageId)
@@ -122,6 +163,9 @@ void DeviceWindow::updateUI()
     titleUpdateDeviceBatteryInfo();
     updateSftpButtonState();
     updateClipBoardButtonState();
+    updatePingButtonState();
+    updateFindMyPhoneButtonState();
+    updatePluginSettingsButtonState();
 }
 
 void DeviceWindow::reloadPages()
@@ -169,9 +213,41 @@ void DeviceWindow::updateClipBoardButtonState()
     m_sendClipboardAction->setVisible(m_clipboardPluginWrapper->isPluginLoaded());
 }
 
+void DeviceWindow::updatePingButtonState()
+{
+    m_pingAction->setVisible(m_pingPluginWrapper->isPluginLoaded());
+}
+
+void DeviceWindow::updateFindMyPhoneButtonState()
+{
+    m_findMyPhoneAction->setVisible(m_findMyPhonePluginWrapper->isPluginLoaded());
+}
+
+void DeviceWindow::updatePluginSettingsButtonState()
+{
+    m_pluginSettingsAction->setVisible(m_device->isReachable() && m_device->isPaired());
+}
+
 void DeviceWindow::updateVisiblePages()
 {
     refreshContainer();
+}
+
+void DeviceWindow::showPluginSettingsWindow()
+{
+    if (m_pluginSettingDlg == nullptr) {
+        m_pluginSettingDlg = new PluginSettingsDialog(m_device, this);
+        QObject::connect(m_pluginSettingDlg, &PluginSettingsDialog::destroyed, this, [this]() {
+            m_pluginSettingDlg = nullptr;
+        });
+
+        QString title = tr("Plugins Configuration - ") + m_device->name();
+        m_pluginSettingDlg->setWindowTitle(title);
+    }
+
+    m_pluginSettingDlg->showNormal();
+    m_pluginSettingDlg->raise();
+    m_pluginSettingDlg->activateWindow();
 }
 
 template<typename T>

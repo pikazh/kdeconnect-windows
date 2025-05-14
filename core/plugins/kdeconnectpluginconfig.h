@@ -25,7 +25,7 @@ public:
     explicit KdeConnectPluginConfig(const QString &deviceId,
                                     const QString &pluginId,
                                     QObject *parent = nullptr);
-    ~KdeConnectPluginConfig() override;
+    virtual ~KdeConnectPluginConfig() override;
 
     /**
      * Store a key-value pair in this config object

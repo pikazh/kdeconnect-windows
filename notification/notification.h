@@ -39,7 +39,15 @@ class NOTIFICATION_EXPORT Notification: public QObject
 {
     Q_OBJECT
 public:
+    enum class StandardEvent {
+        Notification,
+        Warning,
+        Error,
+        Catastrophe,
+    };
+
     explicit Notification(QObject *parent = nullptr);
+    explicit Notification(StandardEvent eventId, QObject *parent = nullptr);
     virtual ~Notification() override;
 
     QString title() const;
@@ -77,6 +85,8 @@ protected:
     int id() const;
     void ref();
     void deRef();
+
+    static QString standardEventToIconName(StandardEvent event);
 
 private:
     std::unique_ptr<NotificationPrivate> const d;
