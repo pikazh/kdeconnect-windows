@@ -59,6 +59,6 @@ private Q_SLOTS:
     void reloadConfig();
 
 private:
-    bool m_autoShare;
+    bool m_autoSync;
     bool m_sharePasswords;
 };

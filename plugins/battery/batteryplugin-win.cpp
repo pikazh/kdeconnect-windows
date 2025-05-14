@@ -1,5 +1,6 @@
 #include "batteryplugin-win.h"
 #include "core/plugins/pluginfactory.h"
+#include "notification.h"
 #include "plugin_battery_debug.h"
 
 K_PLUGIN_CLASS_WITH_JSON(BatteryPlugin, "kdeconnect_battery.json")
@@ -13,6 +14,15 @@ void BatteryPlugin::receivePacket(const NetworkPacket &np)
     //int thresholdEvent = np.get<int>(QStringLiteral("thresholdEvent"), (int) ThresholdNone);
 
     Q_EMIT refreshed(m_remoteCharge, m_isRemoteCharging);
+
+    if (!m_isRemoteCharging && m_showWarning && m_remoteCharge <= m_warningThreshold) {
+        if (!m_showedWarning) {
+            m_showedWarning = true;
+            showNotification();
+        }
+    } else {
+        m_showedWarning = false;
+    }
 }
 
 BatteryMonitor *BatteryPlugin::batteryMonitor()
@@ -26,7 +36,7 @@ void BatteryPlugin::sendLocalBatteryInfo()
     auto batteryMon = batteryMonitor();
 
     // Prepare an outgoing network packet
-    NetworkPacket status(PACKET_TYPE_BATTERY, {{}});
+    NetworkPacket status(PACKET_TYPE_BATTERY);
     status.set(QStringLiteral("isCharging"), batteryMon->isCharging());
     status.set(QStringLiteral("currentCharge"), batteryMon->charge());
     // We consider the primary battery to be low if it's below 15%
@@ -38,25 +48,50 @@ void BatteryPlugin::sendLocalBatteryInfo()
     sendPacket(status);
 }
 
+void BatteryPlugin::showNotification()
+{
+    Notification *n = new Notification();
+    QString title = QString(QStringLiteral("%1: Low Battery")).arg(device()->name());
+    n->setTitle(title);
+    QString text = QString(QStringLiteral("Battery at %1%")).arg(m_remoteCharge);
+    n->setText(text);
+    n->setIconName(QStringLiteral("battery-040"));
+    n->notify();
+}
+
 void BatteryPlugin::localBatteryInfoUpdated()
 {
     sendLocalBatteryInfo();
 }
 
+void BatteryPlugin::reloadConfig()
+{
+    auto conf = config();
+    m_showWarning = conf->getBool(QStringLiteral("warning"), false);
+    m_warningThreshold = conf->getInt(QStringLiteral("threshold"), m_chargeThreshold);
+}
+
 BatteryPlugin::BatteryPlugin(QObject *parent, const QVariantList &args)
     : KdeConnectPlugin(parent, args)
 {
-    
-}
+    auto conf = config();
+    QObject::connect(conf.get(),
+                     &KdeConnectPluginConfig::configChanged,
+                     this,
+                     &BatteryPlugin::reloadConfig);
 
-void BatteryPlugin::onPluginEnabled()
-{
+    reloadConfig();
+
     auto batteryMon = batteryMonitor();
     QObject::connect(batteryMon,
                      &BatteryMonitor::refreshed,
                      this,
                      &BatteryPlugin::localBatteryInfoUpdated);
+}
 
+void BatteryPlugin::onPluginEnabled()
+{
+    auto batteryMon = batteryMonitor();
     if (++g_instanceCount == 1) {
         batteryMon->start();
     }

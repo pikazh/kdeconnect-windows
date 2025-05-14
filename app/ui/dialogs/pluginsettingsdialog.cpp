@@ -1,7 +1,13 @@
 #include "pluginsettingsdialog.h"
-#include "core/plugins/kdeconnectplugin.h"
-#include "core/plugins/pluginloader.h"
 #include "ui_pluginsettingsdialog.h"
+
+#include "core/plugins/kdeconnectplugin.h"
+#include "core/plugins/pluginid.h"
+#include "core/plugins/pluginloader.h"
+
+#include "ui/dialogs/batterypluginconfigdialog.h"
+#include "ui/dialogs/clipboardpluginconfigdialog.h"
+#include "ui/dialogs/presenterpluginconfigdialog.h"
 
 #include <QIcon>
 #include <QPushButton>
@@ -15,6 +21,10 @@ PluginSettingsDialog::PluginSettingsDialog(Device::Ptr device, QWidget *parent)
     , m_delayFilterTimer(new QTimer(this))
 {
     setAttribute(Qt::WA_DeleteOnClose);
+
+    m_pluginIdsWhichHasConfig.insert(pluginIdString(PluginId::BatteryMonitor));
+    m_pluginIdsWhichHasConfig.insert(pluginIdString(PluginId::ClipBoard));
+    m_pluginIdsWhichHasConfig.insert(pluginIdString(PluginId::Presenter));
 
     QObject::connect(this,
                      &PluginSettingsDialog::accepted,
@@ -63,11 +73,12 @@ void PluginSettingsDialog::initPluginList()
 
         ui->pluginList->addTopLevelItem(item);
 
-        {
+        if (m_pluginIdsWhichHasConfig.contains(pluginId)) {
             QWidget *w = new QWidget(ui->pluginList);
             QHBoxLayout *layout = new QHBoxLayout(w);
             layout->setContentsMargins(0, 0, 0, 0);
             QPushButton *configBtn = new QPushButton(ui->pluginList);
+            configBtn->setProperty("pluginId", pluginId);
             configBtn->setIcon(QIcon::fromTheme(QStringLiteral("configure")));
             layout->addSpacerItem(
                 new QSpacerItem(10, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
@@ -76,6 +87,11 @@ void PluginSettingsDialog::initPluginList()
                 new QSpacerItem(10, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
 
             ui->pluginList->setItemWidget(item, Configuration, w);
+
+            QObject::connect(configBtn,
+                             &QPushButton::clicked,
+                             this,
+                             &PluginSettingsDialog::showPluginConfigDialog);
         }
     }
 
@@ -110,6 +126,36 @@ void PluginSettingsDialog::saveEnabledPluginList()
     }
 
     m_device->reloadPlugins();
+}
+
+void PluginSettingsDialog::showPluginConfigDialog()
+{
+    auto btn = QObject::sender();
+    if (btn == nullptr) {
+        return;
+    }
+
+    QString pluginId = qvariant_cast<QString>(btn->property("pluginId"));
+    if (!m_pluginIdsWhichHasConfig.contains(pluginId)) {
+        return;
+    }
+
+    auto pluginLoader = PluginLoader::instance();
+    auto pluginInfo = pluginLoader->getPluginInfo(pluginId);
+
+    if (pluginId == pluginIdString(PluginId::BatteryMonitor)) {
+        auto dlg = new BatteryPluginConfigDialog(m_device, this);
+        dlg->setWindowTitle(pluginInfo.name());
+        dlg->exec();
+    } else if (pluginId == pluginIdString(PluginId::ClipBoard)) {
+        auto dlg = new ClipboardPluginConfigDialog(m_device, this);
+        dlg->setWindowTitle(pluginInfo.name());
+        dlg->exec();
+    } else if (pluginId == pluginIdString(PluginId::Presenter)) {
+        auto dlg = new PresenterPluginConfigDialog(m_device, this);
+        dlg->setWindowTitle(pluginInfo.name());
+        dlg->exec();
+    }
 }
 
 void PluginSettingsDialog::on_filterEdit_textChanged(const QString &text)

@@ -21,7 +21,7 @@ class DeviceWindow : public QMainWindow, public BasePageContainer
     Q_OBJECT
 public:
     explicit DeviceWindow(Device::Ptr device, QWidget *parent = nullptr);
-    virtual ~DeviceWindow() = default;
+    virtual ~DeviceWindow() override = default;
 
     virtual bool selectPage(QString pageId) override;
     virtual BasePage *selectedPage() const override;

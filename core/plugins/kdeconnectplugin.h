@@ -22,7 +22,7 @@ class KDECONNECTCORE_EXPORT KdeConnectPlugin : public QObject
     friend class Device;
     Q_OBJECT
 public:
-    KdeConnectPlugin(QObject *parent, const QVariantList &args);
+    explicit KdeConnectPlugin(QObject *parent, const QVariantList &args);
     virtual ~KdeConnectPlugin() override;
 
     const Device *device();
@@ -30,7 +30,7 @@ public:
 
     bool sendPacket(NetworkPacket &np) const;
 
-    KdeConnectPluginConfig *config() const;
+    KdeConnectPluginConfig::Ptr config() const;
 
     QString pluginId() const;
 
@@ -59,7 +59,7 @@ protected:
     }
 
 private:
-    const std::unique_ptr<KdeConnectPluginPrivate> d;
+    std::unique_ptr<KdeConnectPluginPrivate> const d;
     bool m_isEnabled = false;
 };
 

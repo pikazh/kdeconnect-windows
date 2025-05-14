@@ -38,12 +38,20 @@ Q_SIGNALS:
 protected:
     void sendLocalBatteryInfo();
 
+    void showNotification();
+
 protected Q_SLOTS:
     void localBatteryInfoUpdated();
+    void reloadConfig();
 
 private:
     const int m_chargeThreshold = 15;
     int m_remoteCharge = -1;
     bool m_isRemoteCharging = false;
+
+    bool m_showWarning = false;
+    int m_warningThreshold = -1;
+    bool m_showedWarning = false;
+
     static int g_instanceCount;
 };

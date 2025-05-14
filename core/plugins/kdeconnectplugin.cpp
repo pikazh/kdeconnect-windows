@@ -11,7 +11,7 @@ struct KdeConnectPluginPrivate {
     Device *m_device;
     QString m_pluginId;
     QSet<QString> m_outgoingCapabilties;
-    KdeConnectPluginConfig *m_config = nullptr;
+    KdeConnectPluginConfig::Ptr m_config;
 };
 
 KdeConnectPlugin::KdeConnectPlugin(QObject *parent, const QVariantList &args)
@@ -26,11 +26,13 @@ KdeConnectPlugin::KdeConnectPlugin(QObject *parent, const QVariantList &args)
     d->m_outgoingCapabilties = QSet(cap.begin(), cap.end());
 }
 
-KdeConnectPluginConfig *KdeConnectPlugin::config() const
+KdeConnectPlugin::~KdeConnectPlugin() {}
+
+KdeConnectPluginConfig::Ptr KdeConnectPlugin::config() const
 {
     // Create on demand, because not every plugin will use it
     if (!d->m_config) {
-        d->m_config = new KdeConnectPluginConfig(d->m_device->id(), d->m_pluginId);
+        d->m_config.reset(new KdeConnectPluginConfig(d->m_device->id(), d->m_pluginId));
     }
     return d->m_config;
 }
@@ -38,11 +40,6 @@ KdeConnectPluginConfig *KdeConnectPlugin::config() const
 QString KdeConnectPlugin::pluginId() const
 {
     return d->m_pluginId;
-}
-
-KdeConnectPlugin::~KdeConnectPlugin()
-{
-    delete d->m_config;
 }
 
 const Device *KdeConnectPlugin::device()

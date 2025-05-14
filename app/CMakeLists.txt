@@ -66,6 +66,12 @@ qt_add_executable(kdeconnect-app
     plugin/pingpluginwrapper.cpp
     plugin/findmyphonepluginwrapper.h
     plugin/findmyphonepluginwrapper.cpp
+    ui/dialogs/clipboardpluginconfigdialog.h ui/dialogs/clipboardpluginconfigdialog.cpp
+    ui/dialogs/batterypluginconfigdialog.h ui/dialogs/batterypluginconfigdialog.cpp
+    ui/dialogs/presenterpluginconfigdialog.h ui/dialogs/presenterpluginconfigdialog.cpp
+    ui/dialogs/clipboardpluginconfigdialog.ui
+    ui/dialogs/batterypluginconfigdialog.ui
+    ui/dialogs/presenterpluginconfigdialog.ui
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

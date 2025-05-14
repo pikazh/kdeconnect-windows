@@ -8,7 +8,7 @@ qt_add_library(kdeconnect_battery SHARED
     batterymonitor.cpp
 )
 
-target_link_libraries(kdeconnect_battery PRIVATE Qt::Core Qt::Network kdeconnectcore)
+target_link_libraries(kdeconnect_battery PRIVATE Qt::Gui Qt::Core Qt::Network kdeconnectcore notification)
 
 include(GNUInstallDirs)
 install(TARGETS kdeconnect_battery

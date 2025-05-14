@@ -12,9 +12,10 @@
 #include <QString>
 #include <QStringList>
 #include <QVariant>
-
-#include "kdeconnectcore_export.h"
 #include <memory>
+
+#include "QObjectPtr.h"
+#include "kdeconnectcore_export.h"
 
 struct KdeConnectPluginConfigPrivate;
 
@@ -22,6 +23,8 @@ class KDECONNECTCORE_EXPORT KdeConnectPluginConfig : public QObject
 {
     Q_OBJECT
 public:
+    using Ptr = shared_qobject_ptr<KdeConnectPluginConfig>;
+
     explicit KdeConnectPluginConfig(const QString &deviceId,
                                     const QString &pluginId,
                                     QObject *parent = nullptr);
