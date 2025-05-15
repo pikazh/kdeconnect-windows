@@ -5,10 +5,6 @@ qt_add_library(kdeconnectcore SHARED
     backends/lan/lanlinkprovider.h
     backends/lan/landevicelink.cpp
     backends/lan/landevicelink.h
-    #    backends/lan/compositeuploadjob.cpp
-    #	backends/lan/compositeuploadjob.h
-    #   backends/lan/uploadjob.cpp
-    #	backends/lan/uploadjob.h
     backends/lan/mdnsdiscovery.cpp
     backends/lan/mdnsdiscovery.h
     backends/lan/mdns_wrapper.cpp
@@ -22,8 +18,6 @@ qt_add_library(kdeconnectcore SHARED
     networkpackettypes.h
     networkpacket.h
     networkpacket.cpp
-    #daemon.h
-    #daemon.cpp
     core_debug.h
     core_debug.cpp
     deviceinfo.h

@@ -47,6 +47,15 @@ qt_add_executable(kdeconnect-app
     ui/dialogs/pluginsettingsdialog.h
     ui/dialogs/pluginsettingsdialog.cpp
     ui/dialogs/pluginsettingsdialog.ui
+    ui/dialogs/clipboardpluginconfigdialog.h
+    ui/dialogs/clipboardpluginconfigdialog.cpp
+    ui/dialogs/batterypluginconfigdialog.h
+    ui/dialogs/batterypluginconfigdialog.cpp
+    ui/dialogs/presenterpluginconfigdialog.h
+    ui/dialogs/presenterpluginconfigdialog.cpp
+    ui/dialogs/clipboardpluginconfigdialog.ui
+    ui/dialogs/batterypluginconfigdialog.ui
+    ui/dialogs/presenterpluginconfigdialog.ui
 
     plugin/pluginwrapperbase.h
     plugin/pluginwrapperbase.cpp
@@ -66,12 +75,7 @@ qt_add_executable(kdeconnect-app
     plugin/pingpluginwrapper.cpp
     plugin/findmyphonepluginwrapper.h
     plugin/findmyphonepluginwrapper.cpp
-    ui/dialogs/clipboardpluginconfigdialog.h ui/dialogs/clipboardpluginconfigdialog.cpp
-    ui/dialogs/batterypluginconfigdialog.h ui/dialogs/batterypluginconfigdialog.cpp
-    ui/dialogs/presenterpluginconfigdialog.h ui/dialogs/presenterpluginconfigdialog.cpp
-    ui/dialogs/clipboardpluginconfigdialog.ui
-    ui/dialogs/batterypluginconfigdialog.ui
-    ui/dialogs/presenterpluginconfigdialog.ui
+
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -105,9 +109,21 @@ install(TARGETS kdeconnect-app
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-qt_generate_deploy_app_script(
+# qt_generate_deploy_app_script(
+#     TARGET kdeconnect-app
+#     OUTPUT_SCRIPT deploy_script
+#     NO_UNSUPPORTED_PLATFORM_ERROR
+# )
+
+qt_generate_deploy_script(
     TARGET kdeconnect-app
     OUTPUT_SCRIPT deploy_script
-    NO_UNSUPPORTED_PLATFORM_ERROR
-)
+    CONTENT "
+qt_deploy_runtime_dependencies(
+    EXECUTABLE \"$<TARGET_FILE:kdeconnect-app>\"
+    ADDITIONAL_MODULES  \"$<TARGET_FILE:kdeconnect_mprisremote>\"
+    NO_COMPILER_RUNTIME
+    DEPLOY_TOOL_OPTIONS \"--no-opengl-sw\" \"--no-system-d3d-compiler\"
+    VERBOSE
+)")
 install(SCRIPT ${deploy_script})

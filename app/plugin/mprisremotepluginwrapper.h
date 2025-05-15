@@ -12,8 +12,8 @@ public:
     Q_PROPERTY(QString album READ album)
     QString album() const;
 
-    Q_PROPERTY(QString albumArtFilePath READ albumArtFilePath)
-    QString albumArtFilePath() const;
+    Q_PROPERTY(QByteArray albumArtData READ albumArtData)
+    QByteArray albumArtData() const;
 
     Q_PROPERTY(QString artist READ artist)
     QString artist() const;

@@ -9,9 +9,9 @@ QString MprisRemotePluginWrapper::album() const
     return propertyValue<QString>("album");
 }
 
-QString MprisRemotePluginWrapper::albumArtFilePath() const
+QByteArray MprisRemotePluginWrapper::albumArtData() const
 {
-    return propertyValue<QString>("albumArtFilePath");
+    return propertyValue<QByteArray>("albumArtData");
 }
 
 QString MprisRemotePluginWrapper::artist() const

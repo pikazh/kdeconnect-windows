@@ -68,9 +68,12 @@ public:
     void setAutoDestroy(bool autoDestroy);
     bool autoDestroy() const;
 
+    static Notification *exec(StandardEvent event, const QString &title, const QString &text);
+    static Notification *exec(const QString &title, const QString &text, const QString &iconName);
+
 public Q_SLOTS:
     void close();
-    void notify();
+    void sendNotify();
 
 Q_SIGNALS:
     void closed();

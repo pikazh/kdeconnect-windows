@@ -17,6 +17,7 @@ enum class PluginId {
     VirtualInput,
     RemoteMousePad,
     RemoteKeyboard,
+    Telephony,
 };
 
 QString KDECONNECTCORE_EXPORT pluginIdString(PluginId name);

@@ -18,7 +18,7 @@ void BatteryPlugin::receivePacket(const NetworkPacket &np)
     if (!m_isRemoteCharging && m_showWarning && m_remoteCharge <= m_warningThreshold) {
         if (!m_showedWarning) {
             m_showedWarning = true;
-            showNotification();
+            showNotification(m_remoteCharge);
         }
     } else {
         m_showedWarning = false;
@@ -48,15 +48,24 @@ void BatteryPlugin::sendLocalBatteryInfo()
     sendPacket(status);
 }
 
-void BatteryPlugin::showNotification()
+void BatteryPlugin::showNotification(const int chargePercent)
 {
-    Notification *n = new Notification();
     QString title = QString(QStringLiteral("%1: Low Battery")).arg(device()->name());
-    n->setTitle(title);
-    QString text = QString(QStringLiteral("Battery at %1%")).arg(m_remoteCharge);
-    n->setText(text);
-    n->setIconName(QStringLiteral("battery-040"));
-    n->notify();
+    QString text = QString(QStringLiteral("Battery at %1%")).arg(chargePercent);
+    QString iconName;
+    if (chargePercent <= 10) {
+        iconName = QStringLiteral("battery-010");
+    } else if (chargePercent <= 20) {
+        iconName = QStringLiteral("battery-020");
+    } else if (chargePercent <= 30) {
+        iconName = QStringLiteral("battery-030");
+    } else if (chargePercent <= 40) {
+        iconName = QStringLiteral("battery-040");
+    } else {
+        iconName = QStringLiteral("battery-050");
+    }
+
+    Notification::exec(title, text, iconName);
 }
 
 void BatteryPlugin::localBatteryInfoUpdated()

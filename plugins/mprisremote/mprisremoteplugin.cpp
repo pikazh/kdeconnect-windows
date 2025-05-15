@@ -19,7 +19,7 @@ void MprisRemotePlugin::receivePacket(const NetworkPacket &np)
     if (np.has(QStringLiteral("player"))) {
         const QString player = np.get<QString>(QStringLiteral("player"));
         if (!m_players.contains(player)) {
-            m_players[player] = new MprisRemotePlayer(player, this);
+            m_players[player] = new MprisRemotePlayer(player, m_albumArtManager, this);
             bindSignals(m_players[player]);
         }
         m_players[player]->parseNetworkPacket(np);
@@ -43,7 +43,7 @@ void MprisRemotePlugin::receivePacket(const NetworkPacket &np)
         // Add new players
         for (const QString &player : players) {
             if (!m_players.contains(player)) {
-                m_players[player] = new MprisRemotePlayer(player, this);
+                m_players[player] = new MprisRemotePlayer(player, m_albumArtManager, this);
                 bindSignals(m_players[player]);
                 requestPlayerStatus(player);
                 isPlayerListChanged = true;
@@ -61,6 +61,11 @@ void MprisRemotePlugin::receivePacket(const NetworkPacket &np)
         }
     }
 }
+
+MprisRemotePlugin::MprisRemotePlugin(QObject *parent, const QVariantList &args)
+    : KdeConnectPlugin(parent, args)
+    , m_albumArtManager(new AlbumArtManager(device()->id(), this))
+{}
 
 long MprisRemotePlugin::position() const
 {
@@ -187,10 +192,10 @@ QString MprisRemotePlugin::album() const
     return player ? player->album() : QString();
 }
 
-QString MprisRemotePlugin::albumArtFilePath() const
+QByteArray MprisRemotePlugin::albumArtData() const
 {
     auto player = m_players.value(m_currentPlayer);
-    return player ? player->localAlbumArtUrl() : QString();
+    return player ? player->albumArtData() : QByteArray();
 }
 
 QString MprisRemotePlugin::artist() const

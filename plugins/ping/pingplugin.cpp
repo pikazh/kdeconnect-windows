@@ -7,11 +7,9 @@ K_PLUGIN_CLASS_WITH_JSON(PingPlugin, "kdeconnect_ping.json")
 
 void PingPlugin::receivePacket(const NetworkPacket &np)
 {
-    Notification *n = new Notification();
-    n->setText(np.get<QString>(QStringLiteral("message"), tr("Ping!")));
-    n->setTitle(device()->name());
-    n->setIconName(QStringLiteral("dialog-ok-apply"));
-    n->notify();
+    Notification::exec(device()->name(),
+                       np.get<QString>(QStringLiteral("message"), tr("Ping!")),
+                       QStringLiteral("dialog-ok-apply"));
 }
 
 PingPlugin::PingPlugin(QObject *parent, const QVariantList &args)

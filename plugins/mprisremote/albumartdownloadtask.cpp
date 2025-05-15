@@ -1,23 +1,19 @@
 #include "albumartdownloadtask.h"
 #include "plugin_mprisremote_debug.h"
 
-#include <QDir>
-#include <QUuid>
-
 AlbumArtDownloadTask::AlbumArtDownloadTask(QObject *parent)
     : SocketTask(parent)
     , m_hashCal(QCryptographicHash::Sha1)
 {
 }
 
-void AlbumArtDownloadTask::setDownloadDir(const QString &dir)
+QByteArray AlbumArtDownloadTask::albumArtData(QByteArray *sha1Result) const
 {
-    m_albumArtDir = dir;
-}
+    if (sha1Result != nullptr) {
+        sha1Result->assign(m_hashCal.result());
+    }
 
-QString AlbumArtDownloadTask::albumArtFilePath() const
-{
-    return m_albumArtFile.fileName();
+    return m_dlData;
 }
 
 void AlbumArtDownloadTask::onAbort()
@@ -28,25 +24,11 @@ void AlbumArtDownloadTask::onAbort()
 
 void AlbumArtDownloadTask::finisheTask()
 {
-    if (m_albumArtFile.isOpen()) {
-        m_albumArtFile.close();
-
-        if (m_aborted || m_errorOccured) {
-            m_albumArtFile.remove();
-        }
-    }
-
     if (m_aborted) {
         emitAborted();
     } else if (m_errorOccured) {
         emitFailed(m_errorStr);
     } else {
-        QString newFileName = QString("%1_%2").arg(m_hashCal.result().toHex()).arg(m_readSize);
-        QDir cacheDir(m_albumArtDir);
-        if (!cacheDir.exists(newFileName) || cacheDir.remove(newFileName)) {
-            m_albumArtFile.rename(m_albumArtDir + QDir::separator() + newFileName);
-        }
-
         emitSucceeded();
     }
 }
@@ -99,25 +81,13 @@ void AlbumArtDownloadTask::socketDisconnected()
 void AlbumArtDownloadTask::socketEncrypted()
 {
     m_hashCal.reset();
-    m_readSize = 0;
-
-    m_albumArtFile.setFileName(m_albumArtDir + QDir::separator()
-                               + QUuid::createUuid().toString(QUuid::WithoutBraces));
-    if (!m_albumArtFile.open(QIODevice::WriteOnly)) {
-        m_errorOccured = true;
-        m_errorStr = QString(tr("Can not open file %1 for writing ablum art."))
-                         .arg(m_albumArtFile.fileName());
-        qWarning(KDECONNECT_PLUGIN_MPRISREMOTE) << m_errorStr;
-
-        closeSocket();
-    }
+    m_dlData.clear();
 }
 
 void AlbumArtDownloadTask::dataReceived()
 {
     auto s = socket();
-    QByteArray bytes = s->readAll();
-    m_readSize += bytes.length();
-    m_albumArtFile.write(bytes);
-    m_hashCal.addData(bytes);
+    auto newData = s->readAll();
+    m_dlData.append(newData);
+    m_hashCal.addData(newData);
 }

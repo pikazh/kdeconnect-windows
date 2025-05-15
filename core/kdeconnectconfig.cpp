@@ -5,8 +5,10 @@
  */
 
 #include "kdeconnectconfig.h"
-
-//#include <KLocalizedString>
+#include "core_debug.h"
+#include "deviceinfo.h"
+#include "plugins/pluginloader.h"
+#include "sslhelper.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -19,13 +21,6 @@
 #include <QStandardPaths>
 #include <QThread>
 #include <QUuid>
-
-#include "core_debug.h"
-//#include "daemon.h"
-//#include "dbushelper.h"
-#include "deviceinfo.h"
-#include "plugins/pluginloader.h"
-#include "sslhelper.h"
 
 const QFile::Permissions strictPermissions = QFile::ReadOwner | QFile::WriteOwner | QFile::ReadUser | QFile::WriteUser;
 

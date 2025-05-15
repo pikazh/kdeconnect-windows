@@ -11,7 +11,9 @@
 #include <QDateTime>
 #include <QUuid>
 
-MprisRemotePlayer::MprisRemotePlayer(QString id, MprisRemotePlugin *plugin)
+MprisRemotePlayer::MprisRemotePlayer(QString id,
+                                     AlbumArtManager *albumArtMng,
+                                     MprisRemotePlugin *plugin)
     : QObject(plugin)
     , id(id)
     , m_playing(false)
@@ -27,13 +29,13 @@ MprisRemotePlayer::MprisRemotePlayer(QString id, MprisRemotePlugin *plugin)
     , m_artist()
     , m_album()
     , m_canSeek(false)
-    , m_albumArtCache(new AlbumArtCache(this))
+    , m_albumArtManager(albumArtMng)
     , m_plugin(plugin)
 {
-    connect(m_albumArtCache,
-            &AlbumArtCache::albumArtFetchFinished,
+    connect(m_albumArtManager,
+            &AlbumArtManager::albumArtDownloadFinished,
             this,
-            &MprisRemotePlayer::onAlbumArtFetchFinished);
+            &MprisRemotePlayer::onAlbumArtDownloadFinished);
 }
 
 void MprisRemotePlayer::parseNetworkPacket(const NetworkPacket &np)
@@ -46,14 +48,11 @@ void MprisRemotePlayer::parseNetworkPacket(const NetworkPacket &np)
         qint64 payLoadSize = np.payloadSize();
         Q_ASSERT(!albumArtUrl.isEmpty() && !host.isEmpty() && port > 0 && payLoadSize > 0);
         if (!albumArtUrl.isEmpty() && !host.isEmpty() && port > 0 && payLoadSize > 0) {
-            QString deviceId = m_plugin->device()->id();
-            m_albumArtCache->fetchAlbumArt(deviceId, albumArtUrl, host, port, payLoadSize);
+            m_albumArtManager->downloadAlbumArt(albumArtUrl, host, port, payLoadSize);
         }
 
         return;
     }
-
-    bool trackInfoHasChanged = false;
 
     // Track properties
     QString newTitle = np.get<QString>(QStringLiteral("title"), m_title);
@@ -61,19 +60,8 @@ void MprisRemotePlayer::parseNetworkPacket(const NetworkPacket &np)
     QString newAlbum = np.get<QString>(QStringLiteral("album"), m_album);
     QString newAlbumArtUrl = np.get<QString>(QStringLiteral("albumArtUrl"), QStringLiteral(""));
     int newLength = np.get<int>(QStringLiteral("length"), m_length);
-    if (newAlbumArtUrl != m_albumArtUrl) {
-        // album art changed
-        m_albumArtUrl = newAlbumArtUrl;
-        m_dlAlbumArtRetryTime = 0;
-        auto indexItem = m_albumArtCache->indexItem(m_albumArtUrl);
-        if (indexItem.fetchStatus == AlbumArtCache::IndexItem::Status::NOT_FETCHED
-            || indexItem.fetchStatus == AlbumArtCache::IndexItem::Status::FAILED) {
-            m_plugin->requestAlbumArt(identity(), m_albumArtUrl);
-        }
 
-        setLocalAlbumArtUrl(indexItem.file);
-    }
-
+    bool trackInfoHasChanged = false;
     // Check if they changed
     if (newTitle != m_title || newArtist != m_artist || newAlbum != m_album
         || newLength != m_length) {
@@ -82,6 +70,21 @@ void MprisRemotePlayer::parseNetworkPacket(const NetworkPacket &np)
         m_artist = newArtist;
         m_album = newAlbum;
         m_length = newLength;
+    }
+
+    if (newAlbumArtUrl != m_albumArtUrl) {
+        trackInfoHasChanged = true;
+        // album art changed
+        m_albumArtUrl = newAlbumArtUrl;
+        m_albumArtData.clear();
+
+        auto state = m_albumArtManager->getAlbumArt(m_albumArtUrl, m_albumArtData);
+        if (state == AlbumArtManager::AlbumArtState::NoData) {
+            m_plugin->requestAlbumArt(identity(), m_albumArtUrl);
+        }
+    }
+
+    if (trackInfoHasChanged) {
         Q_EMIT trackInfoChanged();
     }
 
@@ -141,13 +144,6 @@ void MprisRemotePlayer::setPosition(long position)
 {
     m_lastPosition = position;
     m_lastPositionTime = QDateTime::currentMSecsSinceEpoch();
-}
-
-void MprisRemotePlayer::setLocalAlbumArtUrl(const QSharedPointer<AlbumArtCache::LocalFile> &url)
-{
-    m_localAlbumArtUrl = url;
-    //qCDebug(KDECONNECT_PLUGIN_MPRISREMOTE) << "Setting local url" << (url ? url->localPath.toDisplayString() : QStringLiteral("(null)"));
-    Q_EMIT trackInfoChanged();
 }
 
 int MprisRemotePlayer::volume() const
@@ -215,22 +211,17 @@ QString MprisRemotePlayer::albumArtUrl() const
     return m_albumArtUrl;
 }
 
-QString MprisRemotePlayer::localAlbumArtUrl() const
+QByteArray MprisRemotePlayer::albumArtData() const
 {
-    return m_localAlbumArtUrl ? m_localAlbumArtUrl->m_localPath : QString();
+    return m_albumArtData;
 }
 
-void MprisRemotePlayer::onAlbumArtFetchFinished(const QString albumArtUrl)
+void MprisRemotePlayer::onAlbumArtDownloadFinished(const QString albumArtUrl)
 {
     if (m_albumArtUrl == albumArtUrl) {
-        auto indexItem = m_albumArtCache->indexItem(albumArtUrl);
-        if (indexItem.fetchStatus == AlbumArtCache::IndexItem::Status::SUCCESS) {
-            setLocalAlbumArtUrl(indexItem.file);
-        } else {
-            if (++m_dlAlbumArtRetryTime < 3) {
-                qDebug(KDECONNECT_PLUGIN_MPRISREMOTE) << "retrying to down" << m_albumArtUrl;
-                m_plugin->requestAlbumArt(identity(), m_albumArtUrl);
-            }
+        auto state = m_albumArtManager->getAlbumArt(albumArtUrl, m_albumArtData);
+        if (state == AlbumArtManager::AlbumArtState::FoundData) {
+            Q_EMIT trackInfoChanged();
         }
     }
 }

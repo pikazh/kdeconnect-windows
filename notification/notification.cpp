@@ -72,17 +72,17 @@ QString Notification::standardEventToIconName(Notification::StandardEvent event)
     QString iconName;
     switch (event) {
     case Notification::StandardEvent::Warning:
-        iconName = QStringLiteral("dialog-warning");
+        iconName = QStringLiteral("data-warning");
         break;
     case Notification::StandardEvent::Error:
-        iconName = QStringLiteral("dialog-error");
+        iconName = QStringLiteral("data-error");
         break;
     case Notification::StandardEvent::Catastrophe:
-        iconName = QStringLiteral("dialog-error");
+        iconName = QStringLiteral("data-error");
         break;
     case Notification::StandardEvent::Notification: // fall through
     default:
-        iconName = QStringLiteral("dialog-information");
+        iconName = QStringLiteral("data-information");
         break;
     }
     return iconName;
@@ -179,6 +179,27 @@ bool Notification::autoDestroy() const
     return d->autoDestroy;
 }
 
+Notification *Notification::exec(Notification::StandardEvent event,
+                                 const QString &title,
+                                 const QString &text)
+{
+    Notification *n = new Notification(event);
+    n->setTitle(title);
+    n->setText(text);
+    QMetaObject::invokeMethod(n, &Notification::sendNotify, Qt::QueuedConnection);
+    return n;
+}
+
+Notification *Notification::exec(const QString &title, const QString &text, const QString &iconName)
+{
+    Notification *n = new Notification();
+    n->setTitle(title);
+    n->setText(text);
+    n->setIconName(iconName);
+    QMetaObject::invokeMethod(n, &Notification::sendNotify, Qt::QueuedConnection);
+    return n;
+}
+
 QList<NotificationAction *> Notification::actions() const
 {
     return d->actions;
@@ -223,7 +244,7 @@ void Notification::close()
     }
 }
 
-void Notification::notify()
+void Notification::sendNotify()
 {
     NotificationManager::instance()->notify(this);
 }

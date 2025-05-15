@@ -5,10 +5,9 @@
  */
 
 #pragma once
-
-#include <QObject>
-
 #include "core/plugins/kdeconnectplugin.h"
+
+#include "albumartmanager.h"
 #include "mprisremoteplayer.h"
 
 #define PACKET_TYPE_MPRIS_REQUEST QStringLiteral("kdeconnect.mpris.request")
@@ -26,11 +25,11 @@ class MprisRemotePlugin : public KdeConnectPlugin
     Q_PROPERTY(QString title READ title)
     Q_PROPERTY(QString artist READ artist)
     Q_PROPERTY(QString album READ album)
-    Q_PROPERTY(QString albumArtFilePath READ albumArtFilePath)
+    Q_PROPERTY(QByteArray albumArtData READ albumArtData)
     Q_PROPERTY(bool canSeek READ canSeek)
 
 public:
-    using KdeConnectPlugin::KdeConnectPlugin;
+    explicit MprisRemotePlugin(QObject *parent, const QVariantList &args);
 
     long position() const;
     int volume() const;
@@ -41,7 +40,7 @@ public:
     QString title() const;
     QString artist() const;
     QString album() const;
-    QString albumArtFilePath() const;
+    QByteArray albumArtData() const;
     bool canSeek() const;
 
     void setVolume(int volume);
@@ -73,4 +72,5 @@ private:
 
     QString m_currentPlayer;
     QMap<QString, MprisRemotePlayer *> m_players;
+    AlbumArtManager *m_albumArtManager;
 };

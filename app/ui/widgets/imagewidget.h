@@ -9,7 +9,7 @@ class ImageWidget : public QWidget
 public:
     explicit ImageWidget(QWidget *parent = nullptr);
 
-    bool loadImage(const QString &imagePath);
+    bool loadImage(const QByteArray &imageData);
     virtual QSize sizeHint() const;
 
 protected:

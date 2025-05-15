@@ -1,7 +1,7 @@
 #include "imagewidget.h"
 #include "app_debug.h"
 
-#include <QFileInfo>
+#include <QBuffer>
 #include <QImageReader>
 #include <QPainter>
 #include <QResizeEvent>
@@ -10,24 +10,26 @@ ImageWidget::ImageWidget(QWidget *parent)
     : QWidget{parent}
 {}
 
-bool ImageWidget::loadImage(const QString &imagePath)
+bool ImageWidget::loadImage(const QByteArray &imageData)
 {
-    if (imagePath.isEmpty() || !QFileInfo(imagePath).isFile()) {
+    if (imageData.isEmpty()) {
         m_image = QImage();
         return false;
     }
 
-    QImageReader reader(imagePath);
+    QBuffer buffer;
+    buffer.setData(imageData);
+    QImageReader reader(&buffer);
     reader.setAutoTransform(true);
 
     if (!reader.canRead()) {
-        qCWarning(KDECONNECT_APP) << "can't load image" << imagePath;
+        qCWarning(KDECONNECT_APP) << "can't load image";
         m_image = QImage();
         return false;
     }
 
     if (!reader.read(&m_image)) {
-        qCWarning(KDECONNECT_APP) << imagePath << ": corrupted image: " << reader.errorString();
+        qCWarning(KDECONNECT_APP) << "corrupted image: " << reader.errorString();
         m_image = QImage();
         return false;
     }

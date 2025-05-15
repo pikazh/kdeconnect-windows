@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # SingleApplication base class
 set(QAPPLICATION_CLASS FreeStandingSingleApplication)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network Gui LinguistTools)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network Gui Sql LinguistTools)
 find_package(OpenSSL REQUIRED COMPONENTS Crypto)
 
 include_directories(${PROJECT_SOURCE_DIR})

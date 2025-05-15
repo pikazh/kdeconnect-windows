@@ -54,7 +54,10 @@ public:
 
         QSize screenSize = screen()->size();
         int scaledImageWidth = screenSize.width() / 16;
-        m_image = m_image.scaled(scaledImageWidth, scaledImageWidth, Qt::KeepAspectRatio);
+        m_image = m_image.scaled(scaledImageWidth,
+                                 scaledImageWidth,
+                                 Qt::KeepAspectRatio,
+                                 Qt::SmoothTransformation);
 
         return true;
     }

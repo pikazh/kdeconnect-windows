@@ -53,9 +53,10 @@ void DevicePairNotify::onDeviceReachableChanged(bool reachable)
 
 void DevicePairNotify::showPairingRequestNotifyForDevice(Device *dev)
 {
-    Notification *n = new Notification();
-    QString text = QString(tr("incoming pairing request from %1")).arg(dev->name());
-    n->setText(text);
+    QString text = QString(tr("Pairing request from %1")).arg(dev->name());
+    Notification *n = Notification::exec(Notification::StandardEvent::Notification,
+                                         QStringLiteral("KDE Connect"),
+                                         text);
     auto acceptAction = n->addAction(tr("Accept"));
     auto rejectAction = n->addAction(tr("Reject"));
     auto viewAction = n->addAction(tr("View"));
@@ -65,8 +66,6 @@ void DevicePairNotify::showPairingRequestNotifyForDevice(Device *dev)
     QObject::connect(viewAction, &NotificationAction::activated, dev, [dev]() {
         APPLICATION->showDeviceWindow(dev->sharedFromThis());
     });
-
-    n->notify();
 
     m_notifications[dev->id()] = n;
 }

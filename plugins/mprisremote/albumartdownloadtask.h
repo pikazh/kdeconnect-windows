@@ -2,8 +2,8 @@
 
 #include "task/sockettask.h"
 
+#include <QByteArray>
 #include <QCryptographicHash>
-#include <QFile>
 
 class AlbumArtDownloadTask : public SocketTask
 {
@@ -14,9 +14,7 @@ public:
     AlbumArtDownloadTask(QObject *parent = nullptr);
     virtual ~AlbumArtDownloadTask() override = default;
 
-    void setDownloadDir(const QString &dir);
-
-    QString albumArtFilePath() const;
+    QByteArray albumArtData(QByteArray *sha1Result = nullptr) const;
 
 protected:
     virtual void onAbort() override;
@@ -32,12 +30,10 @@ protected Q_SLOTS:
     virtual void dataReceived() override;
 
 private:
-    QFile m_albumArtFile;
-    quint64 m_readSize = 0;
     bool m_aborted = false;
     bool m_errorOccured = false;
     bool m_connected = false;
     QString m_errorStr;
-    QString m_albumArtDir;
+    QByteArray m_dlData;
     QCryptographicHash m_hashCal;
 };

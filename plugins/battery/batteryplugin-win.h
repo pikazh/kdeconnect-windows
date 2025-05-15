@@ -38,7 +38,7 @@ Q_SIGNALS:
 protected:
     void sendLocalBatteryInfo();
 
-    void showNotification();
+    void showNotification(const int chargePercent);
 
 protected Q_SLOTS:
     void localBatteryInfoUpdated();

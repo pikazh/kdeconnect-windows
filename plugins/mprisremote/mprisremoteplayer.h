@@ -5,11 +5,9 @@
  */
 #pragma once
 
-#include "albumartcache.h"
+#include "albumartmanager.h"
 
-#include <QHash>
 #include <QString>
-#include <QUrl>
 
 class NetworkPacket;
 class MprisRemotePlugin;
@@ -19,13 +17,13 @@ class MprisRemotePlayer : public QObject
     Q_OBJECT
 
 public:
-    explicit MprisRemotePlayer(QString id, MprisRemotePlugin *plugin);
+    explicit MprisRemotePlayer(QString id, AlbumArtManager *albumArtMng, MprisRemotePlugin *plugin);
     virtual ~MprisRemotePlayer() = default;
 
     void parseNetworkPacket(const NetworkPacket &np);
     long position() const;
     void setPosition(long position);
-    void setLocalAlbumArtUrl(const QSharedPointer<AlbumArtCache::LocalFile> &url);
+    void setAlbumArtData(const QByteArray &data);
     int volume() const;
     long length() const;
     bool playing() const;
@@ -33,7 +31,7 @@ public:
     QString artist() const;
     QString album() const;
     QString albumArtUrl() const;
-    QString localAlbumArtUrl() const;
+    QByteArray albumArtData() const;
     QString identity() const;
 
     bool canSeek() const;
@@ -50,7 +48,7 @@ Q_SIGNALS:
     void playingChanged();
 
 private Q_SLOTS:
-    void onAlbumArtFetchFinished(const QString albumArtUrl);
+    void onAlbumArtDownloadFinished(const QString albumArtUrl);
 
 private:
     QString id;
@@ -68,10 +66,8 @@ private:
     QString m_artist;
     QString m_album;
     QString m_albumArtUrl;
-    int m_dlAlbumArtRetryTime = 0;
-    // hold a strong reference so that the file doesn't get deleted while in use
-    QSharedPointer<AlbumArtCache::LocalFile> m_localAlbumArtUrl;
+    QByteArray m_albumArtData;
 
-    AlbumArtCache *m_albumArtCache = nullptr;
+    AlbumArtManager *m_albumArtManager = nullptr;
     MprisRemotePlugin *m_plugin = nullptr;
 };

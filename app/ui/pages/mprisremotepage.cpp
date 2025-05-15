@@ -114,7 +114,7 @@ void MprisRemotePage::uiUpdateTrackInfo()
         ui->artistAndAlbumLabel->clear();
     }
 
-    m_albumArtWidget->loadImage(m_pluginWrapper->albumArtFilePath());
+    m_albumArtWidget->loadImage(m_pluginWrapper->albumArtData());
     m_albumArtWidget->update();
 
     int len = m_pluginWrapper->length() / 1000;

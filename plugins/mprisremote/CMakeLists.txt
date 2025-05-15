@@ -8,15 +8,17 @@ if(WIN32)
         plugin_mprisremote_debug.cpp
         albumartdownloadtask.h
         albumartdownloadtask.cpp
-        albumartcache.h
-        albumartcache.cpp
+        albumartmanager.h
+        albumartmanager.cpp
+        albumartdb.h
+        albumartdb.cpp
         kdeconnect_mprisremote.json
     )
 endif()
 
 qt_add_library(kdeconnect_mprisremote SHARED ${kdeconnect_mprisremote_SRCS})
 
-target_link_libraries(kdeconnect_mprisremote PRIVATE Qt::Core Qt::Network kdeconnectcore)
+target_link_libraries(kdeconnect_mprisremote PRIVATE Qt::Core Qt::Network Qt::Sql kdeconnectcore)
 
 include(GNUInstallDirs)
 install(TARGETS kdeconnect_mprisremote

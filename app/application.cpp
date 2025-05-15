@@ -15,8 +15,8 @@ Application::Application(int &argc, char **argv)
     qSetMessagePattern(QStringLiteral(
         "%{time yyyy-MM-ddTHH:mm:ss.zzz} %{if-category}%{category}: %{endif}%{message}"));
 
-    setApplicationName(QStringLiteral("KdeConnect"));
-    setApplicationDisplayName(tr("KdeConnect"));
+    setApplicationName(QStringLiteral("KDEConnect"));
+    setApplicationDisplayName(tr("KDEConnect"));
 
     new DevicePairNotify(m_deviceManager, this);
     QObject::connect(this, SIGNAL(aboutToQuit()), this, SLOT(cleanUp()));
