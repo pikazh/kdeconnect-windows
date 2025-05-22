@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QObject>
 #include <QTextDocumentFragment>
 
 class Notification;
@@ -13,7 +12,7 @@ public:
 
     virtual void init() {}
     virtual void notify(Notification *notification) = 0;
-    virtual void close(Notification *notification) { emit finished(notification); }
+    virtual void close(int id) { emit finished(id); }
 
 protected:
     static inline QString stripRichText(const QString &s)
@@ -22,6 +21,6 @@ protected:
     }
 
 Q_SIGNALS:
-    void actionInvoked(Notification *notification, const QString &actionId);
-    void finished(Notification *notification);
+    void actionInvoked(int id, const QString &actionId);
+    void finished(int id);
 };

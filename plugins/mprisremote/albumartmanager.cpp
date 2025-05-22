@@ -3,13 +3,19 @@
 
 #include "core/kdeconnectconfig.h"
 
+#include <QDir>
+
 AlbumArtManager::AlbumArtManager(const QString &deviceID, QObject *parent)
     : QObject(parent)
     , m_taskSchedule(new TaskScheduler(10, this))
     , m_db(new AlbumArtDB(this))
     , m_peerDeviceId(deviceID)
 {
-    m_db->init(KdeConnectConfig::instance().deviceConfigDir(deviceID).absolutePath());
+    QString dbPath = KdeConnectConfig::instance().deviceConfigDir(deviceID).absolutePath();
+    QDir(dbPath).mkdir(QStringLiteral("."));
+    dbPath = dbPath + QDir::separator() + QStringLiteral("albumart");
+    QString connectionName = deviceID + QStringLiteral("/albumart");
+    m_db->init(connectionName, dbPath);
 
     QObject::connect(m_taskSchedule,
                      &TaskScheduler::taskFinished,
@@ -55,7 +61,9 @@ void AlbumArtManager::onAlbumDlTaskFinished(Task::Ptr task)
             if (taskPtr->isSuccessful()) {
                 QByteArray data = taskPtr->albumArtData();
                 Q_ASSERT(data.size() == dataSize);
-                m_db->insert(albumArtUrl, data);
+                if (data.size() == dataSize) {
+                    m_db->insert(albumArtUrl, data);
+                }
             }
 
             m_taskSchedule->removeTask(task);

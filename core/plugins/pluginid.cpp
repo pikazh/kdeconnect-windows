@@ -18,7 +18,8 @@ QHash<PluginId, QString> initPluginNameHashTable()
     pluginNames.insert(PluginId::RemoteMousePad, QStringLiteral("RemoteControl"));
     pluginNames.insert(PluginId::RemoteKeyboard, QStringLiteral("Remote keyboard from the desktop"));
     pluginNames.insert(PluginId::Telephony, QStringLiteral("Telephony integration"));
-
+    pluginNames.insert(PluginId::Sms, QStringLiteral("SMS"));
+    pluginNames.insert(PluginId::Contacts, QStringLiteral("Contacts"));
     return pluginNames;
 }
 

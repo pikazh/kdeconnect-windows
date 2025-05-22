@@ -2,38 +2,32 @@
 #include "plugin_mprisremote_debug.h"
 
 #include <QDateTime>
-#include <QDir>
 
 AlbumArtDB::AlbumArtDB(QObject *parent)
     : QObject(parent)
-    , m_db(QSqlDatabase::addDatabase(QLatin1String("QSQLITE")))
 {}
 
 AlbumArtDB::~AlbumArtDB()
 {
-    if (m_db.isOpen()) {
-        m_db.close();
-    }
-    QSqlDatabase::removeDatabase(QLatin1String("QSQLITE"));
+    unInit();
 }
 
-bool AlbumArtDB::init(const QString &dbDir)
+bool AlbumArtDB::init(const QString &connectionName, const QString &dbFilePath)
 {
-    QDir d(dbDir);
-    d.mkpath(QStringLiteral("."));
-    QString dbPath = dbDir + QDir::separator() + QStringLiteral("albumart");
-    m_db.setDatabaseName(dbPath);
+    m_db = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), connectionName);
+    m_db.setDatabaseName(dbFilePath);
     if (!m_db.open()) {
-        qWarning(KDECONNECT_PLUGIN_MPRISREMOTE)
-            << "open db" << dbPath << "failed with err" << m_db.lastError();
+        qCCritical(KDECONNECT_PLUGIN_MPRISREMOTE)
+            << "open db" << dbFilePath << "failed with err" << m_db.lastError();
         return false;
     }
     QSqlQuery query(m_db);
-    QString createTableSql = QStringLiteral("CREATE TABLE IF NOT EXISTS Records"
-                                            "(Id INTEGER PRIMARY KEY AUTOINCREMENT, Url "
-                                            "VARCHAR(256), LastAccessTime INTEGER, Data BLOB)");
+    QString createTableSql = QStringLiteral(
+        "CREATE TABLE IF NOT EXISTS Records"
+        "(Id INTEGER PRIMARY KEY AUTOINCREMENT, Url "
+        "VARCHAR(256), CreationTime INTEGER, LastAccessTime INTEGER, Data BLOB)");
     if (!query.exec(createTableSql)) {
-        qWarning(KDECONNECT_PLUGIN_MPRISREMOTE)
+        qCCritical(KDECONNECT_PLUGIN_MPRISREMOTE)
             << "create table failed with err" << query.lastError();
         return false;
     }
@@ -42,29 +36,37 @@ bool AlbumArtDB::init(const QString &dbDir)
         
 }
 
+void AlbumArtDB::unInit()
+{
+    if (m_db.isValid()) {
+        if (m_db.isOpen()) {
+            m_db.close();
+        }
+        QString connName = m_db.connectionName();
+        m_db = QSqlDatabase();
+        QSqlDatabase::removeDatabase(connName);
+    }
+}
+
 bool AlbumArtDB::insert(const QString &url, const QByteArray &data)
 {
     QSqlQuery query(m_db);
-    query.prepare(QStringLiteral("SELECT Id From Records WHERE Url = (:url)"));
+    query.prepare(QStringLiteral("DELETE From Records WHERE Url = (:url)"));
     query.bindValue(":url", url);
-    if (query.exec() && query.next()) {
-        query.prepare(QStringLiteral("DELETE From Records WHERE Url = (:url)"));
-        query.bindValue(":url", url);
-        if (!query.exec()) {
-            qWarning(KDECONNECT_PLUGIN_MPRISREMOTE)
-                << "delete record failed with err" << query.lastError();
+    if (!query.exec()) {
+        qCCritical(KDECONNECT_PLUGIN_MPRISREMOTE)
+            << "delete record failed with err" << query.lastError();
 
-            return false;
-        }
+        return false;
     }
 
-    query.prepare(
-        QStringLiteral("INSERT INTO Records(Url,LastAccessTime,Data) VALUES (:url,:time,:data)"));
+    query.prepare(QStringLiteral("INSERT INTO Records(Url,CreationTime,LastAccessTime,Data) VALUES "
+                                 "(:url,:time,:time,:data)"));
     query.bindValue(":url", url);
     query.bindValue(":time", QDateTime::currentSecsSinceEpoch());
     query.bindValue(":data", data);
     if (!query.exec()) {
-        qWarning(KDECONNECT_PLUGIN_MPRISREMOTE)
+        qCCritical(KDECONNECT_PLUGIN_MPRISREMOTE)
             << "insert record failed with err" << query.lastError();
 
         return false;
@@ -79,10 +81,17 @@ bool AlbumArtDB::query(const QString &url, QByteArray &data)
 {
     QSqlQuery query(m_db);
 
-    query.prepare(QStringLiteral("SELECT Data From Records WHERE Url = (:url)"));
+    query.prepare(QStringLiteral("SELECT CreationTime, Data From Records WHERE Url = (:url)"));
     query.bindValue(":url", url);
     if (query.exec() && query.next()) {
-        data = std::move(query.value(0).toByteArray());
+        qint64 diffTime = QDateTime::currentSecsSinceEpoch() - query.value(0).toInt();
+        // make the record expired if it was created one week ago
+        const qint64 maxAllowedDiffTime = 60 * 60 * 24 * 7;
+        if (diffTime < 0 || diffTime > maxAllowedDiffTime) {
+            return false;
+        }
+
+        data = std::move(query.value(1).toByteArray());
 
         query.prepare(
             QStringLiteral("Update Records SET LastAccessTime = (:time) WHERE Url = (:url)"));

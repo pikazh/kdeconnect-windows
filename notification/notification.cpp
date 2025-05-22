@@ -1,4 +1,5 @@
 #include "notification.h"
+#include "notification_debug.h"
 #include "notificationmanager.h"
 
 #include <QList>
@@ -12,13 +13,13 @@ struct NotificationActionPrivate
 struct NotificationPrivate
 {
     int id = -1;
-    int ref = 0;
     QString title;
     QString text;
     QPixmap pixmap;
     QString iconName;
     QList<NotificationAction*> actions;
     bool autoDestroy = true;
+    bool isClosed = true;
 
     int actionIdCounter = 0;
 
@@ -93,6 +94,7 @@ Notification::Notification(QObject *parent)
     , d(new NotificationPrivate)
 {
     d->id = d->notificationIdCounter++;
+    qDebug(NOTIFICATIONS_MOD) << "notification with id" << d->id << "created.";
 }
 
 Notification::Notification(StandardEvent eventId, QObject *parent)
@@ -101,12 +103,18 @@ Notification::Notification(StandardEvent eventId, QObject *parent)
 {
     d->id = d->notificationIdCounter++;
     setIconName(standardEventToIconName(eventId));
+
+    qDebug(NOTIFICATIONS_MOD) << "notification with id" << d->id << "created.";
 }
 
 Notification::~Notification()
 {
     clearActions();
-    close();
+    if (!isClosed()) {
+        close();
+    }
+
+    qDebug(NOTIFICATIONS_MOD) << "notification with id" << d->id << "destroyed.";
 }
 
 QString Notification::title() const
@@ -169,21 +177,26 @@ void Notification::clearActions()
     d->actions.clear();
 }
 
+bool Notification::autoDestroy() const
+{
+    return d->autoDestroy;
+}
+
 void Notification::setAutoDestroy(bool autoDestroy)
 {
     d->autoDestroy = autoDestroy;
 }
 
-bool Notification::autoDestroy() const
+bool Notification::isClosed() const
 {
-    return d->autoDestroy;
+    return d->isClosed;
 }
 
 Notification *Notification::exec(Notification::StandardEvent event,
                                  const QString &title,
                                  const QString &text)
 {
-    Notification *n = new Notification(event);
+    auto n(new Notification(event));
     n->setTitle(title);
     n->setText(text);
     QMetaObject::invokeMethod(n, &Notification::sendNotify, Qt::QueuedConnection);
@@ -192,7 +205,7 @@ Notification *Notification::exec(Notification::StandardEvent event,
 
 Notification *Notification::exec(const QString &title, const QString &text, const QString &iconName)
 {
-    Notification *n = new Notification();
+    auto n(new Notification());
     n->setTitle(title);
     n->setText(text);
     n->setIconName(iconName);
@@ -216,37 +229,26 @@ void Notification::activate(const QString &actionId)
     }
 }
 
-void Notification::ref()
-{
-    d->ref++;
-}
-
-void Notification::deRef()
-{
-    Q_ASSERT(d->ref > 0);
-    --d->ref;
-    if (d->ref == 0) {
-        d->id = -1;
-        close();
-    }
-}
-
 void Notification::close()
 {
-    if (d->id >= 0) {
-        NotificationManager::instance()->close(this);
-    } else if (d->id == -1) {
-        d->id = -2;
-        emit closed();
-        if (autoDestroy()) {
-            deleteLater();
-        }
-    }
+    NotificationManager::instance()->close(this->id());
 }
 
 void Notification::sendNotify()
 {
-    NotificationManager::instance()->notify(this);
+    if (NotificationManager::instance()->notify(this)) {
+        d->isClosed = false;
+    }
+}
+
+void Notification::emitClosed()
+{
+    d->isClosed = true;
+    Q_EMIT closed();
+    qDebug(NOTIFICATIONS_MOD) << "notification with id" << d->id << "closed.";
+    if (autoDestroy()) {
+        deleteLater();
+    }
 }
 
 int Notification::id() const

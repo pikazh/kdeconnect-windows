@@ -33,7 +33,8 @@ class TelephonyPlugin : public KdeConnectPlugin
     Q_OBJECT
 
 public:
-    using KdeConnectPlugin::KdeConnectPlugin;
+    TelephonyPlugin(QObject *parent, const QVariantList &args);
+    virtual ~TelephonyPlugin() override;
 
 protected:
     virtual void receivePacket(const NetworkPacket &np) override;

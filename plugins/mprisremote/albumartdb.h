@@ -16,7 +16,8 @@ public:
     explicit AlbumArtDB(QObject *parent = nullptr);
     virtual ~AlbumArtDB() override;
 
-    bool init(const QString &dbDir);
+    bool init(const QString &connectionName, const QString &dbFilePath);
+    void unInit();
 
 public Q_SLOTS:
     bool insert(const QString &url, const QByteArray &data);

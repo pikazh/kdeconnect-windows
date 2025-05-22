@@ -50,7 +50,7 @@ Device::Ptr DeviceManager::getDevice(const QString &deviceId) const
         }
     }
 
-    return nullptr;
+    return Device::Ptr();
 }
 
 QList<Device::Ptr> DeviceManager::devicesList() const
@@ -69,8 +69,8 @@ void DeviceManager::refreshNetwokState()
 void DeviceManager::addDevice(Device::Ptr device)
 {
     QString id = device->id();
-    connect(device.get(), &Device::reachableChanged, this, &DeviceManager::onDeviceStatusChanged);
-    connect(device.get(), &Device::pairStateChanged, this, &DeviceManager::onDeviceStatusChanged);
+    connect(device.get(), &Device::reachableChanged, this, &DeviceManager::onDeviceReachableChanged);
+    connect(device.get(), &Device::pairStateChanged, this, &DeviceManager::onDevicePairStateChanged);
 
     // todo: add notification
     m_devices[id] = device;
@@ -93,13 +93,8 @@ void DeviceManager::onNewDeviceLink(DeviceLink *dl)
 
     if (m_devices.contains(id)) {
         Device::Ptr device = m_devices[id];
-        bool wasReachable = device->isReachable();
         device->addLink(dl);
 
-        if (!wasReachable) {
-            Q_EMIT deviceVisibilityChanged(id, true);
-            Q_EMIT deviceListChanged();
-        }
     } else {
         DeviceInfo deviceInfo = dl->deviceInfo();
         qDebug(KDECONNECT_APP) << "It is a new device: " << deviceInfo.name;
@@ -109,7 +104,7 @@ void DeviceManager::onNewDeviceLink(DeviceLink *dl)
     }
 }
 
-void DeviceManager::onDeviceStatusChanged()
+void DeviceManager::onDeviceReachableChanged()
 {
     Device *device = (Device *) sender();
     if (device != nullptr) {
@@ -117,6 +112,19 @@ void DeviceManager::onDeviceStatusChanged()
             removeDevice(device->sharedFromThis());
         } else {
             Q_EMIT deviceVisibilityChanged(device->id(), device->isReachable());
+            Q_EMIT deviceListChanged();
+        }
+    }
+}
+
+void DeviceManager::onDevicePairStateChanged()
+{
+    Device *device = (Device *) sender();
+    if (device != nullptr) {
+        if (!device->isReachable() && !device->isPaired()) {
+            removeDevice(device->sharedFromThis());
+        } else {
+            Q_EMIT devicePairStateChanged(device->id(), device->pairState());
             Q_EMIT deviceListChanged();
         }
     }

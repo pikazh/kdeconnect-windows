@@ -6,7 +6,7 @@ class SftpPluginWrapper : public PluginWrapperBase
 {
     Q_OBJECT
 public:
-    SftpPluginWrapper(Device::Ptr devicePtr, QObject *parent = nullptr);
+    explicit SftpPluginWrapper(Device::Ptr devicePtr, QObject *parent = nullptr);
     virtual ~SftpPluginWrapper() override = default;
 
 public Q_SLOTS:

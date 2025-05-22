@@ -6,7 +6,7 @@ class MprisRemotePluginWrapper : public PluginWrapperBase
 {
     Q_OBJECT
 public:
-    MprisRemotePluginWrapper(Device::Ptr devicePtr, QObject *parent = nullptr);
+    explicit MprisRemotePluginWrapper(Device::Ptr devicePtr, QObject *parent = nullptr);
     virtual ~MprisRemotePluginWrapper() override = default;
 
     Q_PROPERTY(QString album READ album)

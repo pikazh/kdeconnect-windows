@@ -59,9 +59,11 @@ LanLinkProvider::LanLinkProvider(QObject *parent)
 
     m_udpSocket.setProxy(QNetworkProxy::NoProxy);
 
-    connect(&m_udpSocket, &QAbstractSocket::errorOccurred, [](QAbstractSocket::SocketError socketError) {
-        qWarning() << "Error sending UDP packet:" << socketError;
-    });
+    connect(&m_udpSocket,
+            &QAbstractSocket::errorOccurred,
+            [](QAbstractSocket::SocketError socketError) {
+                qWarning(KDECONNECT_CORE) << "Error sending UDP packet:" << socketError;
+            });
 
     const auto checkNetworkChange = [this]() {
         if (QNetworkInformation::instance()->reachability() == QNetworkInformation::Reachability::Online) {

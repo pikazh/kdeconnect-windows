@@ -13,8 +13,8 @@ class NotificationManager : public QObject
 public:
     static NotificationManager *instance();
 
-    void notify(Notification *n);
-    void close(Notification *n);
+    bool notify(Notification *n);
+    void close(int id);
 
 protected:
     explicit NotificationManager(QObject *parent = nullptr);
@@ -22,10 +22,12 @@ protected:
 
     QList<NotificationPlugin *> pluginsForNotification(Notification *n);
 
+    int notificationAddRef(int id);
+    int notificationDeRef(int id);
+
 protected Q_SLOTS:
-    void onPluginNotifyFinished(Notification *n);
-    void onPluginNotificationActionInvoked(Notification *n, const QString &actionId);
-    void onNotificationClosed();
+    void onPluginNotifyFinished(int id);
+    void onPluginNotificationActionInvoked(int id, const QString &actionId);
 
 private:
     std::unique_ptr<NotificationManagerPrivate> const d;

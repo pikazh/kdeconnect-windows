@@ -16,10 +16,7 @@ K_PLUGIN_CLASS_WITH_JSON(TelephonyPlugin, "kdeconnect_telephony.json")
 void TelephonyPlugin::handlePackage(const NetworkPacket &np)
 {
     if (np.get<bool>(QStringLiteral("isCancel"))) {
-        if (m_currentCallNotification) {
-            m_currentCallNotification->close();
-            m_currentCallNotification.clear();
-        }
+        m_currentCallNotification->close();
         return;
     }
 
@@ -45,18 +42,11 @@ void TelephonyPlugin::handlePackage(const NetworkPacket &np)
     Q_EMIT callReceived(type, phoneNumber, contactName);
 
     if (event == QLatin1String("talking")) {
-        if (m_currentCallNotification) {
-            m_currentCallNotification->close();
-            m_currentCallNotification.clear();
-        }
+        m_currentCallNotification->close();
         return;
     }
 
-    qCDebug(KDECONNECT_PLUGIN_TELEPHONY) << "Creating notification with type:" << type;
-
-    if (!m_currentCallNotification) {
-        m_currentCallNotification = new Notification();
-    }
+    qCDebug(KDECONNECT_PLUGIN_TELEPHONY) << "showing notification with type:" << type;
 
     if (!phoneThumbnail.isEmpty()) {
         QPixmap photo;
@@ -79,6 +69,20 @@ void TelephonyPlugin::handlePackage(const NetworkPacket &np)
     }
 
     m_currentCallNotification->sendNotify();
+}
+
+TelephonyPlugin::TelephonyPlugin(QObject *parent, const QVariantList &args)
+    : KdeConnectPlugin(parent, args)
+    , m_currentCallNotification(new Notification)
+{
+    m_currentCallNotification->setAutoDestroy(false);
+}
+
+TelephonyPlugin::~TelephonyPlugin()
+{
+    auto ptr = m_currentCallNotification.get();
+    delete ptr;
+    m_currentCallNotification.clear();
 }
 
 void TelephonyPlugin::receivePacket(const NetworkPacket &np)

@@ -5,11 +5,9 @@
 
 #include "devicelistmodel.h"
 
-QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
 }
-QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
 {
@@ -24,6 +22,7 @@ protected Q_SLOTS:
     void on_pairButton_clicked();
     void on_openDevicePageButton_clicked();
     void on_refreshDeviceListButton_clicked();
+    void on_smsButton_clicked();
     void onDeviceListCurrentRowChanged(const QModelIndex &current);
     void on_deviceList_activated(const QModelIndex &index);
 

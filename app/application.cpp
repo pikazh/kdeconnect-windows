@@ -1,8 +1,8 @@
 #include "application.h"
 #include "devicepairnotify.h"
-#include "icons.h"
 #include "kdeconnectconfig.h"
-#include "notification.h"
+
+#include "icons.h"
 
 #include <QAction>
 #include <QIcon>
@@ -13,10 +13,12 @@ Application::Application(int &argc, char **argv)
     , m_deviceManager(new DeviceManager(this))
 {
     qSetMessagePattern(QStringLiteral(
-        "%{time yyyy-MM-ddTHH:mm:ss.zzz} %{if-category}%{category}: %{endif}%{message}"));
+        "[%{time yyyy-MM-ddTHH:mm:ss.zzz} "
+        "%{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}"
+        "%{if-fatal}F%{endif}] %{if-category}%{category}: %{endif}%{message}"));
 
-    setApplicationName(QStringLiteral("KDEConnect"));
-    setApplicationDisplayName(tr("KDEConnect"));
+    setApplicationName(QStringLiteral("KDE Connect"));
+    setApplicationDisplayName(tr("KDE Connect"));
 
     new DevicePairNotify(m_deviceManager, this);
     QObject::connect(this, SIGNAL(aboutToQuit()), this, SLOT(cleanUp()));
@@ -72,6 +74,21 @@ void Application::showDeviceWindow(Device::Ptr device)
     }
 }
 
+void Application::showSmsConversationsWindow()
+{
+    if (m_smsConversationWindow == nullptr) {
+        m_smsConversationWindow = new SmsWindow(this->deviceManager());
+        QObject::connect(m_smsConversationWindow,
+                         SIGNAL(aboutToClose()),
+                         this,
+                         SLOT(smsWindowClosing()));
+    }
+
+    m_smsConversationWindow->showNormal();
+    m_smsConversationWindow->raise();
+    m_smsConversationWindow->activateWindow();
+}
+
 void Application::cleanUp()
 {
     m_deviceManager->unInit();
@@ -94,6 +111,15 @@ void Application::mainWindowClosing()
     Q_ASSERT(mainWindow == m_MainWindow);
     if (mainWindow != nullptr) {
         m_MainWindow = nullptr;
+    }
+}
+
+void Application::smsWindowClosing()
+{
+    auto smsWindow = qobject_cast<SmsWindow *>(QObject::sender());
+    Q_ASSERT(smsWindow == m_smsConversationWindow);
+    if (smsWindow != nullptr) {
+        m_smsConversationWindow = nullptr;
     }
 }
 

@@ -18,6 +18,16 @@ qt_add_executable(kdeconnect-app
     ui/devicewindow.cpp
     ui/devicelistmodel.h
     ui/devicelistmodel.cpp
+    ui/smswindow.ui
+    ui/smswindow.h
+    ui/smswindow.cpp
+    ui/smsconversationlistmodel.h
+    ui/smsconversationlistmodel.cpp
+    ui/smsconversationlistitemdelegate.h
+    ui/smsconversationlistitemdelegate.cpp
+    ui/smswidget.ui
+    ui/smsconversationswidget.h
+    ui/smsconversationswidget.cpp
 	
     ui/widgets/PageContainer.h
     ui/widgets/PageContainer_p.h
@@ -75,6 +85,10 @@ qt_add_executable(kdeconnect-app
     plugin/pingpluginwrapper.cpp
     plugin/findmyphonepluginwrapper.h
     plugin/findmyphonepluginwrapper.cpp
+    plugin/smspluginwrapper.h
+    plugin/smspluginwrapper.cpp
+    plugin/contactspluginwrapper.h
+    plugin/contactspluginwrapper.cpp
 
 )
 
@@ -100,6 +114,7 @@ target_link_libraries(kdeconnect-app
     kdeconnectcore
     notification
     icons
+    KF6Contacts
 )
 
 include(GNUInstallDirs)
@@ -123,6 +138,7 @@ qt_deploy_runtime_dependencies(
     EXECUTABLE \"$<TARGET_FILE:kdeconnect-app>\"
     ADDITIONAL_MODULES  \"$<TARGET_FILE:kdeconnect_mprisremote>\"
     NO_COMPILER_RUNTIME
+    GENERATE_QT_CONF
     DEPLOY_TOOL_OPTIONS \"--no-opengl-sw\" \"--no-system-d3d-compiler\"
     VERBOSE
 )")

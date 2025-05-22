@@ -6,7 +6,7 @@ class RemoteMousePadPluginWrapper : public PluginWrapperBase
 {
     Q_OBJECT
 public:
-    RemoteMousePadPluginWrapper(Device::Ptr devicePtr, QObject *parent = nullptr);
+    explicit RemoteMousePadPluginWrapper(Device::Ptr devicePtr, QObject *parent = nullptr);
     virtual ~RemoteMousePadPluginWrapper() override = default;
 
 public Q_SLOTS:

@@ -29,11 +29,13 @@ Q_SIGNALS:
     void deviceAdded(const QString &id);
     void deviceRemoved(const QString &id); // Note that paired devices will never be removed
     void deviceVisibilityChanged(const QString &id, bool isVisible);
+    void devicePairStateChanged(const QString &id, Device::PairState state);
     void deviceListChanged(); // Emitted when any of deviceAdded, deviceRemoved or deviceVisibilityChanged is emitted
 
 private Q_SLOTS:
     void onNewDeviceLink(DeviceLink *dl);
-    void onDeviceStatusChanged();
+    void onDeviceReachableChanged();
+    void onDevicePairStateChanged();
 
 private:
     // Different ways to find devices and connect to them

@@ -7,6 +7,7 @@
 struct NotificationManagerPrivate
 {
     QHash<int, Notification *> notifications;
+    QHash<int, int> notificationsRefCount;
     QHash<QString, NotificationPlugin *> notificationPlugins;
 };
 
@@ -16,36 +17,32 @@ NotificationManager *NotificationManager::instance()
     return &self;
 }
 
-void NotificationManager::notify(Notification *n)
+bool NotificationManager::notify(Notification *n)
 {
-    d->notifications[n->id()] = n;
-
     auto pluginList = pluginsForNotification(n);
     if (pluginList.isEmpty()) {
-        // make it close itself faster
-        n->ref();
-        n->deRef();
-        return;
+        // todo
+        return false;
     }
 
-    QObject::connect(n,
-                     &Notification::closed,
-                     this,
-                     &NotificationManager::onNotificationClosed,
-                     Qt::UniqueConnection);
+    d->notifications[n->id()] = n;
 
     for (auto plugin : pluginList) {
-        n->ref();
+        notificationAddRef(n->id());
         plugin->notify(n);
     }
+
+    return true;
 }
 
-void NotificationManager::close(Notification *n)
+void NotificationManager::close(int id)
 {
-    if (d->notifications.contains(n->id())) {
-        auto pluginList = pluginsForNotification(n);
+    auto it = d->notifications.find(id);
+    if (it != d->notifications.end()) {
+        auto notif = it.value();
+        auto pluginList = pluginsForNotification(notif);
         for (auto plugin : pluginList) {
-            plugin->close(n);
+            plugin->close(notif->id());
         }
     }
 }
@@ -59,9 +56,6 @@ NotificationManager::~NotificationManager()
 {
     qDeleteAll(d->notificationPlugins);
     d->notificationPlugins.clear();
-
-    qDeleteAll(d->notifications);
-    d->notifications.clear();
 }
 
 QList<NotificationPlugin *> NotificationManager::pluginsForNotification(Notification *n)
@@ -88,30 +82,50 @@ QList<NotificationPlugin *> NotificationManager::pluginsForNotification(Notifica
     }
 }
 
-void NotificationManager::onPluginNotifyFinished(Notification *n)
+int NotificationManager::notificationAddRef(int id)
 {
-    if (d->notifications.find(n->id()) != d->notifications.end()) {
-        n->deRef();
+    auto it = d->notificationsRefCount.find(id);
+    if (it != d->notificationsRefCount.end()) {
+        return ++it.value();
+    } else {
+        d->notificationsRefCount[id] = 1;
+        return 1;
     }
 }
 
-void NotificationManager::onPluginNotificationActionInvoked(Notification *n, const QString &actionId)
+int NotificationManager::notificationDeRef(int id)
 {
-    if (d->notifications.contains(n->id())) {
-        n->activate(actionId);
-    }
-}
-
-void NotificationManager::onNotificationClosed()
-{
-    Notification *n = qobject_cast<Notification *>(QObject::sender());
-    if (n != nullptr) {
-        // can not use n->id() here, it may be -1 or -2 at this moment
-        for (auto it = d->notifications.begin(); it != d->notifications.end(); ++it) {
-            if (it.value() == n) {
-                d->notifications.erase(it);
-                break;
-            }
+    auto it = d->notificationsRefCount.find(id);
+    if (it != d->notificationsRefCount.end()) {
+        int ret = --it.value();
+        if (ret == 0) {
+            d->notificationsRefCount.erase(it);
         }
+
+        return ret;
+    } else {
+        Q_ASSERT(0);
+        return -1;
+    }
+}
+
+void NotificationManager::onPluginNotifyFinished(int id)
+{
+    auto it = d->notifications.find(id);
+    if (it != d->notifications.end()) {
+        if (notificationDeRef(id) == 0) {
+            auto n = it.value();
+            d->notifications.erase(it);
+
+            n->emitClosed();
+        }
+    }
+}
+
+void NotificationManager::onPluginNotificationActionInvoked(int id, const QString &actionId)
+{
+    auto it = d->notifications.find(id);
+    if (it != d->notifications.end()) {
+        it.value()->activate(actionId);
     }
 }

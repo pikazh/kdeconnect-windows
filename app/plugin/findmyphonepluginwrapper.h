@@ -6,7 +6,7 @@ class FindMyPhonePluginWrapper : public PluginWrapperBase
 {
     Q_OBJECT
 public:
-    FindMyPhonePluginWrapper(Device::Ptr devicePtr, QObject *parent = nullptr);
+    explicit FindMyPhonePluginWrapper(Device::Ptr devicePtr, QObject *parent = nullptr);
     virtual ~FindMyPhonePluginWrapper() override = default;
 
 public Q_SLOTS:

@@ -6,7 +6,9 @@ PluginWrapperBase::PluginWrapperBase(Device::Ptr device, PluginId pluginId, QObj
     , m_deviceWeakPtr(device)
     , m_sourcePluginId(pluginId)
 {
-    QObject::connect(device.get(), SIGNAL(pluginsChanged()), this, SLOT(reloadPlugin()));
+    if (device) {
+        QObject::connect(device.get(), SIGNAL(pluginsChanged()), this, SLOT(reloadPlugin()));
+    }
 }
 
 void PluginWrapperBase::init()

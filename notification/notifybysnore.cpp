@@ -45,7 +45,7 @@ NotifyBySnore::NotifyBySnore(QObject *parent)
                 return;
             }
 
-            Notification *n = it.value();
+            auto n = it.value();
 
             switch (SnoreToastActions::getAction(responseAction.toStdWString())) {
             case SnoreToastActions::Actions::Clicked:
@@ -68,7 +68,7 @@ NotifyBySnore::NotifyBySnore(QObject *parent)
                 qCDebug(NOTIFICATIONS_MOD) << "User clicked an action button in the toast.";
                 const QString responseButton = notificationResponseMap[QStringLiteral("button")]
                                                    .toString();
-                Q_EMIT actionInvoked(n, responseButton);
+                Q_EMIT actionInvoked(n->id(), responseButton);
                 break;
             }
 
@@ -87,7 +87,7 @@ NotifyBySnore::NotifyBySnore(QObject *parent)
             }
 
             // Action Center callbacks are not yet supported so just close the notification once done
-            this->close(n);
+            this->close(n->id());
         });
     });
 }
@@ -104,33 +104,9 @@ void NotifyBySnore::init()
 
 void NotifyBySnore::notify(Notification *notification)
 {
-    QMetaObject::invokeMethod(this,
-                              &NotifyBySnore::notifyDeferred,
-                              Qt::QueuedConnection,
-                              notification);
-}
-
-void NotifyBySnore::close(Notification *notification)
-{
-    qCDebug(NOTIFICATIONS_MOD) << "Requested to close notification with ID:" << notification->id();
-
-    m_notifications.remove(notification->id());
-    const QStringList snoretoastArgsList{QStringLiteral("-close"),
-                                         QString::number(notification->id()),
-                                         QStringLiteral("-appID"),
-                                         qGuiApp->applicationName()};
-
-    //qCDebug(NOTIFICATIONS_MOD) << "Closing notification; SnoreToast process arguments:" << snoretoastArgsList;
-    QProcess::startDetached(SnoreToastExecPath(), snoretoastArgsList);
-
-    Q_EMIT finished(notification);
-}
-
-void NotifyBySnore::notifyDeferred(Notification *notification)
-{
     auto it = m_notifications.find(notification->id());
     if (it != m_notifications.end()) {
-        close(it.value());
+        close(notification->id());
     }
 
     m_notifications[notification->id()] = notification;
@@ -150,10 +126,10 @@ void NotifyBySnore::notifyDeferred(Notification *notification)
                                    m_server.fullServerName()};
 
     // handle the icon for toast notification
-    QString iconPath = m_iconDir.path() + QDir::separator() + QString::number(notification->id()) + QLatin1Char('_');
+    QString iconPath = m_iconDir.path() + QDir::separator() + QString::number(notification->id())
+                       + QLatin1Char('_');
     bool hasIcon = false;
-    if(!notification->pixmap().isNull())
-    {
+    if (!notification->pixmap().isNull()) {
         iconPath += QString::number(notification->pixmap().cacheKey());
         hasIcon = notification->pixmap().save(iconPath, "PNG");
     } else if (!notification->iconName().isEmpty()) {
@@ -167,8 +143,7 @@ void NotifyBySnore::notifyDeferred(Notification *notification)
         hasIcon = qGuiApp->windowIcon().pixmap(1024, 1024).save(iconPath, "PNG");
     }
 
-    if (hasIcon)
-    {
+    if (hasIcon) {
         snoretoastArgsList << QStringLiteral("-p") << iconPath;
     }
 
@@ -177,13 +152,12 @@ void NotifyBySnore::notifyDeferred(Notification *notification)
     {
         snoretoastArgsList << QStringLiteral("-tb");
     }
-    else */if (!notification->actions().isEmpty())
-    {
+    else */
+    if (!notification->actions().isEmpty()) {
         // add actions if any
         const auto actions = notification->actions();
         QStringList actionLabels;
-        for (NotificationAction *action : actions)
-        {
+        for (NotificationAction *action : actions) {
             action->setId(action->text());
             actionLabels << action->text();
         }
@@ -230,6 +204,26 @@ void NotifyBySnore::notifyDeferred(Notification *notification)
 
     qCDebug(NOTIFICATIONS_MOD) << "SnoreToast process starting:" << snoretoastArgsList;
     snoretoastProcess->start(SnoreToastExecPath(), snoretoastArgsList);
+}
+
+void NotifyBySnore::close(int id)
+{
+    if (!m_notifications.contains(id)) {
+        return;
+    }
+
+    qCDebug(NOTIFICATIONS_MOD) << "Requested to close notification with ID:" << id;
+
+    m_notifications.remove(id);
+    const QStringList snoretoastArgsList{QStringLiteral("-close"),
+                                         QString::number(id),
+                                         QStringLiteral("-appID"),
+                                         qGuiApp->applicationName()};
+
+    //qCDebug(NOTIFICATIONS_MOD) << "Closing notification; SnoreToast process arguments:" << snoretoastArgsList;
+    QProcess::startDetached(SnoreToastExecPath(), snoretoastArgsList);
+
+    Q_EMIT finished(id);
 }
 
 QString NotifyBySnore::SnoreToastExecPath()

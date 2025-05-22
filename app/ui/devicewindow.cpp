@@ -4,6 +4,9 @@
 #include "ui/pages/devicepluginpagesprovider.h"
 
 #include <QCloseEvent>
+#include <QDialogButtonBox>
+#include <QPushButton>
+
 #include <memory>
 
 #define RETRIEVE_THEME_ICON(icon_name) QIcon::fromTheme(QStringLiteral(##icon_name##))
@@ -16,6 +19,7 @@ DeviceWindow::DeviceWindow(Device::Ptr device, QWidget *parent)
     , m_clipboardPluginWrapper(new ClipboardPluginWrapper(device, this))
     , m_pingPluginWrapper(new PingPluginWrapper(device, this))
     , m_findMyPhonePluginWrapper(new FindMyPhonePluginWrapper(device, this))
+    , m_smsPluginWrapper(new SmsPluginWrapper(device, this))
 {
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle(device->name());
@@ -41,6 +45,8 @@ DeviceWindow::DeviceWindow(Device::Ptr device, QWidget *parent)
     m_clipboardPluginWrapper->init();
     m_pingPluginWrapper->init();
     m_findMyPhonePluginWrapper->init();
+
+    m_smsPluginWrapper->init();
 
     QObject::connect(m_batteryPluginWrapper,
                      &BatteryPluginWrapper::refreshed,
@@ -71,6 +77,10 @@ DeviceWindow::DeviceWindow(Device::Ptr device, QWidget *parent)
 
     reloadPages();
     updateUI();
+
+    m_smsPluginWrapper->requestAllConversations();
+    QStringList addresses{"16762851943", "13168561293"};
+    m_smsPluginWrapper->sendSms(addresses, "hello", {});
 }
 
 void DeviceWindow::createToolBar()
@@ -264,4 +274,10 @@ void DeviceWindow::loadPages()
     m_container->setParentContainer(this);
     setCentralWidget(m_container);
     setContentsMargins(0, 0, 0, 0);
+
+    QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Close);
+    buttons->button(QDialogButtonBox::Close)->setText(tr("Close"));
+    buttons->setContentsMargins(6, 0, 6, 0);
+    m_container->addButtons(buttons);
+    connect(buttons->button(QDialogButtonBox::Close), SIGNAL(clicked()), this, SLOT(close()));
 }

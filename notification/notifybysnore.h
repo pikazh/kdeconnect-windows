@@ -1,5 +1,4 @@
-#ifndef NOTIFYBYSNORE_H
-#define NOTIFYBYSNORE_H
+#pragma once
 
 #include "notificationplugin.h"
 
@@ -16,13 +15,10 @@ public:
     virtual ~NotifyBySnore() override;
 
     virtual void init() override;
-    virtual void notify(Notification *notification) override;
-    virtual void close(Notification *notification) override;
+    virtual void notify(Notification *n) override;
+    virtual void close(int id) override;
 
     void installAppShortCut();
-
-protected Q_SLOTS:
-    void notifyDeferred(Notification *notification);
 
 protected:
     static QString SnoreToastExecPath();
@@ -32,5 +28,3 @@ private:
     QTemporaryDir m_iconDir;
     QHash<int, Notification *> m_notifications;
 };
-
-#endif // NOTIFYBYSNORE_H

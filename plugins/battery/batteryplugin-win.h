@@ -1,7 +1,9 @@
 #pragma once
 
-#include "batterymonitor.h"
 #include "core/plugins/kdeconnectplugin.h"
+
+#include "batterymonitor.h"
+#include "notification.h"
 
 #define PACKET_TYPE_BATTERY QStringLiteral("kdeconnect.battery")
 

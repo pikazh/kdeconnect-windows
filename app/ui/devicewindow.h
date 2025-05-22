@@ -11,6 +11,7 @@
 #include "plugin/findmyphonepluginwrapper.h"
 #include "plugin/pingpluginwrapper.h"
 #include "plugin/sftppluginwrapper.h"
+#include "plugin/smspluginwrapper.h"
 
 #include "ui/dialogs/pluginsettingsdialog.h"
 #include "ui/pages/BasePageContainer.h"
@@ -65,6 +66,7 @@ private:
     ClipboardPluginWrapper *m_clipboardPluginWrapper = nullptr;
     PingPluginWrapper *m_pingPluginWrapper = nullptr;
     FindMyPhonePluginWrapper *m_findMyPhonePluginWrapper = nullptr;
+    SmsPluginWrapper *m_smsPluginWrapper = nullptr;
 
     PageContainer *m_container = nullptr;
 

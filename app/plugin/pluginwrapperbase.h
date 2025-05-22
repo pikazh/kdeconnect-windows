@@ -40,6 +40,21 @@ protected:
         }
     }
 
+    template<typename T>
+    T invokeMethod(const char *methodName)
+    {
+        T retVal;
+        auto plugin = sourcePlugin();
+        if (plugin != nullptr) {
+            QMetaObject::invokeMethod(plugin,
+                                      methodName,
+                                      Qt::DirectConnection,
+                                      Q_RETURN_ARG(T, retVal));
+        }
+
+        return retVal;
+    }
+
     void invokeMethod(const char *methodName)
     {
         auto plugin = sourcePlugin();

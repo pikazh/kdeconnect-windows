@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->openDevicePageButton->setIcon(RETRIEVE_THEME_ICON("smartphonedisconnected"));
     ui->openDevicePageButton->setDisabled(true);
     ui->modifyDeviceNameButton->setIcon(RETRIEVE_THEME_ICON("configure"));
+    ui->smsButton->setIcon(RETRIEVE_THEME_ICON("mail-message-new-list"));
 
     m_deviceListModel = new DeviceListModel(this);
     DeviceListProxyModel *proxyModel = new DeviceListProxyModel(this);
@@ -121,6 +122,11 @@ void MainWindow::on_refreshDeviceListButton_clicked()
     QMetaObject::invokeMethod(deviceManager,
                               &DeviceManager::refreshNetwokState,
                               Qt::QueuedConnection);
+}
+
+void MainWindow::on_smsButton_clicked()
+{
+    APPLICATION->showSmsConversationsWindow();
 }
 
 void MainWindow::onDeviceListCurrentRowChanged(const QModelIndex &current)

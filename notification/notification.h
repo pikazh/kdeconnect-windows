@@ -3,16 +3,19 @@
 #include "notification_export.h"
 #include "notificationplugin.h"
 
-#include <memory>
 #include <QObject>
 #include <QPixmap>
 
+#include <memory>
 
 struct NotificationActionPrivate;
 struct NotificationPrivate;
 
 class NOTIFICATION_EXPORT NotificationAction: public QObject
 {
+    friend class Notification;
+    friend class NotifyBySnore;
+
     Q_OBJECT
 public:
     explicit NotificationAction(QObject *parent = nullptr);
@@ -26,17 +29,18 @@ Q_SIGNALS:
     void activated();
 
 protected:
-    friend class Notification;
-    friend class NotifyBySnore;
-
     void setId(const QString &id);
     QString id() const;
 
     std::unique_ptr<NotificationActionPrivate> const d;
 };
 
-class NOTIFICATION_EXPORT Notification: public QObject
+class NOTIFICATION_EXPORT Notification : public QObject, public QEnableSharedFromThis<Notification>
 {
+    friend class NotificationManager;
+    friend class NotificationPlugin;
+    friend class NotifyBySnore;
+
     Q_OBJECT
 public:
     enum class StandardEvent {
@@ -65,8 +69,10 @@ public:
     NotificationAction *addAction(const QString &label);
     void clearActions();
 
-    void setAutoDestroy(bool autoDestroy);
     bool autoDestroy() const;
+    void setAutoDestroy(bool autoDestroy);
+
+    bool isClosed() const;
 
     static Notification *exec(StandardEvent event, const QString &title, const QString &text);
     static Notification *exec(const QString &title, const QString &text, const QString &iconName);
@@ -79,15 +85,11 @@ Q_SIGNALS:
     void closed();
 
 protected:
-    friend class NotificationManager;
-    friend class NotificationPlugin;
-    friend class NotifyBySnore;
+    void emitClosed();
 
     QList<NotificationAction*> actions() const;
     void activate(const QString &actionId);
     int id() const;
-    void ref();
-    void deRef();
 
     static QString standardEventToIconName(StandardEvent event);
 

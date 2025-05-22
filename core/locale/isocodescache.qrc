@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/org.kde.ki18n/iso-codes/cache/">
+        <file>iso_3166-1.json</file>
+        <file>iso_3166-2.json</file>
+    </qresource>
+</RCC>

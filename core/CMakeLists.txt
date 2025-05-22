@@ -29,6 +29,9 @@ qt_add_library(kdeconnectcore SHARED
     jsonutils.cpp
     sslhelper.h
     sslhelper.cpp
+    krandom.h
+    krandom.cpp
+
     plugins/pluginloader.h
     plugins/pluginloader.cpp
     plugins/kdeconnectpluginconfig.h
@@ -41,6 +44,7 @@ qt_add_library(kdeconnectcore SHARED
     plugins/pluginfactory.cpp
     plugins/pluginmetadata.h
     plugins/pluginmetadata.cpp
+
     task/task.h
     task/task.cpp
     task/netaction.h
@@ -49,6 +53,19 @@ qt_add_library(kdeconnectcore SHARED
     task/taskscheduler.cpp
     task/sockettask.h
     task/sockettask.cpp
+
+    sms/conversationmessage.h
+    sms/conversationmessage.cpp
+
+    locale/mapentry_p.h
+    locale/isocodes_p.h
+    locale/isocodescache_p.h
+    locale/isocodescache.qrc
+    locale/isocodescache.cpp
+    locale/isocodes.cpp
+    locale/kcountry.h
+    locale/kcountry.cpp
+
 )
 
 include(GenerateExportHeader)
