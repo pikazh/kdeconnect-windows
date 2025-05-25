@@ -24,10 +24,26 @@ void SmsPluginWrapper::sendSms(const QList<QString> &addresses,
     invokeMethod("sendSms", addresses, textMessage, attachmentUrls, subID);
 }
 
+void SmsPluginWrapper::requestAttachment(const qint64 &partID, const QString &uniqueIdentifier)
+{
+    invokeMethod("requestAttachment", partID, uniqueIdentifier);
+}
+
 void SmsPluginWrapper::connectPluginSignals(KdeConnectPlugin *plugin)
 {
     QObject::connect(plugin,
                      SIGNAL(messagesReceived(const QList<ConversationMessage> &)),
                      this,
                      SIGNAL(messagesReceived(const QList<ConversationMessage> &)));
+
+    QObject::connect(plugin,
+                     SIGNAL(attachmentDownloadInfoReceived(const QString &,
+                                                           const qint64,
+                                                           const QString &,
+                                                           const quint16)),
+                     this,
+                     SIGNAL(attachmentDownloadInfoReceived(const QString &,
+                                                           const qint64,
+                                                           const QString &,
+                                                           const quint16)));
 }

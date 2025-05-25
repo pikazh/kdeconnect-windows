@@ -128,7 +128,7 @@ void Task::emitAborted()
     emit finished();
 }
 
-void Task::emitFailed(QString failReason)
+void Task::emitFailed(const QString &failReason)
 {
     if (!isRunning()) {
         qCritical(KDECONNECT_CORE) << "Task" << describe() << "call emitFailed while not running!!";

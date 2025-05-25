@@ -6,8 +6,6 @@ if(WIN32)
         mprisremoteplugin.cpp
         plugin_mprisremote_debug.h
         plugin_mprisremote_debug.cpp
-        albumartdownloadtask.h
-        albumartdownloadtask.cpp
         albumartmanager.h
         albumartmanager.cpp
         albumartdb.h

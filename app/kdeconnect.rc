@@ -15,10 +15,10 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-            VALUE "FileDescription", "KDEConnect"
+            VALUE "FileDescription", "KDE Connect"
             VALUE "FileVersion", "1.0.0.0"
             VALUE "OriginalFilename", "kdeconnect-app.exe"
-            VALUE "ProductName", "KDEConnect"
+            VALUE "ProductName", "KDE Connect"
             VALUE "ProductVersion", "1.0.0.0"
         END
     END

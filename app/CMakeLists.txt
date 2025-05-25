@@ -10,6 +10,11 @@ qt_add_executable(kdeconnect-app
     app_debug.cpp
     devicepairnotify.h
     devicepairnotify.cpp
+    contactprovider.h
+    contactprovider.cpp
+    smshelper.h
+    smshelper.cpp
+    smsitemdata.h
 
     ui/mainwindow.cpp
     ui/mainwindow.h
@@ -21,13 +26,21 @@ qt_add_executable(kdeconnect-app
     ui/smswindow.ui
     ui/smswindow.h
     ui/smswindow.cpp
-    ui/smsconversationlistmodel.h
-    ui/smsconversationlistmodel.cpp
     ui/smsconversationlistitemdelegate.h
     ui/smsconversationlistitemdelegate.cpp
     ui/smswidget.ui
     ui/smsconversationswidget.h
     ui/smsconversationswidget.cpp
+    ui/smsconversationlistitemdelegate.h
+    ui/smsconversationlistitemdelegate.cpp
+    ui/smscontentitem.ui
+    ui/smslistitemsortfilterproxymodel.h
+    ui/smslistitemsortfilterproxymodel.cpp
+    ui/smsconversationcontentwidget.ui
+    ui/smsconversationcontentwidget.h
+    ui/smsconversationcontentwidget.cpp
+    ui/smscontentitem.h
+    ui/smscontentitem.cpp
 	
     ui/widgets/PageContainer.h
     ui/widgets/PageContainer_p.h
@@ -89,7 +102,6 @@ qt_add_executable(kdeconnect-app
     plugin/smspluginwrapper.cpp
     plugin/contactspluginwrapper.h
     plugin/contactspluginwrapper.cpp
-
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

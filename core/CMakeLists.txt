@@ -29,6 +29,8 @@ qt_add_library(kdeconnectcore SHARED
     jsonutils.cpp
     sslhelper.h
     sslhelper.cpp
+    imageutil.h
+    imageutil.cpp
     krandom.h
     krandom.cpp
 
@@ -53,6 +55,10 @@ qt_add_library(kdeconnectcore SHARED
     task/taskscheduler.cpp
     task/sockettask.h
     task/sockettask.cpp
+    task/kdeconnectbufferdownloadtask.h
+    task/kdeconnectbufferdownloadtask.cpp
+    task/kdeconnectfiledownloadtask.h
+    task/kdeconnectfiledownloadtask.cpp
 
     sms/conversationmessage.h
     sms/conversationmessage.cpp
@@ -74,7 +80,7 @@ generate_export_header(kdeconnectcore EXPORT_FILE_NAME kdeconnectcore_export.h)
 target_include_directories(kdeconnectcore PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(kdeconnectcore PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(kdeconnectcore PRIVATE Qt::Core Qt::Network OpenSSL::Crypto)
+target_link_libraries(kdeconnectcore PRIVATE Qt::Core Qt::Gui Qt::Network OpenSSL::Crypto)
 
 include(GNUInstallDirs)
 install(TARGETS kdeconnectcore

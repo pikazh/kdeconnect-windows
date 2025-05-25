@@ -17,7 +17,7 @@ public Q_SLOTS:
     QHash<QString, KContacts::Addressee> localCachedContacts();
 
 Q_SIGNALS:
-    void localCacheSynchronized(const QString &newContact, const KContacts::Addressee &address);
+    void localCacheSynchronized(QHash<QString, KContacts::Addressee> &);
     void localCacheRemoved(const QList<QString> &contactIdsTobeRemoved);
 
 protected:

@@ -1,20 +1,22 @@
 #pragma once
 
-#include "task/sockettask.h"
+#include "sockettask.h"
 
 #include <QByteArray>
 #include <QCryptographicHash>
+#include <QFile>
 
-class AlbumArtDownloadTask : public SocketTask
+class KDECONNECTCORE_EXPORT KdeConnectFileDownloadTask : public SocketTask
 {
     Q_OBJECT
 public:
-    using Ptr = shared_qobject_ptr<AlbumArtDownloadTask>;
+    using Ptr = shared_qobject_ptr<KdeConnectFileDownloadTask>;
 
-    AlbumArtDownloadTask(QObject *parent = nullptr);
-    virtual ~AlbumArtDownloadTask() override = default;
+    KdeConnectFileDownloadTask(QObject *parent = nullptr);
+    virtual ~KdeConnectFileDownloadTask() override = default;
 
-    QByteArray albumArtData(QByteArray *sha1Result = nullptr) const;
+    QString downloadedFilePath(QByteArray *sha1Result = nullptr) const;
+    void setDownloadFilePath(const QString &filePath);
 
 protected:
     virtual void onAbort() override;
@@ -34,6 +36,7 @@ private:
     bool m_errorOccured = false;
     bool m_connected = false;
     QString m_errorStr;
-    QByteArray m_dlData;
     QCryptographicHash m_hashCal;
+    QFile m_downloadedFile;
+    QString m_downloadFilePath;
 };

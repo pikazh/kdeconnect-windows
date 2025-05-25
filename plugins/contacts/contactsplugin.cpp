@@ -118,6 +118,7 @@ bool ContactsPlugin::handleResponseVCards(const NetworkPacket &np)
 
     const QStringList &uIDs = np.get<QStringList>(QStringLiteral("uids"));
 
+    QHash<QString, KContacts::Addressee> updatedContacts;
     // Loop over all IDs, extract the VCard from the packet and write the file
     for (const auto &ID : uIDs) {
         QByteArray buf = np.get<QByteArray>(ID);
@@ -133,8 +134,12 @@ bool ContactsPlugin::handleResponseVCards(const NetworkPacket &np)
                 qCDebug(KDECONNECT_PLUGIN_CONTACTS) << "record with uid" << ID << "updated";
             }
 
-            Q_EMIT localCacheSynchronized(ID, list[0]);
+            updatedContacts[ID] = list[0];
         }
+    }
+
+    if (!updatedContacts.isEmpty()) {
+        Q_EMIT localCacheSynchronized(updatedContacts);
     }
 
     return true;

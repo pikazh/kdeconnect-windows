@@ -47,7 +47,7 @@ protected Q_SLOTS:
 
 Q_SIGNALS:
     void taskStarted(Task::Ptr task);
-    void taskFailed(Task::Ptr task, QString reason);
+    void taskFailed(Task::Ptr task, const QString &reason);
     void taskSucceeded(Task::Ptr task);
     void taskAborted(Task::Ptr task);
     void taskFinished(Task::Ptr task);

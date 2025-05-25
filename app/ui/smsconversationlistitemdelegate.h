@@ -1,13 +1,24 @@
-#ifndef SMSCONVERSATIONLISTITEMDELEGATE_H
-#define SMSCONVERSATIONLISTITEMDELEGATE_H
+#pragma once
 
+#include <QList>
+#include <QString>
 #include <QStyledItemDelegate>
+#include <QTextLayout>
 
-class SmsConversationListItemDelegate : public QStyledItemDelegate
+#include <utility>
+
+class SMSConversationListItemDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    explicit SmsConversationListItemDelegate(QObject *parent = nullptr);
-};
+    SMSConversationListItemDelegate(QWidget *parent);
 
-#endif // SMSCONVERSATIONLISTITEMDELEGATE_H
+protected:
+    virtual void paint(QPainter *painter,
+                       const QStyleOptionViewItem &option,
+                       const QModelIndex &index) const override;
+
+    QList<std::pair<qreal, QString>> viewItemTextLayout(QTextLayout &textLayout,
+                                                        int lineWidth,
+                                                        qreal &height) const;
+};

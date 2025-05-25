@@ -8,12 +8,10 @@
 #include "plugin_sftp_debug.h"
 
 #include <QCoreApplication>
-#include <QDebug>
 #include <QDir>
 #include <QDirIterator>
 #include <QFileInfo>
 #include <QProcess>
-#include <QRegularExpression>
 
 K_PLUGIN_CLASS_WITH_JSON(SftpPlugin, "kdeconnect_sftp.json")
 

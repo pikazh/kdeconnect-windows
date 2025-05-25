@@ -80,10 +80,9 @@ Q_SIGNALS:
     /**
      * Emitted to indicate that we have locally cached all remote contacts
      *
-     * @param newContact The just-synchronized contact 
+     * 
      */
-    Q_SCRIPTABLE void localCacheSynchronized(const QString &newContactID,
-                                             const KContacts::Addressee &address);
+    Q_SCRIPTABLE void localCacheSynchronized(QHash<QString, KContacts::Addressee> &);
 
     void localCacheRemoved(const QList<QString> &contactIdsTobeRemoved);
 

@@ -9,12 +9,12 @@
 #include "plugin_sms_debug.h"
 
 #include "core/device.h"
+#include "core/kdeconnectconfig.h"
 #include "core/plugins/pluginfactory.h"
 
 #include <QFile>
 #include <QFileInfo>
 #include <QMimeDatabase>
-#include <QStandardPaths>
 
 K_PLUGIN_CLASS_WITH_JSON(SmsPlugin, "kdeconnect_sms.json")
 
@@ -90,7 +90,6 @@ bool SmsPlugin::sendSms(const QList<QString> &addresses,
 void SmsPlugin::requestAllConversations()
 {
     NetworkPacket np(PACKET_TYPE_SMS_REQUEST_CONVERSATIONS);
-
     sendPacket(np);
 }
 
@@ -124,67 +123,27 @@ bool SmsPlugin::handleBatchMessages(const NetworkPacket &np)
         messagesList.append(message);
     }
 
+    if (messages.count() > 0) {
+        Q_EMIT messagesReceived(messagesList);
+    }
+
     return true;
 }
 
 bool SmsPlugin::handleSmsAttachmentFile(const NetworkPacket &np)
 {
     const QString fileName = np.get<QString>(QStringLiteral("filename"));
-    /*
-    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-    cacheDir.append(QStringLiteral("/") + device()->name() + QStringLiteral("/"));
-    QDir attachmentsCacheDir(cacheDir);
-
-    if (!attachmentsCacheDir.exists()) {
-        qDebug(KDECONNECT_PLUGIN_SMS) << attachmentsCacheDir.absolutePath() << " directory doesn't exist.";
-        return false;
+    const auto fileSize = np.payloadSize();
+    const QVariantMap payloadInfo = np.payloadTransferInfo();
+    const QString host = qvariant_cast<QString>(payloadInfo[QStringLiteral("host")]);
+    const quint16 port = qvariant_cast<quint16>(payloadInfo[QStringLiteral("port")]);
+    Q_ASSERT(!fileName.isEmpty() && fileSize > 0 && !host.isEmpty() && port > 0);
+    if (!fileName.isEmpty() && fileSize > 0 && !host.isEmpty() && port > 0) {
+        Q_EMIT attachmentDownloadInfoReceived(fileName, fileSize, host, port);
+        return true;
     }
 
-    QUrl fileUrl = QUrl::fromLocalFile(attachmentsCacheDir.absolutePath());
-    fileUrl = fileUrl.adjusted(QUrl::StripTrailingSlash);
-    fileUrl.setPath(fileUrl.path() + QStringLiteral("/") + fileName, QUrl::DecodedMode);
-
-    FileTransferJob *job = np.createPayloadTransferJob(fileUrl);
-    connect(job, &FileTransferJob::result, this, [this, fileName](KJob *job) -> void {
-        FileTransferJob *ftjob = qobject_cast<FileTransferJob *>(job);
-        if (ftjob && !job->error()) {
-            // Notify SMS app about the newly downloaded attachment
-            m_conversationInterface->attachmentDownloaded(ftjob->destination().path(), fileName);
-        } else {
-            qCDebug(KDECONNECT_PLUGIN_SMS) << ftjob->errorString() << (ftjob ? ftjob->destination() : QUrl());
-        }
-    });
-    job->start();
-
-*/
-
-    return true;
-}
-
-void SmsPlugin::getAttachment(const qint64 &partID, const QString &uniqueIdentifier)
-{
-    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-    cacheDir.append(QStringLiteral("/") + device()->name() + QStringLiteral("/"));
-    QDir fileDirectory(cacheDir);
-
-    bool fileFound = false;
-    if (fileDirectory.exists()) {
-        // Search for the attachment file locally before sending request to remote device
-        fileFound = fileDirectory.exists(uniqueIdentifier);
-    } else {
-        bool ret = fileDirectory.mkpath(QStringLiteral("."));
-        if (!ret) {
-            qWarning() << "couldn't create directorty " << fileDirectory.absolutePath();
-        }
-    }
-
-    if (!fileFound) {
-        // If the file is not present in the local dir request the remote device for the file
-        requestAttachment(partID, uniqueIdentifier);
-    } else {
-        const QString fileDestination = fileDirectory.absoluteFilePath(uniqueIdentifier);
-        //m_conversationInterface->attachmentDownloaded(fileDestination, uniqueIdentifier);
-    }
+    return false;
 }
 
 Attachment SmsPlugin::createAttachmentFromUrl(const QString &url)

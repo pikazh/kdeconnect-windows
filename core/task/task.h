@@ -47,14 +47,14 @@ protected:
 protected Q_SLOTS:
     void emitSucceeded();
     void emitAborted();
-    void emitFailed(QString failReason);
+    void emitFailed(const QString &failReason);
 
 Q_SIGNALS:
     void started();
     void progress(qint64 current, qint64 total);
     void finished();
     void succeeded();
-    void failed(QString reason);
+    void failed(const QString &reason);
     void aborted();
 
 private:

@@ -1,5 +1,4 @@
-#ifndef DEVICELISTMODEL_H
-#define DEVICELISTMODEL_H
+#pragma once
 
 #include <QAbstractListModel>
 #include <QPixmap>
@@ -47,5 +46,3 @@ protected:
 private:
     QList<DeviceListModel::Column> m_columns;
 };
-
-#endif // DEVICELISTMODEL_H

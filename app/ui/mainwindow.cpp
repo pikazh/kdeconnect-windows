@@ -1,9 +1,9 @@
 #include "mainwindow.h"
-#include "./ui_mainwindow.h"
 #include "app_debug.h"
 #include "application.h"
 #include "devicemanager.h"
 #include "kdeconnectconfig.h"
+#include "ui_mainwindow.h"
 
 #include <QCloseEvent>
 #include <QInputDialog>

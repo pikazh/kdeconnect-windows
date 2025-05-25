@@ -17,9 +17,9 @@ QHash<QString, KContacts::Addressee> ContactsPluginWrapper::localCachedContacts(
 void ContactsPluginWrapper::connectPluginSignals(KdeConnectPlugin *plugin)
 {
     QObject::connect(plugin,
-                     SIGNAL(localCacheSynchronized(const QString &, const KContacts::Addressee &)),
+                     SIGNAL(localCacheSynchronized(QHash<QString, KContacts::Addressee> &)),
                      this,
-                     SIGNAL(localCacheSynchronized(const QString &, const KContacts::Addressee &)));
+                     SIGNAL(localCacheSynchronized(QHash<QString, KContacts::Addressee> &)));
 
     QObject::connect(plugin,
                      SIGNAL(localCacheRemoved(const QList<QString> &)),

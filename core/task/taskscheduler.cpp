@@ -90,7 +90,7 @@ void TaskScheduler::runTask(Task::Ptr task)
 
     QObject::connect(taskPtr, &Task::started, this, [this, task]() { onTaskStarted(task); });
     QObject::connect(taskPtr, &Task::succeeded, this, [this, task]() { onTaskSucceeded(task); });
-    QObject::connect(taskPtr, &Task::failed, this, [this, task](QString reason) {
+    QObject::connect(taskPtr, &Task::failed, this, [this, task](const QString &reason) {
         onTaskFailed(task, reason);
     });
     QObject::connect(taskPtr, &Task::aborted, this, [this, task]() { onTaskAbortd(task); });

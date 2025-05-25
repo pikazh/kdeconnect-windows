@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 
@@ -40,4 +39,3 @@ private:
 
     DeviceListModel *m_deviceListModel;
 };
-#endif // MAINWINDOW_H

@@ -172,7 +172,15 @@ void SmsWindow::addOrRemoveDeviceEntryFromMenu(const QString &deviceId)
     }
 }
 
-void SmsWindow::refreshMessages() {}
+void SmsWindow::refreshMessages()
+{
+    SmsConversationsWidget *currentWidget = qobject_cast<SmsConversationsWidget *>(
+        ui->conversationStacks->currentWidget());
+
+    if (currentWidget != nullptr) {
+        currentWidget->refreshConversation();
+    }
+}
 
 void SmsWindow::selectDevice(const QString &deviceId)
 {

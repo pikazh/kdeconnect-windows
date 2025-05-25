@@ -164,14 +164,12 @@ public Q_SLOTS:
      */
     Q_SCRIPTABLE void requestAttachment(const qint64 &partID, const QString &uniqueIdentifier);
 
-    /**
-     * Searches the requested file in the application's cache directory,
-     * if not found then sends the request to remote device
-     */
-    Q_SCRIPTABLE void getAttachment(const qint64 &partID, const QString &uniqueIdentifier);
-
 Q_SIGNALS:
     void messagesReceived(const QList<ConversationMessage> &msgList);
+    void attachmentDownloadInfoReceived(const QString &uniqueIdentifier,
+                                        const qint64 fileSize,
+                                        const QString &host,
+                                        const quint16 port);
 
 private:
     /**

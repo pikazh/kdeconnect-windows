@@ -40,26 +40,26 @@ void AlbumArtManager::downloadAlbumArt(const QString &albumArtUrl,
                                        quint16 port,
                                        qint64 dataSize)
 {
-    auto dlTaskPtr = new AlbumArtDownloadTask();
+    auto dlTaskPtr = new KdeConnectBufferDownloadTask();
     dlTaskPtr->setPeerDeviceId(m_peerDeviceId);
     dlTaskPtr->setPeerHostAndPort(host, port);
     dlTaskPtr->setProperty("albumArtUrl", albumArtUrl);
     dlTaskPtr->setProperty("dataSize", dataSize);
 
-    AlbumArtDownloadTask::Ptr dlTask(dlTaskPtr);
+    KdeConnectBufferDownloadTask::Ptr dlTask(dlTaskPtr);
     m_taskSchedule->addTask(dlTask);
     m_albumArtDLTasks.insert(albumArtUrl, dlTask);
 }
 
 void AlbumArtManager::onAlbumDlTaskFinished(Task::Ptr task)
 {
-    AlbumArtDownloadTask *taskPtr = qobject_cast<AlbumArtDownloadTask *>(task.get());
+    KdeConnectBufferDownloadTask *taskPtr = qobject_cast<KdeConnectBufferDownloadTask *>(task.get());
     if (taskPtr != nullptr) {
         QString albumArtUrl = taskPtr->property("albumArtUrl").toString();
         qint64 dataSize = qvariant_cast<qint64>(taskPtr->property("dataSize"));
         if (!albumArtUrl.isEmpty() && dataSize > 0) {
             if (taskPtr->isSuccessful()) {
-                QByteArray data = taskPtr->albumArtData();
+                QByteArray data = taskPtr->downloadedBuffer();
                 Q_ASSERT(data.size() == dataSize);
                 if (data.size() == dataSize) {
                     m_db->insert(albumArtUrl, data);
@@ -74,9 +74,9 @@ void AlbumArtManager::onAlbumDlTaskFinished(Task::Ptr task)
     }
 }
 
-void AlbumArtManager::onAlbumDlTaskFailed(Task::Ptr task, QString reason)
+void AlbumArtManager::onAlbumDlTaskFailed(Task::Ptr task, const QString &reason)
 {
-    AlbumArtDownloadTask *taskPtr = qobject_cast<AlbumArtDownloadTask *>(task.get());
+    KdeConnectBufferDownloadTask *taskPtr = qobject_cast<KdeConnectBufferDownloadTask *>(task.get());
     if (taskPtr != nullptr) {
         QString albumArtUrl = taskPtr->property("albumArtUrl").toString();
         qWarning(KDECONNECT_PLUGIN_MPRISREMOTE)
