@@ -2,7 +2,7 @@
 
 #include <QPainter>
 
-QPixmap ImageUtil::combineImage(const QList<QPixmap> &images)
+QPixmap ImageUtil::combineIcon(const QList<QPixmap> &images)
 {
     QPixmap retImage;
     if (images.size() == 1) {

@@ -1,6 +1,7 @@
 #include "smsconversationcontentwidget.h"
 #include "app_debug.h"
 #include "smscontentitem.h"
+#include "smshelper.h"
 #include "smsitemdata.h"
 #include "ui_smsconversationcontentwidget.h"
 
@@ -10,13 +11,21 @@
 
 #define RETRIEVE_THEME_ICON(icon_name) QIcon::fromTheme(QStringLiteral(##icon_name##))
 
+#define AVATAR_WIDTH (32)
+
 using namespace std::chrono_literals;
 
-SmsConversationContentWidget::SmsConversationContentWidget(QWidget *parent)
+SmsConversationContentWidget::SmsConversationContentWidget(SmsManager *smsManager,
+                                                           qint64 conversationId,
+                                                           ContactProvider *contactProvider,
+                                                           QWidget *parent)
     : QWidget{parent}
     , ui(new Ui::SmsConversationContentWidget)
+    , m_smsManager(smsManager)
+    , m_conversationId(conversationId)
+    , m_contactProvider(contactProvider)
     , m_lastCheckMsgTime(std::chrono::system_clock::now())
-    , m_checkMsgDuration(2000ms)
+    , m_checkMsgDuration(1000ms)
 {
     ui->setupUi(this);
     ui->attachmentList->hide();
@@ -25,6 +34,8 @@ SmsConversationContentWidget::SmsConversationContentWidget(QWidget *parent)
     auto font = ui->title->font();
     font.setPointSize(font.pointSize() + 2);
     ui->title->setFont(font);
+
+    m_defaultAvator = RETRIEVE_THEME_ICON("im-user").pixmap(AVATAR_WIDTH, AVATAR_WIDTH);
 
     ui->listItemWidget->installEventFilter(this);
     ui->listItemWidget->sortItems(Qt::AscendingOrder);
@@ -35,6 +46,18 @@ SmsConversationContentWidget::SmsConversationContentWidget(QWidget *parent)
                      &QScrollBar::valueChanged,
                      this,
                      &SmsConversationContentWidget::onContentListVerticalScrollbarValueChanged);
+
+    QObject::connect(m_smsManager,
+                     &SmsManager::conversationNewMessage,
+                     this,
+                     &SmsConversationContentWidget::onConversationNewMessage);
+
+    QObject::connect(m_contactProvider,
+                     &ContactProvider::contactUpdated,
+                     this,
+                     &SmsConversationContentWidget::onContactUpdated);
+
+    loadMessages();
 }
 
 SmsConversationContentWidget::~SmsConversationContentWidget()
@@ -47,29 +70,118 @@ void SmsConversationContentWidget::setTitle(const QString &title)
     ui->title->setText(title);
 }
 
-void SmsConversationContentWidget::addMessage(int index, const ConversationMessage &message)
+void SmsConversationContentWidget::bindToConversation(qint64 newConversationId)
 {
-    QListWidgetItem *item = new QListWidgetItem(ui->listItemWidget);
+    Q_ASSERT(newConversationId > -1);
+    if (m_conversationId != newConversationId) {
+        m_conversationId = newConversationId;
+
+        ui->listItemWidget->clear();
+
+        loadMessages();
+    }
+}
+
+void SmsConversationContentWidget::addMessage(const ConversationMessage &message)
+{
+    QListWidgetItem *item = new QListWidgetItem();
     SmsContentItem *contentItemWidget = new SmsContentItem(ui->listItemWidget);
     item->setSizeHint(QSize(ui->listItemWidget->width(), contentItemWidget->size().height()));
+
+    // for sorting
     item->setText(QString::number(message.date()));
 
-    ui->listItemWidget->addItem(item);
-    ui->listItemWidget->setItemWidget(item, contentItemWidget);
+    contentItemWidget->setTime(message.date());
 
     contentItemWidget->setText(message.body());
     if (message.isOutgoing()) {
         contentItemWidget->setName(tr("You"));
+        contentItemWidget->setAvatar(m_defaultAvator);
     } else {
-        contentItemWidget->setName(message.addresses().at(0).address());
+        QString senderName = message.addresses().at(0).address();
+        contentItemWidget->setSenderNumber(senderName);
+
+        QString canonicalizedNumber = SMSHelper::canonicalizePhoneNumber(senderName);
+        auto contact = m_contactProvider->lookupContactByPhoneNumberOrName(canonicalizedNumber);
+        if (!contact.isEmpty()) {
+            contentItemWidget->setName(contact.realName());
+            if (m_cachedAvatars.contains(canonicalizedNumber)) {
+                contentItemWidget->setAvatar(m_cachedAvatars[canonicalizedNumber]);
+            } else if (!contact.photo().isEmpty()) {
+                auto avatar = QPixmap::fromImage(contact.photo().data())
+                                  .scaled(AVATAR_WIDTH,
+                                          AVATAR_WIDTH,
+                                          Qt::KeepAspectRatio,
+                                          Qt::SmoothTransformation);
+                m_cachedAvatars[canonicalizedNumber] = avatar;
+                contentItemWidget->setAvatar(avatar);
+            } else {
+                contentItemWidget->setAvatar(m_defaultAvator);
+            }
+
+        } else {
+            contentItemWidget->setName(senderName);
+            contentItemWidget->setAvatar(m_defaultAvator);
+        }
     }
 
-    contentItemWidget->setTime(message.date());
-    contentItemWidget->setAvatar(RETRIEVE_THEME_ICON("im-user").pixmap(32, 32));
+    if (!message.attachments().isEmpty()) {
+        contentItemWidget->setAttachments(message.uID(), message.attachments(), m_smsManager);
+    }
 
-    ui->listItemWidget->scrollToBottom();
+    ui->listItemWidget->addItem(item);
+    ui->listItemWidget->setItemWidget(item, contentItemWidget);
 
-    m_checkMsgDuration = 2000ms;
+    //ui->listItemWidget->scrollToBottom();
+}
+
+void SmsConversationContentWidget::onConversationNewMessage(const qint64 conversationId,
+                                                            const ConversationMessage &msg,
+                                                            const int insertedIndex)
+{
+    if (conversationId == m_conversationId) {
+        addMessage(msg);
+        m_checkMsgDuration = 1000ms;
+    }
+}
+
+void SmsConversationContentWidget::onContactUpdated()
+{
+    m_cachedAvatars.clear();
+
+    for (int i = 0; i < ui->listItemWidget->count(); ++i) {
+        auto item = ui->listItemWidget->item(i);
+        SmsContentItem *itemWidget = qobject_cast<SmsContentItem *>(
+            ui->listItemWidget->itemWidget(item));
+        Q_ASSERT(itemWidget != nullptr);
+        if (itemWidget != nullptr) {
+            QString senderNumber = itemWidget->senderNumber();
+            if (!senderNumber.isEmpty()) {
+                QString canonicalizedNumber = SMSHelper::canonicalizePhoneNumber(senderNumber);
+                auto contact = m_contactProvider->lookupContactByPhoneNumberOrName(senderNumber);
+                if (!contact.isEmpty()) {
+                    itemWidget->setName(contact.realName());
+                    if (m_cachedAvatars.contains(canonicalizedNumber)) {
+                        itemWidget->setAvatar(m_cachedAvatars[canonicalizedNumber]);
+                    } else if (!contact.photo().isEmpty()) {
+                        auto avatar = QPixmap::fromImage(contact.photo().data())
+                                          .scaled(AVATAR_WIDTH,
+                                                  AVATAR_WIDTH,
+                                                  Qt::KeepAspectRatio,
+                                                  Qt::SmoothTransformation);
+                        m_cachedAvatars[canonicalizedNumber] = avatar;
+                        itemWidget->setAvatar(avatar);
+                    } else {
+                        itemWidget->setAvatar(m_defaultAvator);
+                    }
+
+                } else {
+                    itemWidget->setName(senderNumber);
+                    itemWidget->setAvatar(m_defaultAvator);
+                }
+            }
+        }
+    }
 }
 
 void SmsConversationContentWidget::adjustItemsSize()
@@ -82,15 +194,38 @@ void SmsConversationContentWidget::adjustItemsSize()
     }
 }
 
+void SmsConversationContentWidget::loadMessages()
+{
+    if (m_conversationId > -1) {
+        const auto [hasConversation, msgList] = m_smsManager->conversationMessages(m_conversationId);
+        Q_ASSERT(hasConversation);
+        if (hasConversation) {
+            for (auto i = 0; i < msgList.count(); ++i) {
+                addMessage(msgList[i]);
+            }
+
+            if (msgList.count() < 20) {
+                m_smsManager->requireMoreMessages(m_conversationId, msgList.last().date(), 20);
+            }
+        }
+    }
+}
+
 bool SmsConversationContentWidget::eventFilter(QObject *obj, QEvent *event)
 {
     auto evtType = event->type();
     if (obj == ui->listItemWidget) {
-        if (evtType == QEvent::Resize || evtType == QEvent::Show)
-            adjustItemsSize();
+        if (evtType == QEvent::Resize || evtType == QEvent::Show) {
+            QMetaObject::invokeMethod(this,
+                                      &SmsConversationContentWidget::adjustItemsSize,
+                                      Qt::QueuedConnection);
+        }
     } else if (obj == ui->listItemWidget->verticalScrollBar()) {
-        if (evtType == QEvent::Hide || evtType == QEvent::Show)
-            adjustItemsSize();
+        if (evtType == QEvent::Hide || evtType == QEvent::Show) {
+            QMetaObject::invokeMethod(this,
+                                      &SmsConversationContentWidget::adjustItemsSize,
+                                      Qt::QueuedConnection);
+        }
     }
 
     return QWidget::eventFilter(obj, event);
@@ -98,6 +233,7 @@ bool SmsConversationContentWidget::eventFilter(QObject *obj, QEvent *event)
 
 void SmsConversationContentWidget::onContentListVerticalScrollbarValueChanged(int value)
 {
+    qDebug(KDECONNECT_APP) << value;
     if (value == 0) {
         std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
         std::chrono::duration<double, std::milli> dur = now - m_lastCheckMsgTime;
@@ -107,7 +243,10 @@ void SmsConversationContentWidget::onContentListVerticalScrollbarValueChanged(in
             if (m_checkMsgDuration > 10000ms)
                 m_checkMsgDuration = 10000ms;
 
-            Q_EMIT requestMoreMessages();
+            const auto [hasConversation, msgList] = m_smsManager->conversationMessages(
+                m_conversationId);
+            Q_ASSERT(hasConversation);
+            m_smsManager->requireMoreMessages(m_conversationId, msgList.last().date(), 20);
         }
     }
 }

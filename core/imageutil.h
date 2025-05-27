@@ -5,5 +5,5 @@
 #include <QPixmap>
 
 namespace ImageUtil {
-KDECONNECTCORE_EXPORT QPixmap combineImage(const QList<QPixmap> &images);
+KDECONNECTCORE_EXPORT QPixmap combineIcon(const QList<QPixmap> &images);
 }

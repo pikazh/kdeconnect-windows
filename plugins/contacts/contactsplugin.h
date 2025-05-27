@@ -72,7 +72,7 @@ public Q_SLOTS:
      *      Update any contacts which are known locally but have an older timestamp
      *      Add any contacts which are not known locally but are reported by the remote
      */
-    Q_SCRIPTABLE void synchronizeWithRemote();
+    Q_SCRIPTABLE void synchronize();
 
     QHash<QString, KContacts::Addressee> localCachedContacts();
 

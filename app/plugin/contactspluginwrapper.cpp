@@ -4,9 +4,9 @@ ContactsPluginWrapper::ContactsPluginWrapper(Device::Ptr devicePtr, QObject *par
     : PluginWrapperBase(devicePtr, PluginId::Contacts, parent)
 {}
 
-void ContactsPluginWrapper::synchronizeWithRemote()
+void ContactsPluginWrapper::synchronize()
 {
-    invokeMethod("synchronizeWithRemote");
+    invokeMethod("synchronize");
 }
 
 QHash<QString, KContacts::Addressee> ContactsPluginWrapper::localCachedContacts()

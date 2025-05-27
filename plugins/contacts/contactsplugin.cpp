@@ -22,13 +22,13 @@ ContactsPlugin::ContactsPlugin(QObject *parent, const QVariantList &args)
     : KdeConnectPlugin(parent, args)
     , m_contactsDB(new ContactsDB(this))
 {
-    QString dbPath = KdeConnectConfig::instance().deviceConfigDir(device()->id()).absolutePath();
-    QDir(dbPath).mkdir(QStringLiteral("."));
+    QString dbPath = KdeConnectConfig::instance().deviceDataDir(device()->id()).absolutePath();
+    QDir().mkpath(dbPath);
     dbPath = dbPath + QDir::separator() + QStringLiteral("contacts");
     QString connectionName = device()->id() + QStringLiteral("/contacts");
     m_contactsDB->init(connectionName, dbPath);
 
-    synchronizeWithRemote();
+    synchronize();
 }
 
 void ContactsPlugin::receivePacket(const NetworkPacket &np)
@@ -40,7 +40,7 @@ void ContactsPlugin::receivePacket(const NetworkPacket &np)
     }
 }
 
-void ContactsPlugin::synchronizeWithRemote()
+void ContactsPlugin::synchronize()
 {
     sendRequest(PACKET_TYPE_CONTACTS_REQUEST_ALL_UIDS_TIMESTAMP);
 }

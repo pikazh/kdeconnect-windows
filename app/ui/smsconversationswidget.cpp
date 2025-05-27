@@ -20,18 +20,18 @@ const int g_listItemIconWidth = g_listItemHeight - 6;
 SmsConversationsWidget::SmsConversationsWidget(Device::Ptr dev, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::SMSWidget)
-    , m_smsPluginWrapper(new SmsPluginWrapper(dev, this))
+    , m_smsManager(new SmsManager(dev, this))
     , m_contactProvider(new ContactProvider(dev, this))
 {
     ui->setupUi(this);
     //ui->addConversationButton->setIcon(RETRIEVE_THEME_ICON("list-add"));
 
     ui->conversationContentWidgets->addWidget(
-        new SmsConversationContentWidget(ui->conversationContentWidgets));
+        new SmsConversationContentWidget(m_smsManager,
+                                         -1,
+                                         m_contactProvider,
+                                         ui->conversationContentWidgets));
     ui->conversationContentWidgets->setCurrentIndex(0);
-
-    //ui->splitter->setStretchFactor(0, 3);
-    //ui->splitter->setStretchFactor(1, 5);
 
     SmsListItemSortFilterProxyModel *proxyModel = new SmsListItemSortFilterProxyModel(
         ui->conversationListView);
@@ -45,19 +45,23 @@ SmsConversationsWidget::SmsConversationsWidget(Device::Ptr dev, QWidget *parent)
                      this,
                      &SmsConversationsWidget::onConversationListSelectionChanged);
 
-    m_smsPluginWrapper->init();
-
-    QObject::connect(m_smsPluginWrapper,
-                     &SmsPluginWrapper::messagesReceived,
-                     this,
-                     &SmsConversationsWidget::onSmsMessagesReceived);
-
     QObject::connect(m_contactProvider,
                      &ContactProvider::contactUpdated,
                      this,
                      &SmsConversationsWidget::onContactUpdated);
 
-    m_smsPluginWrapper->requestAllConversations();
+    QObject::connect(m_smsManager,
+                     &SmsManager::conversationStarted,
+                     this,
+                     &SmsConversationsWidget::onSmsConversationStarted);
+
+    QObject::connect(m_smsManager,
+                     &SmsManager::conversationNewMessage,
+                     this,
+                     &SmsConversationsWidget::onSmsConversationNewMessage);
+
+    m_contactProvider->synchronize();
+    m_smsManager->init();
 }
 
 SmsConversationsWidget::~SmsConversationsWidget()
@@ -67,43 +71,37 @@ SmsConversationsWidget::~SmsConversationsWidget()
 
 void SmsConversationsWidget::refreshConversation()
 {
-    m_smsPluginWrapper->requestAllConversations();
+    // QAbstractProxyModel *proxyModel = qobject_cast<QAbstractProxyModel *>(
+    //     ui->conversationListView->model());
+    // QStandardItemModel *itemModel = qobject_cast<QStandardItemModel *>(proxyModel->sourceModel());
+    // itemModel->clear();
+
+    // ui->conversationContentWidgets->setCurrentIndex(0);
+    // QList<QWidget *> contentWidgets;
+    // for (int i = 1; i < ui->conversationContentWidgets->count(); ++i) {
+    //     contentWidgets.push_back(ui->conversationContentWidgets->widget(i));
+    // }
+    // for (int i = 0; i < contentWidgets.size(); ++i) {
+    //     auto w = contentWidgets.at(i);
+    //     ui->conversationContentWidgets->removeWidget(w);
+    //     w->deleteLater();
+    // }
+
+    m_contactProvider->synchronize();
+    m_smsManager->refreshMessages();
 }
 
-void SmsConversationsWidget::onSmsMessagesReceived(const QList<ConversationMessage> &msgList)
+void SmsConversationsWidget::onSmsConversationStarted(const qint64 conversationId,
+                                                      const ConversationMessage &msg)
 {
-    for (int i = 0; i < msgList.length(); ++i) {
-        bool newlyCreated = false;
-        int insertedIndex = -1;
-        qint64 conversationId = msgList[i].threadID();
-        auto it = m_conversations.find(conversationId);
-        if (it == m_conversations.end()) {
-            m_conversations.insert(conversationId, QList<ConversationMessage>{msgList[i]});
-            newlyCreated = true;
-        } else {
-            QList<ConversationMessage> &conversation = it.value();
-            int j = 0;
-            for (; j < conversation.size(); ++j) {
-                if (msgList[i].date() >= conversation[j].date()) {
-                    if (msgList[i].uID() != conversation[j].uID()) {
-                        conversation.insert(j, msgList[i]);
-                        insertedIndex = j;
-                    }
-                    break;
-                }
-            }
-            if (j == conversation.size()) {
-                conversation.push_back(msgList[i]);
-                insertedIndex = j;
-            }
-        }
+    uiCreateConversationFromMessage(conversationId, msg);
+}
 
-        if (newlyCreated) {
-            createConversationListItem(conversationId);
-        } else if (insertedIndex > -1) {
-            onConversationUpdated(conversationId, insertedIndex);
-        }
-    }
+void SmsConversationsWidget::onSmsConversationNewMessage(const qint64 conversationId,
+                                                         const ConversationMessage &msg,
+                                                         const int insertedIndex)
+{
+    uiUpdateConversationFromNewMessage(conversationId, msg, insertedIndex);
 }
 
 void SmsConversationsWidget::onContactUpdated()
@@ -120,52 +118,24 @@ void SmsConversationsWidget::onConversationListSelectionChanged(const QModelInde
         if (itemData->conversationContentWidgetIndex >= 0) {
             ui->conversationContentWidgets->setCurrentIndex(
                 itemData->conversationContentWidgetIndex);
-
         } else {
-            SmsConversationContentWidget *contentWidget = new SmsConversationContentWidget(
-                ui->conversationContentWidgets);
+            SmsConversationContentWidget *contentWidget
+                = new SmsConversationContentWidget(m_smsManager,
+                                                   itemData->conversationId,
+                                                   m_contactProvider,
+                                                   ui->conversationContentWidgets);
             itemData->conversationContentWidgetIndex = ui->conversationContentWidgets->addWidget(
                 contentWidget);
             ui->conversationContentWidgets->setCurrentWidget(contentWidget);
 
             contentWidget->setTitle(
                 ui->conversationListView->model()->data(current, Qt::DisplayRole).toString());
-
-            if (itemData->conversationId >= 0) {
-                auto &msgList = m_conversations[itemData->conversationId];
-                for (auto i = 0; i < msgList.size(); ++i) {
-                    contentWidget->addMessage(i, msgList.at(i));
-                }
-
-                if (msgList.size() < 10) {
-                    m_smsPluginWrapper->requestConversation(itemData->conversationId,
-                                                            msgList.last().date(),
-                                                            10);
-                }
-
-                contentWidget->setProperty("conversationId", itemData->conversationId);
-
-                QObject::connect(contentWidget,
-                                 &SmsConversationContentWidget::requestMoreMessages,
-                                 this,
-                                 [this]() {
-                                     QObject *sender = QObject::sender();
-                                     auto conversationId = qvariant_cast<qint64>(
-                                         sender->property("conversationId"));
-                                     if (conversationId >= 0) {
-                                         auto &msgList = m_conversations[conversationId];
-                                         m_smsPluginWrapper
-                                             ->requestConversation(conversationId,
-                                                                   msgList.last().date(),
-                                                                   10);
-                                     }
-                                 });
-            }
         }
     }
 }
 
-void SmsConversationsWidget::createConversationListItem(qint64 conversationId)
+void SmsConversationsWidget::uiCreateConversationFromMessage(const qint64 conversationId,
+                                                             const ConversationMessage &msg)
 {
     QAbstractProxyModel *proxyModel = qobject_cast<QAbstractProxyModel *>(
         ui->conversationListView->model());
@@ -184,12 +154,11 @@ void SmsConversationsWidget::createConversationListItem(qint64 conversationId)
 
     QStandardItem *newItem = new QStandardItem();
     newItem->setEditable(false);
-    ConversationMessage &conversationMsg = m_conversations[conversationId].first();
 
     SmsListItemData::Ptr itemData(new SmsListItemData);
     itemData->conversationId = conversationId;
-    itemData->latestMsgTime = conversationMsg.date();
-    QList<ConversationAddress> conversationLists = conversationMsg.addresses();
+    itemData->latestMsgTime = msg.date();
+    QList<ConversationAddress> conversationLists = msg.addresses();
     for (int i = 0; i < conversationLists.count(); ++i) {
         itemData->canonicalizedPhoneNumbers.append(
             SMSHelper::canonicalizePhoneNumber(conversationLists[i].address()));
@@ -222,17 +191,17 @@ void SmsConversationsWidget::createConversationListItem(qint64 conversationId)
         }
     }
 
-    newItem->setData(ImageUtil::combineImage(avatars).scaled(g_listItemIconWidth,
-                                                             g_listItemIconWidth,
-                                                             Qt::KeepAspectRatio,
-                                                             Qt::SmoothTransformation),
+    newItem->setData(ImageUtil::combineIcon(avatars).scaled(g_listItemIconWidth,
+                                                            g_listItemIconWidth,
+                                                            Qt::KeepAspectRatio,
+                                                            Qt::SmoothTransformation),
                      Qt::DecorationRole);
 
     newItem->setData(contactNameAndNumberList.join(QLatin1StringView(", ")), Qt::DisplayRole);
 
     QString senderName;
     // If the message is incoming, the sender is the first Address]
-    if (conversationMsg.isOutgoing()) {
+    if (msg.isOutgoing()) {
         senderName = tr("You");
     } else {
         auto phoneNumber = SMSHelper::canonicalizePhoneNumber(conversationLists[0].address());
@@ -244,10 +213,10 @@ void SmsConversationsWidget::createConversationListItem(qint64 conversationId)
         }
     }
 
-    QString msgPreview = QLatin1StringView("%1: %2").arg(senderName).arg(conversationMsg.body());
+    QString msgPreview = QLatin1StringView("%1: %2").arg(senderName).arg(msg.body());
 
-    if (!conversationMsg.attachments().isEmpty()) {
-        if (!conversationMsg.body().isEmpty()) {
+    if (!msg.attachments().isEmpty()) {
+        if (!msg.body().isEmpty()) {
             msgPreview = msgPreview + QStringLiteral(" ") + tr("[Attachment]");
         } else {
             msgPreview = msgPreview + tr("[Attachment]");
@@ -259,42 +228,42 @@ void SmsConversationsWidget::createConversationListItem(qint64 conversationId)
     itemModel->appendRow(newItem);
 }
 
-void SmsConversationsWidget::onConversationUpdated(qint64 conversationId, int newMsgIndex)
+void SmsConversationsWidget::uiUpdateConversationFromNewMessage(const qint64 conversationId,
+                                                                const ConversationMessage &msg,
+                                                                const int insertedIndex)
 {
-    QAbstractProxyModel *proxyModel = qobject_cast<QAbstractProxyModel *>(
-        ui->conversationListView->model());
-    QStandardItemModel *itemModel = qobject_cast<QStandardItemModel *>(proxyModel->sourceModel());
+    if (insertedIndex == 0) {
+        QAbstractProxyModel *proxyModel = qobject_cast<QAbstractProxyModel *>(
+            ui->conversationListView->model());
+        QStandardItemModel *itemModel = qobject_cast<QStandardItemModel *>(
+            proxyModel->sourceModel());
 
-    SmsListItemData::Ptr correspondingItemData;
-    QStandardItem *correspondingItem = nullptr;
-    int rowCount = itemModel->rowCount();
-    for (int i = 0; i < rowCount; ++i) {
-        correspondingItem = itemModel->item(i);
-        SmsListItemData::Ptr itemData = qvariant_cast<SmsListItemData::Ptr>(
-            correspondingItem->data(SmsListItemDataRoles::Data));
+        SmsListItemData::Ptr correspondingItemData;
+        QStandardItem *correspondingItem = nullptr;
+        int rowCount = itemModel->rowCount();
+        for (int i = 0; i < rowCount; ++i) {
+            correspondingItem = itemModel->item(i);
+            SmsListItemData::Ptr itemData = qvariant_cast<SmsListItemData::Ptr>(
+                correspondingItem->data(SmsListItemDataRoles::Data));
 
-        Q_ASSERT(itemData);
+            Q_ASSERT(itemData);
 
-        if (itemData->conversationId == conversationId) {
-            correspondingItemData = itemData;
-            break;
+            if (itemData->conversationId == conversationId) {
+                correspondingItemData = itemData;
+                break;
+            }
         }
-    }
 
-    if (!correspondingItemData) {
-        return;
-    }
-
-    if (newMsgIndex == 0) {
-        auto &conversationMsg = m_conversations[conversationId].at(newMsgIndex);
+        if (!correspondingItemData) {
+            return;
+        }
 
         QString senderName;
         // If the message is incoming, the sender is the first Address]
-        if (conversationMsg.isOutgoing()) {
+        if (msg.isOutgoing()) {
             senderName = tr("You");
         } else {
-            auto phoneNumber = SMSHelper::canonicalizePhoneNumber(
-                conversationMsg.addresses().at(0).address());
+            auto phoneNumber = SMSHelper::canonicalizePhoneNumber(msg.addresses().at(0).address());
             auto contact = m_contactProvider->lookupContactByPhoneNumberOrName(phoneNumber);
             if (!contact.isEmpty()) {
                 senderName = contact.realName();
@@ -303,9 +272,9 @@ void SmsConversationsWidget::onConversationUpdated(qint64 conversationId, int ne
             }
         }
 
-        QString msgPreview = QLatin1StringView("%1: %2").arg(senderName).arg(conversationMsg.body());
-        if (!conversationMsg.attachments().isEmpty()) {
-            if (!conversationMsg.body().isEmpty()) {
+        QString msgPreview = QLatin1StringView("%1: %2").arg(senderName).arg(msg.body());
+        if (!msg.attachments().isEmpty()) {
+            if (!msg.body().isEmpty()) {
                 msgPreview = msgPreview + QStringLiteral(" ") + tr("[Attachment]");
             } else {
                 msgPreview = msgPreview + tr("[Attachment]");
@@ -313,23 +282,7 @@ void SmsConversationsWidget::onConversationUpdated(qint64 conversationId, int ne
         }
         correspondingItem->setData(msgPreview, Qt::ToolTipRole);
 
-        correspondingItemData->latestMsgTime = conversationMsg.date();
-    }
-
-    if (correspondingItemData->conversationContentWidgetIndex > 0) {
-        SmsConversationContentWidget *contentWidget = qobject_cast<SmsConversationContentWidget *>(
-            ui->conversationContentWidgets->widget(
-                correspondingItemData->conversationContentWidgetIndex));
-        Q_ASSERT(contentWidget != nullptr);
-        if (contentWidget != nullptr) {
-            contentWidget->addMessage(newMsgIndex, m_conversations[conversationId].at(newMsgIndex));
-        }
-    }
-
-    auto &conversationMsg = m_conversations[conversationId].at(newMsgIndex);
-    if (!conversationMsg.attachments().isEmpty()) {
-        Attachment att = conversationMsg.attachments().at(0);
-        m_smsPluginWrapper->requestAttachment(att.partID(), att.uniqueIdentifier());
+        correspondingItemData->latestMsgTime = msg.date();
     }
 }
 
@@ -370,43 +323,55 @@ void SmsConversationsWidget::uiUpdateConversationsContactInfo()
             }
         }
 
-        listItem->setData(ImageUtil::combineImage(avatars).scaled(g_listItemIconWidth,
-                                                                  g_listItemIconWidth,
-                                                                  Qt::KeepAspectRatio,
-                                                                  Qt::SmoothTransformation),
+        listItem->setData(ImageUtil::combineIcon(avatars).scaled(g_listItemIconWidth,
+                                                                 g_listItemIconWidth,
+                                                                 Qt::KeepAspectRatio,
+                                                                 Qt::SmoothTransformation),
                           Qt::DecorationRole);
 
-        listItem->setData(contactNameAndNumberList.join(QLatin1StringView(", ")), Qt::DisplayRole);
+        QString title = contactNameAndNumberList.join(QLatin1StringView(", "));
+        listItem->setData(title, Qt::DisplayRole);
+        if (itemData->conversationContentWidgetIndex > -1) {
+            SmsConversationContentWidget *widget = qobject_cast<SmsConversationContentWidget *>(
+                ui->conversationContentWidgets->widget(itemData->conversationContentWidgetIndex));
+
+            widget->setTitle(title);
+        }
 
         if (itemData->conversationId > -1) {
             QString senderName;
-            ConversationMessage &conversationMsg = m_conversations[itemData->conversationId].first();
-            // If the message is incoming, the sender is the first Address
-            if (conversationMsg.isOutgoing()) {
-                senderName = tr("You");
-            } else {
-                QList<ConversationAddress> conversationLists = conversationMsg.addresses();
-                auto phoneNumber = SMSHelper::canonicalizePhoneNumber(
-                    conversationLists[0].address());
-                auto contact = m_contactProvider->lookupContactByPhoneNumberOrName(phoneNumber);
-                if (!contact.isEmpty()) {
-                    senderName = contact.realName();
+            const auto [hasConversation, msgList] = m_smsManager->conversationMessages(
+                itemData->conversationId);
+            Q_ASSERT(hasConversation);
+            if (hasConversation) {
+                const ConversationMessage &conversationMsg = msgList.first();
+                // If the message is incoming, the sender is the first Address
+                if (conversationMsg.isOutgoing()) {
+                    senderName = tr("You");
                 } else {
-                    senderName = phoneNumber;
+                    QList<ConversationAddress> conversationLists = conversationMsg.addresses();
+                    auto phoneNumber = SMSHelper::canonicalizePhoneNumber(
+                        conversationLists[0].address());
+                    auto contact = m_contactProvider->lookupContactByPhoneNumberOrName(phoneNumber);
+                    if (!contact.isEmpty()) {
+                        senderName = contact.realName();
+                    } else {
+                        senderName = phoneNumber;
+                    }
                 }
-            }
 
-            QString msgPreview
-                = QLatin1StringView("%1: %2").arg(senderName).arg(conversationMsg.body());
-            if (!conversationMsg.attachments().isEmpty()) {
-                if (!conversationMsg.body().isEmpty()) {
-                    msgPreview = msgPreview + QStringLiteral(" ") + tr("[Attachment]");
-                } else {
-                    msgPreview = msgPreview + tr("[Attachment]");
+                QString msgPreview
+                    = QLatin1StringView("%1: %2").arg(senderName).arg(conversationMsg.body());
+                if (!conversationMsg.attachments().isEmpty()) {
+                    if (!conversationMsg.body().isEmpty()) {
+                        msgPreview = msgPreview + QStringLiteral(" ") + tr("[Attachment]");
+                    } else {
+                        msgPreview = msgPreview + tr("[Attachment]");
+                    }
                 }
-            }
 
-            listItem->setData(msgPreview, Qt::ToolTipRole);
+                listItem->setData(msgPreview, Qt::ToolTipRole);
+            }
         }
     }
 }

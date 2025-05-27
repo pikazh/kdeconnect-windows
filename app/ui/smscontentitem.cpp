@@ -2,17 +2,12 @@
 #include "ui_smscontentitem.h"
 
 #include <QDateTime>
-#include <QIcon>
-
-#define RETRIEVE_THEME_ICON(icon_name) QIcon::fromTheme(QStringLiteral(##icon_name##))
 
 SmsContentItem::SmsContentItem(QWidget *parent)
     : QWidget{parent}
     , ui(new Ui::SmsContentItem)
 {
     ui->setupUi(this);
-    ui->attachmentButton->setIcon(RETRIEVE_THEME_ICON("mail-attachment"));
-    ui->attachmentButton->setVisible(false);
 }
 
 SmsContentItem::~SmsContentItem()
@@ -22,7 +17,7 @@ SmsContentItem::~SmsContentItem()
 
 void SmsContentItem::setText(const QString &text)
 {
-    ui->textEdit->setText(text);
+    ui->textBrowser->setPlainContent(text);
 }
 
 void SmsContentItem::setAvatar(const QPicture &pic)
@@ -44,4 +39,11 @@ void SmsContentItem::setTime(qint64 epochTime)
 {
     QDateTime d = QDateTime::fromMSecsSinceEpoch(epochTime);
     ui->time->setText(d.toString(Qt::ISODate));
+}
+
+void SmsContentItem::setAttachments(const qint32 msgId,
+                                    const QList<Attachment> &attachments,
+                                    SmsManager *smsManager)
+{
+    ui->textBrowser->setAttachments(msgId, attachments, smsManager);
 }

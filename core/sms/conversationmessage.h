@@ -196,7 +196,7 @@ public:
     Attachment()
     {
     }
-    Attachment(qint64 prtID, QString mimeType, QString base64EncodedFile, QString uniqueIdentifier);
+    Attachment(qint64 partID, QString mimeType, QString base64EncodedFile, QString uniqueIdentifier);
 
     qint64 partID() const
     {
@@ -216,8 +216,7 @@ public:
     }
     bool isValid() const
     {
-        return !(m_uniqueIdentifier.isEmpty() || m_mimeType.isEmpty()
-                 || m_base64EncodedFile.isEmpty());
+        return !(m_uniqueIdentifier.isEmpty() || m_mimeType.isEmpty() || m_partID < 0);
     }
 
 private:

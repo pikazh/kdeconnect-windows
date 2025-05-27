@@ -8,6 +8,7 @@
 
 #include "contactprovider.h"
 #include "plugin/smspluginwrapper.h"
+#include "smsmanager.h"
 
 namespace Ui {
 class SMSWidget;
@@ -23,21 +24,26 @@ public:
     void refreshConversation();
 
 protected Q_SLOTS:
-    void onSmsMessagesReceived(const QList<ConversationMessage> &msgList);
+    void onSmsConversationStarted(const qint64 conversationId, const ConversationMessage &msg);
+    void onSmsConversationNewMessage(const qint64 conversationId,
+                                     const ConversationMessage &msg,
+                                     const int insertedIndex);
+
     void onContactUpdated();
 
     void onConversationListSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
 
 protected:
-    void createConversationListItem(qint64 conversationId);
-    void onConversationUpdated(qint64 conversationId, int newMsgIndex);
+    void uiCreateConversationFromMessage(const qint64 conversationId,
+                                         const ConversationMessage &msg);
+    void uiUpdateConversationFromNewMessage(const qint64 conversationId,
+                                            const ConversationMessage &msg,
+                                            const int insertedIndex);
 
     void uiUpdateConversationsContactInfo();
 
 private:
     Ui::SMSWidget *ui;
-
-    SmsPluginWrapper *m_smsPluginWrapper = nullptr;
+    SmsManager *m_smsManager = nullptr;
     ContactProvider *m_contactProvider = nullptr;
-    QHash<qint64, QList<ConversationMessage>> m_conversations;
 };

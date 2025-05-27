@@ -30,6 +30,11 @@ ContactProvider::ContactProvider(Device::Ptr dev, QObject *parent)
     }
 }
 
+void ContactProvider::synchronize()
+{
+    m_contactPluginWrapper->synchronize();
+}
+
 KContacts::Addressee ContactProvider::lookupContactByPhoneNumberOrName(const QString &key)
 {
     auto it = m_phoneAndNameIndexes.find(key);

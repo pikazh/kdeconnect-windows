@@ -11,11 +11,11 @@
 #include "sslhelper.h"
 
 #include <QCoreApplication>
-#include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QHostInfo>
+#include <QLatin1String>
 #include <QSettings>
 #include <QSslCertificate>
 #include <QStandardPaths>
@@ -23,6 +23,8 @@
 #include <QUuid>
 
 const QFile::Permissions strictPermissions = QFile::ReadOwner | QFile::WriteOwner | QFile::ReadUser | QFile::WriteUser;
+
+const QString appDirName = QLatin1String("kdeconnectx");
 
 struct KdeConnectConfigPrivate {
     QSslKey m_privateKey;
@@ -144,7 +146,7 @@ QSsl::KeyAlgorithm KdeConnectConfig::privateKeyAlgorithm()
 QDir KdeConnectConfig::baseConfigDir()
 {
     QString configPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-    QString kdeconnectConfigPath = QDir(configPath).absoluteFilePath(QStringLiteral("kdeconnectx"));
+    QString kdeconnectConfigPath = QDir(configPath).absoluteFilePath(appDirName);
     return QDir(kdeconnectConfigPath);
 }
 
@@ -271,6 +273,19 @@ QDir KdeConnectConfig::pluginConfigDir(const QString &deviceId, const QString &p
     QString deviceConfigPath = baseConfigDir().absoluteFilePath(deviceId);
     QString pluginConfigDir = QDir(deviceConfigPath).absoluteFilePath(pluginId);
     return QDir(pluginConfigDir);
+}
+
+QDir KdeConnectConfig::baseDataDir()
+{
+    QString configPath = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    QString kdeconnectConfigPath = QDir(configPath).absoluteFilePath(appDirName);
+    return QDir(kdeconnectConfigPath);
+}
+
+QDir KdeConnectConfig::deviceDataDir(const QString &deviceId)
+{
+    QString deviceDataPath = baseDataDir().absoluteFilePath(deviceId);
+    return QDir(deviceDataPath);
 }
 
 bool KdeConnectConfig::loadPrivateKey(const QString &keyPath)

@@ -62,6 +62,9 @@ public:
     QDir deviceConfigDir(const QString &deviceId);
     QDir pluginConfigDir(const QString &deviceId, const QString &pluginName); // Used by KdeConnectPluginConfig
 
+    QDir baseDataDir();
+    QDir deviceDataDir(const QString &deviceId);
+
 private:
     KdeConnectConfig();
 

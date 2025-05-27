@@ -42,10 +42,7 @@ PluginSettingsDialog::PluginSettingsDialog(Device::Ptr device, QWidget *parent)
 
     ui->pluginList->setColumnCount(m_columnNames.size());
     ui->pluginList->setHeaderLabels(m_columnNames);
-    ui->pluginList->setSortingEnabled(true);
     ui->pluginList->sortItems(Name, Qt::AscendingOrder);
-    ui->pluginList->setRootIsDecorated(false);
-    ui->pluginList->setItemsExpandable(false);
 
     initPluginList();
 }
@@ -63,7 +60,7 @@ void PluginSettingsDialog::initPluginList()
     for (auto it = pluginList.begin(); it != pluginList.end(); ++it) {
         QString &pluginId = (*it);
         auto info = pluginLoader->getPluginInfo(pluginId);
-        QTreeWidgetItem *item = new QTreeWidgetItem(ui->pluginList);
+        QTreeWidgetItem *item = new QTreeWidgetItem();
         item->setCheckState(Enabled,
                             m_device->isPluginEnabled(pluginId) ? Qt::Checked : Qt::Unchecked);
         item->setData(Enabled, Qt::UserRole, pluginId);

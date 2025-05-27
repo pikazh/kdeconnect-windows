@@ -4,6 +4,10 @@
 #include <QPixmap>
 #include <QWidget>
 
+#include "core/sms/conversationmessage.h"
+
+#include "smsmanager.h"
+
 namespace Ui {
 class SmsContentItem;
 }
@@ -21,6 +25,19 @@ public:
     void setName(const QString &name);
     void setTime(qint64 epochTime);
 
+    void setSenderNumber(const QString &canonicalizedNumber)
+    {
+        m_canonicalizedNumber = canonicalizedNumber;
+    }
+
+    QString senderNumber() const { return m_canonicalizedNumber; }
+
+    void setAttachments(const qint32 msgId,
+                        const QList<Attachment> &attachments,
+                        SmsManager *smsManager);
+
 private:
     Ui::SmsContentItem *ui;
+
+    QString m_canonicalizedNumber;
 };

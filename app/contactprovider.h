@@ -13,6 +13,7 @@ class ContactProvider : public QObject
 public:
     explicit ContactProvider(Device::Ptr dev, QObject *parent = nullptr);
 
+    void synchronize();
     KContacts::Addressee lookupContactByPhoneNumberOrName(const QString &key);
 
 protected Q_SLOTS:

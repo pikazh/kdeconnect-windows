@@ -11,8 +11,8 @@ AlbumArtManager::AlbumArtManager(const QString &deviceID, QObject *parent)
     , m_db(new AlbumArtDB(this))
     , m_peerDeviceId(deviceID)
 {
-    QString dbPath = KdeConnectConfig::instance().deviceConfigDir(deviceID).absolutePath();
-    QDir(dbPath).mkdir(QStringLiteral("."));
+    QString dbPath = KdeConnectConfig::instance().deviceDataDir(deviceID).absolutePath();
+    QDir().mkpath(dbPath);
     dbPath = dbPath + QDir::separator() + QStringLiteral("albumart");
     QString connectionName = deviceID + QStringLiteral("/albumart");
     m_db->init(connectionName, dbPath);

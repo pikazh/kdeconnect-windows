@@ -13,7 +13,7 @@ public:
     virtual ~ContactsPluginWrapper() override = default;
 
 public Q_SLOTS:
-    void synchronizeWithRemote();
+    void synchronize();
     QHash<QString, KContacts::Addressee> localCachedContacts();
 
 Q_SIGNALS:

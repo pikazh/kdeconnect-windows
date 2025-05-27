@@ -102,6 +102,8 @@ qt_add_executable(kdeconnect-app
     plugin/smspluginwrapper.cpp
     plugin/contactspluginwrapper.h
     plugin/contactspluginwrapper.cpp
+    smsmanager.h smsmanager.cpp
+    ui/smstextbrowser.h ui/smstextbrowser.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
