@@ -28,3 +28,30 @@ add_subdirectory(kcodecs)
 add_subdirectory(kcontacts)
 add_subdirectory(icons)
 add_subdirectory(plugins)
+
+set(TRANSLATION_FILES
+        ${PROJECT_SOURCE_DIR}/translations/${PROJECT_NAME}_zh_CN.ts
+    )
+
+qt_add_translations(kdeconnect-app
+    QM_FILES_OUTPUT_VARIABLE qm_files
+    TS_FILES ${TRANSLATION_FILES}
+    )
+
+include(GNUInstallDirs)
+install(FILES ${qm_files}
+    DESTINATION "${CMAKE_INSTALL_BINDIR}/translations")
+
+qt_generate_deploy_script(
+    TARGET kdeconnect-app
+    OUTPUT_SCRIPT deploy_script
+    CONTENT "
+qt_deploy_runtime_dependencies(
+    EXECUTABLE \"$<TARGET_FILE:kdeconnect-app>\"
+    ADDITIONAL_MODULES  \"$<TARGET_FILE:kdeconnect_mprisremote>\"
+    NO_COMPILER_RUNTIME
+    GENERATE_QT_CONF
+    DEPLOY_TOOL_OPTIONS \"--no-opengl-sw\" \"--no-system-d3d-compiler\"
+    VERBOSE
+)")
+install(SCRIPT ${deploy_script})

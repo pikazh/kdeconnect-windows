@@ -1,6 +1,7 @@
 #include "clipboardpluginconfigdialog.h"
-#include "core/plugins/pluginid.h"
 #include "ui_clipboardpluginconfigdialog.h"
+
+#include "core/plugins/pluginid.h"
 
 ClipboardPluginConfigDialog::ClipboardPluginConfigDialog(Device::Ptr dev, QWidget *parent)
     : QDialog(parent)

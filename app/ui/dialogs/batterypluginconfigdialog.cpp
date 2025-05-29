@@ -1,6 +1,7 @@
 #include "batterypluginconfigdialog.h"
-#include "core/plugins/pluginid.h"
 #include "ui_batterypluginconfigdialog.h"
+
+#include "core/plugins/pluginid.h"
 
 BatteryPluginConfigDialog::BatteryPluginConfigDialog(Device::Ptr dev, QWidget *parent)
     : QDialog(parent)

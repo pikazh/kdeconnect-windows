@@ -15,6 +15,8 @@ qt_add_executable(kdeconnect-app
     smshelper.h
     smshelper.cpp
     smsitemdata.h
+    smsmanager.h
+    smsmanager.cpp
 
     ui/mainwindow.cpp
     ui/mainwindow.h
@@ -41,6 +43,10 @@ qt_add_executable(kdeconnect-app
     ui/smsconversationcontentwidget.cpp
     ui/smscontentitem.h
     ui/smscontentitem.cpp
+    ui/smstextbrowser.h
+    ui/smstextbrowser.cpp
+    ui/smsattachmentlistwidget.h
+    ui/smsattachmentlistwidget.cpp
 	
     ui/widgets/PageContainer.h
     ui/widgets/PageContainer_p.h
@@ -72,13 +78,16 @@ qt_add_executable(kdeconnect-app
     ui/dialogs/pluginsettingsdialog.ui
     ui/dialogs/clipboardpluginconfigdialog.h
     ui/dialogs/clipboardpluginconfigdialog.cpp
+    ui/dialogs/clipboardpluginconfigdialog.ui
     ui/dialogs/batterypluginconfigdialog.h
     ui/dialogs/batterypluginconfigdialog.cpp
-    ui/dialogs/presenterpluginconfigdialog.h
-    ui/dialogs/presenterpluginconfigdialog.cpp
-    ui/dialogs/clipboardpluginconfigdialog.ui
     ui/dialogs/batterypluginconfigdialog.ui
-    ui/dialogs/presenterpluginconfigdialog.ui
+    ui/dialogs/runcommandpluginconfigdialog.h
+    ui/dialogs/runcommandpluginconfigdialog.cpp
+    ui/dialogs/runcommandpluginconfigdialog.ui
+    ui/dialogs/appsettingsdialog.ui
+    ui/dialogs/appsettingsdialog.h
+    ui/dialogs/appsettingsdialog.cpp
 
     plugin/pluginwrapperbase.h
     plugin/pluginwrapperbase.cpp
@@ -102,8 +111,6 @@ qt_add_executable(kdeconnect-app
     plugin/smspluginwrapper.cpp
     plugin/contactspluginwrapper.h
     plugin/contactspluginwrapper.cpp
-    smsmanager.h smsmanager.cpp
-    ui/smstextbrowser.h ui/smstextbrowser.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -143,17 +150,3 @@ install(TARGETS kdeconnect-app
 #     OUTPUT_SCRIPT deploy_script
 #     NO_UNSUPPORTED_PLATFORM_ERROR
 # )
-
-qt_generate_deploy_script(
-    TARGET kdeconnect-app
-    OUTPUT_SCRIPT deploy_script
-    CONTENT "
-qt_deploy_runtime_dependencies(
-    EXECUTABLE \"$<TARGET_FILE:kdeconnect-app>\"
-    ADDITIONAL_MODULES  \"$<TARGET_FILE:kdeconnect_mprisremote>\"
-    NO_COMPILER_RUNTIME
-    GENERATE_QT_CONF
-    DEPLOY_TOOL_OPTIONS \"--no-opengl-sw\" \"--no-system-d3d-compiler\"
-    VERBOSE
-)")
-install(SCRIPT ${deploy_script})

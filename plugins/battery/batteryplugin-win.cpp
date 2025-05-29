@@ -76,7 +76,7 @@ void BatteryPlugin::localBatteryInfoUpdated()
 void BatteryPlugin::reloadConfig()
 {
     auto conf = config();
-    m_showWarning = conf->getBool(QStringLiteral("warning"), false);
+    m_showWarning = conf->getBool(QStringLiteral("warning"), true);
     m_warningThreshold = conf->getInt(QStringLiteral("threshold"), m_chargeThreshold);
 }
 

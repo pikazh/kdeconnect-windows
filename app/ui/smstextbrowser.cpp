@@ -113,6 +113,7 @@ void SmsTextBrowser::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu *menu = createStandardContextMenu(event->pos());
     if (!m_attachments.isEmpty()) {
+        menu->addSeparator();
         menu->addAction(tr("Open Attachment Folder"), this, [this]() {
             QDesktopServices::openUrl(m_smsManager->attachmentDownloadDir());
         });

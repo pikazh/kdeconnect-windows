@@ -1,12 +1,20 @@
 #include "application.h"
 #include "devicepairnotify.h"
-#include "kdeconnectconfig.h"
+
+#include "ui/devicewindow.h"
+#include "ui/dialogs/appsettingsdialog.h"
+#include "ui/mainwindow.h"
+#include "ui/smswindow.h"
+
+#include "core/kdeconnectconfig.h"
 
 #include "icons.h"
 
 #include <QAction>
 #include <QIcon>
 #include <QMenu>
+#include <QStyle>
+#include <QStyleFactory>
 
 Application::Application(int &argc, char **argv)
     : QApplication(argc, argv)
@@ -39,7 +47,16 @@ void Application::init()
     setWindowIcon(QIcon(":/kdeconnect.ico"));
     m_deviceManager->init();
     createSystemTrayIcon();
+    initStyle();
     this->setQuitOnLastWindowClosed(false);
+
+    auto kdeConnectConfig = KdeConnectConfig::instance();
+    QObject::connect(
+        kdeConnectConfig,
+        &KdeConnectConfig::deviceNameChanged,
+        this,
+        [this]() { this->deviceManager()->refreshNetwokState(); },
+        Qt::QueuedConnection);
 }
 
 void Application::showMainWindow()
@@ -89,6 +106,21 @@ void Application::showSmsConversationsWindow()
     m_smsConversationWindow->activateWindow();
 }
 
+void Application::showAppSettingsDialog()
+{
+    if (m_appSetingsDlg == nullptr) {
+        m_appSetingsDlg = new AppSettingsDialog();
+        QObject::connect(m_appSetingsDlg,
+                         &AppSettingsDialog::finished,
+                         this,
+                         &Application::appSettingsDialogClosing);
+    }
+
+    m_appSetingsDlg->showNormal();
+    m_appSetingsDlg->raise();
+    m_appSetingsDlg->activateWindow();
+}
+
 void Application::cleanUp()
 {
     m_deviceManager->unInit();
@@ -120,6 +152,15 @@ void Application::smsWindowClosing()
     Q_ASSERT(smsWindow == m_smsConversationWindow);
     if (smsWindow != nullptr) {
         m_smsConversationWindow = nullptr;
+    }
+}
+
+void Application::appSettingsDialogClosing()
+{
+    auto appSettingsDlg = qobject_cast<AppSettingsDialog *>(QObject::sender());
+    Q_ASSERT(appSettingsDlg == m_appSetingsDlg);
+    if (appSettingsDlg != nullptr) {
+        m_appSetingsDlg = nullptr;
     }
 }
 
@@ -157,6 +198,37 @@ void Application::createSystemTrayIcon()
         m_sysTrayIcon->setToolTip(QStringLiteral("KDE Connect"));
         m_sysTrayIcon->show();
     }
+}
+
+void Application::initStyle()
+{
+    QString styleName = KdeConnectConfig::instance()->style();
+    if (!styleName.isEmpty()) {
+        if (this->style()->name().compare(styleName, Qt::CaseInsensitive) != 0) {
+            QStyle *style = QStyleFactory::create(styleName);
+            if (style != nullptr) {
+                this->setStyle(style);
+                return;
+            }
+        }
+    }
+
+    KdeConnectConfig::instance()->setStyle(this->style()->name());
+}
+
+void Application::initLanguage()
+{
+    // QTranslator translator;
+    // const QStringList uiLanguages = QLocale::system().uiLanguages();
+    // for (const QString &locale : uiLanguages) {
+    //     const QString baseName = "XConnect_" + QLocale(locale).name();
+    //     if (translator.load(":/i18n/" + baseName)) {
+    //         app.installTranslator(&translator);
+    //         break;
+    //     }
+    // }
+    // QLocale::setDefault() QString local = QLocale::languageToString(
+    //     QLocale::system().nativeLanguageName());
 }
 
 void Application::onSystemTrayIconActivated(QSystemTrayIcon::ActivationReason reason)

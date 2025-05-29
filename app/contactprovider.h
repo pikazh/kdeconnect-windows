@@ -14,7 +14,7 @@ public:
     explicit ContactProvider(Device::Ptr dev, QObject *parent = nullptr);
 
     void synchronize();
-    KContacts::Addressee lookupContactByPhoneNumberOrName(const QString &key);
+    KContacts::Addressee lookupContactByPhoneNumber(const QString &key);
 
 protected Q_SLOTS:
     void onPluginContactUpdated(QHash<QString, KContacts::Addressee> &updatedContacts);
@@ -27,7 +27,7 @@ private:
     ContactsPluginWrapper *m_contactPluginWrapper = nullptr;
 
     QHash<QString, KContacts::Addressee> m_contacts;
-    QHash<QString, QString> m_phoneAndNameIndexes;
+    QHash<QString, QString> m_phoneNumberIndexes;
 };
 
 #endif // CONTACTPROVIDER_H

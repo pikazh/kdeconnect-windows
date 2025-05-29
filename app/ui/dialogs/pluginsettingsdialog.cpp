@@ -7,7 +7,7 @@
 
 #include "ui/dialogs/batterypluginconfigdialog.h"
 #include "ui/dialogs/clipboardpluginconfigdialog.h"
-#include "ui/dialogs/presenterpluginconfigdialog.h"
+#include "ui/dialogs/runcommandpluginconfigdialog.h"
 
 #include <QIcon>
 #include <QPushButton>
@@ -24,7 +24,7 @@ PluginSettingsDialog::PluginSettingsDialog(Device::Ptr device, QWidget *parent)
 
     m_pluginIdsWhichHasConfig.insert(pluginIdString(PluginId::BatteryMonitor));
     m_pluginIdsWhichHasConfig.insert(pluginIdString(PluginId::ClipBoard));
-    m_pluginIdsWhichHasConfig.insert(pluginIdString(PluginId::Presenter));
+    m_pluginIdsWhichHasConfig.insert(pluginIdString(PluginId::RunCommand));
 
     QObject::connect(this,
                      &PluginSettingsDialog::accepted,
@@ -74,14 +74,12 @@ void PluginSettingsDialog::initPluginList()
             QWidget *w = new QWidget(ui->pluginList);
             QHBoxLayout *layout = new QHBoxLayout(w);
             layout->setContentsMargins(0, 0, 0, 0);
-            QPushButton *configBtn = new QPushButton(ui->pluginList);
+            QPushButton *configBtn = new QPushButton(w);
             configBtn->setProperty("pluginId", pluginId);
             configBtn->setIcon(QIcon::fromTheme(QStringLiteral("configure")));
-            layout->addSpacerItem(
-                new QSpacerItem(10, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
+            layout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed));
             layout->addWidget(configBtn);
-            layout->addSpacerItem(
-                new QSpacerItem(10, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
+            layout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed));
 
             ui->pluginList->setItemWidget(item, Configuration, w);
 
@@ -148,8 +146,8 @@ void PluginSettingsDialog::showPluginConfigDialog()
         auto dlg = new ClipboardPluginConfigDialog(m_device, this);
         dlg->setWindowTitle(pluginInfo.name());
         dlg->exec();
-    } else if (pluginId == pluginIdString(PluginId::Presenter)) {
-        auto dlg = new PresenterPluginConfigDialog(m_device, this);
+    } else if (pluginId == pluginIdString(PluginId::RunCommand)) {
+        auto dlg = new RunCommandPluginConfigDialog(m_device, this);
         dlg->setWindowTitle(pluginInfo.name());
         dlg->exec();
     }

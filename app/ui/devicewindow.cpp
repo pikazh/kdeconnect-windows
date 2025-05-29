@@ -208,7 +208,7 @@ void DeviceWindow::titleUpdateDeviceBatteryInfo()
             battery += tr(", charging");
         }
 
-        battery += QStringLiteral(")");
+        battery += tr(")");
     }
     setWindowTitle(title + battery);
 }
@@ -276,7 +276,6 @@ void DeviceWindow::loadPages()
     setContentsMargins(0, 0, 0, 0);
 
     QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Close);
-    buttons->button(QDialogButtonBox::Close)->setText(tr("Close"));
     buttons->setContentsMargins(6, 0, 6, 0);
     m_container->addButtons(buttons);
     connect(buttons->button(QDialogButtonBox::Close), SIGNAL(clicked()), this, SLOT(close()));

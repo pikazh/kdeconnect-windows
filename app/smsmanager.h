@@ -26,6 +26,11 @@ public:
                              const qint64 startTimeStamp = -1,
                              const qint64 requestNumber = -1);
 
+    void sendSms(const QList<QString> &addresses,
+                 const QString &textMessage,
+                 const QList<QString> &attachmentUrls,
+                 const qint64 subID);
+
     void downloadAttachment(qint32 msgId, const Attachment &attachments);
 
     void refreshMessages();

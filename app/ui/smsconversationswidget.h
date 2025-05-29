@@ -2,6 +2,7 @@
 
 #include <QHash>
 #include <QMap>
+#include <QTimer>
 #include <QWidget>
 
 #include "core/device.h"
@@ -24,6 +25,9 @@ public:
     void refreshConversation();
 
 protected Q_SLOTS:
+
+    void on_conversationFilterEdit_textChanged(const QString &text);
+
     void onSmsConversationStarted(const qint64 conversationId, const ConversationMessage &msg);
     void onSmsConversationNewMessage(const qint64 conversationId,
                                      const ConversationMessage &msg,
@@ -46,4 +50,6 @@ private:
     Ui::SMSWidget *ui;
     SmsManager *m_smsManager = nullptr;
     ContactProvider *m_contactProvider = nullptr;
+
+    QTimer *m_delayFilterTimer = nullptr;
 };

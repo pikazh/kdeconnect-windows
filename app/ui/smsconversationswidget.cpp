@@ -22,23 +22,32 @@ SmsConversationsWidget::SmsConversationsWidget(Device::Ptr dev, QWidget *parent)
     , ui(new Ui::SMSWidget)
     , m_smsManager(new SmsManager(dev, this))
     , m_contactProvider(new ContactProvider(dev, this))
+    , m_delayFilterTimer(new QTimer(this))
 {
     ui->setupUi(this);
-    //ui->addConversationButton->setIcon(RETRIEVE_THEME_ICON("list-add"));
-
-    ui->conversationContentWidgets->addWidget(
-        new SmsConversationContentWidget(m_smsManager,
-                                         -1,
-                                         m_contactProvider,
-                                         ui->conversationContentWidgets));
-    ui->conversationContentWidgets->setCurrentIndex(0);
+    ui->addConversationButton->setIcon(RETRIEVE_THEME_ICON("list-add"));
+    // ui->conversationContentWidgets->addWidget(
+    //     new SmsConversationContentWidget(m_smsManager,
+    //                                      -1,
+    //                                      m_contactProvider,
+    //                                      ui->conversationContentWidgets));
+    // ui->conversationContentWidgets->setCurrentIndex(0);
 
     SmsListItemSortFilterProxyModel *proxyModel = new SmsListItemSortFilterProxyModel(
         ui->conversationListView);
     proxyModel->setSourceModel(new QStandardItemModel(ui->conversationListView));
+    proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    proxyModel->setFilterRole(Qt::DisplayRole);
     ui->conversationListView->setModel(proxyModel);
     ui->conversationListView->setItemDelegate(
         new SMSConversationListItemDelegate(ui->conversationListView));
+
+    m_delayFilterTimer->setInterval(200);
+    m_delayFilterTimer->setSingleShot(true);
+
+    QObject::connect(m_delayFilterTimer, &QTimer::timeout, this, [this, proxyModel]() {
+        proxyModel->setFilterFixedString(ui->conversationFilterEdit->text().trimmed());
+    });
 
     QObject::connect(ui->conversationListView->selectionModel(),
                      &QItemSelectionModel::currentChanged,
@@ -91,6 +100,11 @@ void SmsConversationsWidget::refreshConversation()
     m_smsManager->refreshMessages();
 }
 
+void SmsConversationsWidget::on_conversationFilterEdit_textChanged(const QString &text)
+{
+    m_delayFilterTimer->start();
+}
+
 void SmsConversationsWidget::onSmsConversationStarted(const qint64 conversationId,
                                                       const ConversationMessage &msg)
 {
@@ -122,6 +136,8 @@ void SmsConversationsWidget::onConversationListSelectionChanged(const QModelInde
             SmsConversationContentWidget *contentWidget
                 = new SmsConversationContentWidget(m_smsManager,
                                                    itemData->conversationId,
+                                                   itemData->canonicalizedPhoneNumbers,
+                                                   itemData->simcardSubId,
                                                    m_contactProvider,
                                                    ui->conversationContentWidgets);
             itemData->conversationContentWidgetIndex = ui->conversationContentWidgets->addWidget(
@@ -158,10 +174,11 @@ void SmsConversationsWidget::uiCreateConversationFromMessage(const qint64 conver
     SmsListItemData::Ptr itemData(new SmsListItemData);
     itemData->conversationId = conversationId;
     itemData->latestMsgTime = msg.date();
-    QList<ConversationAddress> conversationLists = msg.addresses();
-    for (int i = 0; i < conversationLists.count(); ++i) {
+    itemData->simcardSubId = msg.subID();
+    QList<ConversationAddress> addresses = msg.addresses();
+    for (int i = 0; i < addresses.count(); ++i) {
         itemData->canonicalizedPhoneNumbers.append(
-            SMSHelper::canonicalizePhoneNumber(conversationLists[i].address()));
+            SMSHelper::canonicalizePhoneNumber(addresses[i].address()));
     }
 
     newItem->setData(QVariant::fromValue(itemData), SmsListItemDataRoles::Data);
@@ -171,7 +188,7 @@ void SmsConversationsWidget::uiCreateConversationFromMessage(const qint64 conver
     auto defaultAvatar = QIcon::fromTheme(QStringLiteral("im-user")).pixmap(1024, 1024);
     QStringList contactNameAndNumberList;
     for (int i = 0; i < itemData->canonicalizedPhoneNumbers.count(); ++i) {
-        auto contact = m_contactProvider->lookupContactByPhoneNumberOrName(
+        auto contact = m_contactProvider->lookupContactByPhoneNumber(
             itemData->canonicalizedPhoneNumbers[i]);
         if (!contact.isEmpty()) {
             contactNameAndNumberList.push_back(contact.realName() + QLatin1StringView("(")
@@ -204,8 +221,8 @@ void SmsConversationsWidget::uiCreateConversationFromMessage(const qint64 conver
     if (msg.isOutgoing()) {
         senderName = tr("You");
     } else {
-        auto phoneNumber = SMSHelper::canonicalizePhoneNumber(conversationLists[0].address());
-        auto contact = m_contactProvider->lookupContactByPhoneNumberOrName(phoneNumber);
+        auto phoneNumber = SMSHelper::canonicalizePhoneNumber(addresses[0].address());
+        auto contact = m_contactProvider->lookupContactByPhoneNumber(phoneNumber);
         if (!contact.isEmpty()) {
             senderName = contact.realName();
         } else {
@@ -264,7 +281,7 @@ void SmsConversationsWidget::uiUpdateConversationFromNewMessage(const qint64 con
             senderName = tr("You");
         } else {
             auto phoneNumber = SMSHelper::canonicalizePhoneNumber(msg.addresses().at(0).address());
-            auto contact = m_contactProvider->lookupContactByPhoneNumberOrName(phoneNumber);
+            auto contact = m_contactProvider->lookupContactByPhoneNumber(phoneNumber);
             if (!contact.isEmpty()) {
                 senderName = contact.realName();
             } else {
@@ -303,7 +320,7 @@ void SmsConversationsWidget::uiUpdateConversationsContactInfo()
         auto defaultAvatar = QIcon::fromTheme(QStringLiteral("im-user")).pixmap(1024, 1024);
         QStringList contactNameAndNumberList;
         for (int i = 0; i < itemData->canonicalizedPhoneNumbers.count(); ++i) {
-            auto contact = m_contactProvider->lookupContactByPhoneNumberOrName(
+            auto contact = m_contactProvider->lookupContactByPhoneNumber(
                 itemData->canonicalizedPhoneNumbers[i]);
             if (!contact.isEmpty()) {
                 contactNameAndNumberList.push_back(contact.realName() + QLatin1StringView("(")
@@ -352,7 +369,7 @@ void SmsConversationsWidget::uiUpdateConversationsContactInfo()
                     QList<ConversationAddress> conversationLists = conversationMsg.addresses();
                     auto phoneNumber = SMSHelper::canonicalizePhoneNumber(
                         conversationLists[0].address());
-                    auto contact = m_contactProvider->lookupContactByPhoneNumberOrName(phoneNumber);
+                    auto contact = m_contactProvider->lookupContactByPhoneNumber(phoneNumber);
                     if (!contact.isEmpty()) {
                         senderName = contact.realName();
                     } else {

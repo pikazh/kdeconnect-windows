@@ -178,7 +178,7 @@ void PairingHandler::pairingDone()
 
 QString PairingHandler::verificationKey() const
 {
-    auto a = KdeConnectConfig::instance().certificate().publicKey().toDer();
+    auto a = KdeConnectConfig::instance()->certificate().publicKey().toDer();
     auto b = m_device->certificate().publicKey().toDer();
     if (a < b) {
         std::swap(a, b);

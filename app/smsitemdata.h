@@ -13,6 +13,7 @@ struct SmsListItemData
     qint64 conversationId = -1;
     QList<QString> canonicalizedPhoneNumbers;
     qint64 latestMsgTime = -1;
+    qint64 simcardSubId = -1;
     int conversationContentWidgetIndex = -1;
 
     using Ptr = QSharedPointer<SmsListItemData>;

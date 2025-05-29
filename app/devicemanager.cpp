@@ -12,15 +12,15 @@ DeviceManager::~DeviceManager() {}
 void DeviceManager::init()
 {
     // Read remembered paired devices
-    const QStringList &list = KdeConnectConfig::instance().trustedDevices();
+    const QStringList &list = KdeConnectConfig::instance()->trustedDevices();
     for (const QString &id : list) {
-        DeviceInfo info = KdeConnectConfig::instance().getTrustedDevice(id);
+        DeviceInfo info = KdeConnectConfig::instance()->getTrustedDevice(id);
         if (info.isCertificateValid()) {
             addDevice(makeShared<Device>(this, info, true));
         } else {
             qCDebug(KDECONNECT_APP)
                 << "Certificate for device " << id << "illegal, deleting the device";
-            KdeConnectConfig::instance().removeTrustedDevice(id);
+            KdeConnectConfig::instance()->removeTrustedDevice(id);
         }
     }
 

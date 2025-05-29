@@ -20,6 +20,7 @@ QHash<PluginId, QString> initPluginNameHashTable()
     pluginNames.insert(PluginId::Telephony, QStringLiteral("Telephony integration"));
     pluginNames.insert(PluginId::Sms, QStringLiteral("SMS"));
     pluginNames.insert(PluginId::Contacts, QStringLiteral("Contacts"));
+    pluginNames.insert(PluginId::RunCommand, QStringLiteral("Run commands"));
     return pluginNames;
 }
 

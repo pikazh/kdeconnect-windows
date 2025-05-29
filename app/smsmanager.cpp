@@ -29,7 +29,7 @@ SmsManager::SmsManager(Device::Ptr dev, QObject *parent)
 
     if (dev) {
         m_attachmentDownloadDir = KdeConnectConfig::instance()
-                                      .deviceDataDir(dev->id())
+                                      ->deviceDataDir(dev->id())
                                       .absoluteFilePath(QStringLiteral("sms_attachment"));
         QDir().mkpath(m_attachmentDownloadDir);
     }
@@ -59,6 +59,14 @@ void SmsManager::requireMoreMessages(const qint64 conversationId,
                                      const qint64 requestNumber)
 {
     m_smsPluginWrapper->requestConversation(conversationId, startTimeStamp, requestNumber);
+}
+
+void SmsManager::sendSms(const QList<QString> &addresses,
+                         const QString &textMessage,
+                         const QList<QString> &attachmentUrls,
+                         const qint64 subID)
+{
+    m_smsPluginWrapper->sendSms(addresses, textMessage, attachmentUrls, subID);
 }
 
 void SmsManager::downloadAttachment(qint32 msgId, const Attachment &attachment)

@@ -8,6 +8,7 @@
 #define KDECONNECTCONFIG_H
 
 #include <QDir>
+#include <QObject>
 #include <QSslKey>
 
 #include "deviceinfo.h"
@@ -15,10 +16,20 @@
 
 class QSslCertificate;
 
-class KDECONNECTCORE_EXPORT KdeConnectConfig
+class KDECONNECTCORE_EXPORT KdeConnectConfig : public QObject
 {
+    Q_OBJECT
 public:
-    static KdeConnectConfig &instance();
+    static KdeConnectConfig *instance();
+
+    /*
+     * App related info
+     */
+
+    QString style();
+    void setStyle(const QString &style);
+    QString language();
+    void setLanguage(const QString &lan);
 
     /*
      * Our own info
@@ -64,6 +75,9 @@ public:
 
     QDir baseDataDir();
     QDir deviceDataDir(const QString &deviceId);
+
+Q_SIGNALS:
+    void deviceNameChanged(const QString &deviceName);
 
 private:
     KdeConnectConfig();

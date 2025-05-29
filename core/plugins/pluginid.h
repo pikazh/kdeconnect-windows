@@ -20,6 +20,7 @@ enum class PluginId {
     Telephony,
     Sms,
     Contacts,
+    RunCommand,
 };
 
 QString KDECONNECTCORE_EXPORT pluginIdString(PluginId name);

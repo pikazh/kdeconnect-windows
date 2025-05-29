@@ -23,6 +23,8 @@ class SmsConversationContentWidget : public QWidget
 public:
     explicit SmsConversationContentWidget(SmsManager *smsManager,
                                           qint64 conversationId,
+                                          const QList<QString> &addresses,
+                                          qint64 simcardSubId,
                                           ContactProvider *contactProvider,
                                           QWidget *parent = nullptr);
     virtual ~SmsConversationContentWidget() override;
@@ -31,27 +33,40 @@ public:
     void bindToConversation(qint64 newConversationId);
 
 protected:
+    enum Columns {
+        Content = 0,
+        Time,
+        Count,
+    };
     virtual bool eventFilter(QObject *obj, QEvent *event) override;
 
     void onContentListVerticalScrollbarValueChanged(int value);
 
     void loadMessages();
-    void addMessage(const ConversationMessage &message);
+    void addMessage(const ConversationMessage &message, const int insertedIndex);
 
 protected Q_SLOTS:
-    void adjustItemsSize();
+    void on_attachmentButton_clicked();
+    void on_sendButton_clicked();
+
+    void onAttachmentSendListRemovedItem(const QString &path);
+    void onAttachmentSendListAddedItem(const QString &path);
+
+    void onContactUpdated();
 
     void onConversationNewMessage(const qint64 conversationId,
                                   const ConversationMessage &msg,
                                   const int insertedIndex);
 
-    void onContactUpdated();
+    void adjustItemsSize();
 
 private:
     Ui::SmsConversationContentWidget *ui;
 
     SmsManager *m_smsManager = nullptr;
     qint64 m_conversationId = -1;
+    QList<QString> m_addresses;
+    qint64 m_simcardSubId = -1;
 
     ContactProvider *m_contactProvider = nullptr;
 

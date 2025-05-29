@@ -17,7 +17,7 @@ public:
     virtual ~MainWindow() override;
 
 protected Q_SLOTS:
-    void on_modifyDeviceNameButton_clicked();
+    void on_appSettingsButton_clicked();
     void on_pairButton_clicked();
     void on_openDevicePageButton_clicked();
     void on_refreshDeviceListButton_clicked();

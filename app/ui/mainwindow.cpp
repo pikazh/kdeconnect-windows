@@ -1,9 +1,12 @@
 #include "mainwindow.h"
-#include "app_debug.h"
+#include "ui_mainwindow.h"
+
 #include "application.h"
 #include "devicemanager.h"
-#include "kdeconnectconfig.h"
-#include "ui_mainwindow.h"
+
+#include "app_debug.h"
+
+#include "core/kdeconnectconfig.h"
 
 #include <QCloseEvent>
 #include <QInputDialog>
@@ -24,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->pairButton->setDisabled(true);
     ui->openDevicePageButton->setIcon(RETRIEVE_THEME_ICON("smartphonedisconnected"));
     ui->openDevicePageButton->setDisabled(true);
-    ui->modifyDeviceNameButton->setIcon(RETRIEVE_THEME_ICON("configure"));
+    ui->appSettingsButton->setIcon(RETRIEVE_THEME_ICON("configure"));
     ui->smsButton->setIcon(RETRIEVE_THEME_ICON("mail-message-new-list"));
 
     m_deviceListModel = new DeviceListModel(this);
@@ -51,8 +54,16 @@ MainWindow::MainWindow(QWidget *parent)
         m_deviceListModel->setDeviceList(deviceManager->devicesList());
     });
 
-    auto localDeviceName = KdeConnectConfig::instance().name();
+    auto kdeConnectConfig = KdeConnectConfig::instance();
+    auto localDeviceName = kdeConnectConfig->name();
     ui->deviceNameLabel->setText(localDeviceName);
+
+    QObject::connect(
+        kdeConnectConfig,
+        &KdeConnectConfig::deviceNameChanged,
+        this,
+        [this](const QString &deviceName) { ui->deviceNameLabel->setText(deviceName); },
+        Qt::QueuedConnection);
 }
 
 MainWindow::~MainWindow()
@@ -60,27 +71,9 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::on_modifyDeviceNameButton_clicked()
+void MainWindow::on_appSettingsButton_clicked()
 {
-    auto localDeviceName = KdeConnectConfig::instance().name();
-    bool ok = false;
-    QString text = QInputDialog::getText(this,
-                                         tr("Please input the device name"),
-                                         tr("Device Name: "),
-                                         QLineEdit::Normal,
-                                         localDeviceName,
-                                         &ok);
-    if (ok && text != localDeviceName) {
-        QString filteredName = DeviceInfo::filterName(text);
-        qCDebug(KDECONNECT_APP) << "New device name" << filteredName;
-        KdeConnectConfig::instance().setName(filteredName);
-        ui->deviceNameLabel->setText(filteredName);
-
-        auto deviceManager = APPLICATION->deviceManager();
-        QMetaObject::invokeMethod(deviceManager,
-                                  &DeviceManager::refreshNetwokState,
-                                  Qt::QueuedConnection);
-    }
+    APPLICATION->showAppSettingsDialog();
 }
 
 void MainWindow::on_pairButton_clicked()

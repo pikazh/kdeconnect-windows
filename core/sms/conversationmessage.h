@@ -214,10 +214,7 @@ public:
     {
         return m_uniqueIdentifier;
     }
-    bool isValid() const
-    {
-        return !(m_uniqueIdentifier.isEmpty() || m_mimeType.isEmpty() || m_partID < 0);
-    }
+    bool isValid() const { return !(m_uniqueIdentifier.isEmpty() || m_mimeType.isEmpty()); }
 
 private:
     qint64 m_partID; // Part ID of the attachment of the message

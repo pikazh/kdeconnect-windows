@@ -22,7 +22,7 @@ ContactsPlugin::ContactsPlugin(QObject *parent, const QVariantList &args)
     : KdeConnectPlugin(parent, args)
     , m_contactsDB(new ContactsDB(this))
 {
-    QString dbPath = KdeConnectConfig::instance().deviceDataDir(device()->id()).absolutePath();
+    QString dbPath = KdeConnectConfig::instance()->deviceDataDir(device()->id()).absolutePath();
     QDir().mkpath(dbPath);
     dbPath = dbPath + QDir::separator() + QStringLiteral("contacts");
     QString connectionName = device()->id() + QStringLiteral("/contacts");

@@ -50,7 +50,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="listItemWidget">
+        <widget class="QTreeWidget" name="listItemWidget">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -66,9 +66,26 @@
          <property name="horizontalScrollBarPolicy">
           <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
          </property>
+         <property name="rootIsDecorated">
+          <bool>false</bool>
+         </property>
+         <property name="itemsExpandable">
+          <bool>false</bool>
+         </property>
          <property name="sortingEnabled">
           <bool>true</bool>
          </property>
+         <property name="expandsOnDoubleClick">
+          <bool>false</bool>
+         </property>
+         <attribute name="headerVisible">
+          <bool>false</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string notr="true">1</string>
+          </property>
+         </column>
         </widget>
        </item>
       </layout>
@@ -100,9 +117,22 @@
           <number>4</number>
          </property>
          <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
           <widget class="QPushButton" name="attachmentButton">
            <property name="text">
-            <string>PushButton</string>
+            <string>Add Attachment(s)</string>
            </property>
           </widget>
          </item>
@@ -116,7 +146,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QListWidget" name="attachmentList">
+        <widget class="SmsAttachmentListWidget" name="attachmentList">
          <property name="enabled">
           <bool>true</bool>
          </property>
@@ -135,6 +165,23 @@
          <property name="horizontalScrollBarPolicy">
           <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
          </property>
+         <property name="rootIsDecorated">
+          <bool>false</bool>
+         </property>
+         <property name="itemsExpandable">
+          <bool>false</bool>
+         </property>
+         <property name="expandsOnDoubleClick">
+          <bool>false</bool>
+         </property>
+         <attribute name="headerVisible">
+          <bool>false</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string notr="true">1</string>
+          </property>
+         </column>
         </widget>
        </item>
       </layout>
@@ -143,6 +190,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SmsAttachmentListWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>smsattachmentlistwidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -39,10 +39,30 @@ static QString getDefaultDeviceName()
     return QHostInfo::localHostName();
 }
 
-KdeConnectConfig &KdeConnectConfig::instance()
+KdeConnectConfig *KdeConnectConfig::instance()
 {
     static KdeConnectConfig kcc;
-    return kcc;
+    return &kcc;
+}
+
+QString KdeConnectConfig::style()
+{
+    return d->m_config->value(QStringLiteral("style")).toString();
+}
+
+void KdeConnectConfig::setStyle(const QString &style)
+{
+    d->m_config->setValue(QStringLiteral("style"), style);
+}
+
+QString KdeConnectConfig::language()
+{
+    return d->m_config->value(QStringLiteral("language")).toString();
+}
+
+void KdeConnectConfig::setLanguage(const QString &lan)
+{
+    d->m_config->setValue(QStringLiteral("language"), lan);
 }
 
 KdeConnectConfig::KdeConnectConfig()
@@ -70,7 +90,8 @@ QString KdeConnectConfig::name()
 void KdeConnectConfig::setName(const QString &name)
 {
     d->m_config->setValue(QStringLiteral("name"), name);
-    d->m_config->sync();
+
+    Q_EMIT deviceNameChanged(name);
 }
 
 DeviceType KdeConnectConfig::deviceType()
@@ -173,6 +194,8 @@ void KdeConnectConfig::addTrustedDevice(const DeviceInfo &deviceInfo)
 void KdeConnectConfig::updateTrustedDeviceInfo(const DeviceInfo &deviceInfo)
 {
     if (!trustedDevices().contains(deviceInfo.id)) {
+        qCWarning(KDECONNECT_CORE)
+            << "trying to update untrusted device info. device name:" << deviceInfo.name;
         // do not store values for untrusted devices (it would make them trusted)
         return;
     }
@@ -233,8 +256,11 @@ void KdeConnectConfig::removeAllTrustedDevices()
 void KdeConnectConfig::setDeviceProperty(const QString &deviceId, const QString &key, const QString &value)
 {
     // do not store values for untrusted devices (it would make them trusted)
-    if (!trustedDevices().contains(deviceId))
+    if (!trustedDevices().contains(deviceId)) {
+        qCWarning(KDECONNECT_CORE)
+            << "trying to set device property for untrusted device. device id:" << deviceId;
         return;
+    }
 
     d->m_trustedDevices->beginGroup(deviceId);
     d->m_trustedDevices->setValue(key, value);
@@ -317,6 +343,7 @@ bool KdeConnectConfig::loadCertificate(const QString &certPath)
             return true;
         }
     }
+
     return d->m_certificate.isNull();
 }
 
@@ -348,7 +375,7 @@ void KdeConnectConfig::generatePrivateKey(const QString &keyPath)
 
     d->m_privateKey = SslHelper::generateEcPrivateKey();
     if (d->m_privateKey.isNull()) {
-        qCritical() << "Could not generate the private key";
+        qCritical(KDECONNECT_CORE) << "Could not generate the private key";
         //Daemon::instance()->reportError(i18n("KDE Connect failed to start"), i18n("Could not generate the private key."));
     }
 
@@ -368,7 +395,7 @@ void KdeConnectConfig::generatePrivateKey(const QString &keyPath)
     d->m_config->sync();
 
     if (error) {
-        //Daemon::instance()->reportError(QStringLiteral("KDE Connect"), i18n("Could not store private key file: %1", keyPath));
+        qCritical(KDECONNECT_CORE) << "Could not store private key file:" << keyPath;
     }
 }
 
@@ -382,8 +409,7 @@ void KdeConnectConfig::generateCertificate(const QString &certPath)
 
     d->m_certificate = SslHelper::generateSelfSignedCertificate(d->m_privateKey, uuid);
     if (d->m_certificate.isNull()) {
-        qCritical() << "Could not generate a certificate";
-        //Daemon::instance()->reportError(i18n("KDE Connect failed to start"), i18n("Could not generate the device certificate."));
+        qCritical(KDECONNECT_CORE) << "Could not generate a certificate";
     }
 
     QFile cert(certPath);
@@ -399,6 +425,6 @@ void KdeConnectConfig::generateCertificate(const QString &certPath)
     }
 
     if (error) {
-        //Daemon::instance()->reportError(QStringLiteral("KDE Connect"), i18n("Could not store certificate file: %1", certPath));
+        qCritical(KDECONNECT_CORE) << "Could not store certificate file:" << certPath;
     }
 }

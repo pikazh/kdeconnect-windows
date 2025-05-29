@@ -5,26 +5,25 @@
  */
 
 #include "mdnsdiscovery.h"
+#include "mdns_wrapper.h"
 
 #include "core/core_debug.h"
 #include "core/kdeconnectconfig.h"
 #include "lanlinkprovider.h"
 
-#include "mdns_wrapper.h"
-
 const QString kServiceType = QStringLiteral("_kdeconnect._udp.local");
 
 MdnsDiscovery::MdnsDiscovery(LanLinkProvider *lanLinkProvider)
-    : mdnsAnnouncer(KdeConnectConfig::instance().deviceId(), kServiceType, LanLinkProvider::UDP_PORT)
+    : mdnsAnnouncer(KdeConnectConfig::instance()->deviceId(), kServiceType, LanLinkProvider::UDP_PORT)
 {
-    KdeConnectConfig &config = KdeConnectConfig::instance();
-    mdnsAnnouncer.putTxtRecord(QStringLiteral("id"), config.deviceId());
-    mdnsAnnouncer.putTxtRecord(QStringLiteral("name"), config.name());
-    mdnsAnnouncer.putTxtRecord(QStringLiteral("type"), config.deviceType().toString());
+    auto config = KdeConnectConfig::instance();
+    mdnsAnnouncer.putTxtRecord(QStringLiteral("id"), config->deviceId());
+    mdnsAnnouncer.putTxtRecord(QStringLiteral("name"), config->name());
+    mdnsAnnouncer.putTxtRecord(QStringLiteral("type"), config->deviceType().toString());
     mdnsAnnouncer.putTxtRecord(QStringLiteral("protocol"), QString::number(NetworkPacket::s_protocolVersion));
 
     connect(&mdnsDiscoverer, &MdnsWrapper::Discoverer::serviceFound, this, [lanLinkProvider](const MdnsWrapper::Discoverer::MdnsService &service) {
-        if (KdeConnectConfig::instance().deviceId() == service.name) {
+        if (KdeConnectConfig::instance()->deviceId() == service.name) {
             qCDebug(KDECONNECT_CORE) << "Discovered myself, ignoring";
             return;
         }

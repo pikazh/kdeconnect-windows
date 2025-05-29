@@ -22,7 +22,7 @@ KdeConnectPluginConfig::KdeConnectPluginConfig(const QString &deviceId,
     : QObject(parent)
     , d(new KdeConnectPluginConfigPrivate())
 {
-    d->m_configDir = KdeConnectConfig::instance().pluginConfigDir(deviceId, pluginId);
+    d->m_configDir = KdeConnectConfig::instance()->pluginConfigDir(deviceId, pluginId);
     QDir().mkpath(d->m_configDir.path());
 
     d->m_config = new QSettings(d->m_configDir.absoluteFilePath(QStringLiteral("config")), QSettings::IniFormat);

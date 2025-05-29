@@ -160,7 +160,7 @@ void Device::reloadPlugins()
 
 QString Device::pluginsConfigFile() const
 {
-    return KdeConnectConfig::instance().deviceConfigDir(id()).absoluteFilePath(QStringLiteral("config"));
+    return KdeConnectConfig::instance()->deviceConfigDir(id()).absoluteFilePath(QStringLiteral("config"));
 }
 
 void Device::requestPairing()
@@ -197,7 +197,7 @@ void Device::pairingHandler_incomingPairRequest()
 void Device::pairingHandler_pairingSuccessful()
 {
     Q_ASSERT(d->m_pairingHandler->pairState() == PairState::Paired);
-    KdeConnectConfig::instance().addTrustedDevice(d->m_deviceInfo);
+    KdeConnectConfig::instance()->addTrustedDevice(d->m_deviceInfo);
     reloadPlugins(); // Will load/unload plugins
     Q_EMIT pairStateChanged(pairState());
 }
@@ -213,7 +213,7 @@ void Device::pairingHandler_unpaired()
 {
     Q_ASSERT(d->m_pairingHandler->pairState() == PairState::NotPaired);
     qCDebug(KDECONNECT_CORE) << "Unpaired";
-    KdeConnectConfig::instance().removeTrustedDevice(id());
+    KdeConnectConfig::instance()->removeTrustedDevice(id());
     reloadPlugins(); // Will load/unload plugins
     Q_EMIT pairStateChanged(pairState());
 }
@@ -261,7 +261,7 @@ bool Device::updateDeviceInfo(const DeviceInfo &newDeviceInfo)
         Q_EMIT nameChanged(d->m_deviceInfo.name);
         if (isPaired())
         {
-            KdeConnectConfig::instance().updateTrustedDeviceInfo(d->m_deviceInfo);
+            KdeConnectConfig::instance()->updateTrustedDeviceInfo(d->m_deviceInfo);
         }
     }
 
@@ -423,7 +423,7 @@ QString Device::encryptionInfo() const
     QString result;
     const QCryptographicHash::Algorithm digestAlgorithm = QCryptographicHash::Algorithm::Sha256;
 
-    QString localChecksum = QString::fromLatin1(KdeConnectConfig::instance().certificate().digest(digestAlgorithm).toHex());
+    QString localChecksum = QString::fromLatin1(KdeConnectConfig::instance()->certificate().digest(digestAlgorithm).toHex());
     for (int i = 2; i < localChecksum.size(); i += 3) {
         localChecksum.insert(i, QLatin1Char(':')); // Improve readability
     }

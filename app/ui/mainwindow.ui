@@ -163,9 +163,9 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="modifyDeviceNameButton">
+       <widget class="QPushButton" name="appSettingsButton">
         <property name="toolTip">
-         <string>Change device name</string>
+         <string>Settings</string>
         </property>
         <property name="text">
          <string/>

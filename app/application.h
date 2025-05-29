@@ -1,16 +1,17 @@
-#ifndef APPLICATION_H
-#define APPLICATION_H
+#pragma once
 
 #include "devicemanager.h"
-#include "ui/devicewindow.h"
-#include "ui/mainwindow.h"
-#include "ui/smswindow.h"
 
 #include <QApplication>
 #include <QMap>
 #include <QMenu>
 #include <QString>
 #include <QSystemTrayIcon>
+
+class MainWindow;
+class SmsWindow;
+class AppSettingsDialog;
+class DeviceWindow;
 
 #define APPLICATION (static_cast<Application *>(QCoreApplication::instance()))
 
@@ -28,9 +29,13 @@ public Q_SLOTS:
     void showMainWindow();
     void showDeviceWindow(Device::Ptr device);
     void showSmsConversationsWindow();
+    void showAppSettingsDialog();
 
 protected:
     void createSystemTrayIcon();
+
+    void initStyle();
+    void initLanguage();
 
 protected Q_SLOTS:
     void onSystemTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
@@ -38,15 +43,15 @@ protected Q_SLOTS:
     void deviceWindowClosing();
     void mainWindowClosing();
     void smsWindowClosing();
+    void appSettingsDialogClosing();
 
 private:
     DeviceManager *m_deviceManager;
 
     MainWindow *m_MainWindow = nullptr;
     SmsWindow *m_smsConversationWindow = nullptr;
+    AppSettingsDialog *m_appSetingsDlg = nullptr;
     QMap<QString, DeviceWindow *> m_deviceWindows;
     QSystemTrayIcon *m_sysTrayIcon = nullptr;
     QMenu *m_trayIconMenu = nullptr;
 };
-
-#endif // APPLICATION_H

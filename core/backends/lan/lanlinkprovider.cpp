@@ -177,14 +177,14 @@ void LanLinkProvider::broadcastUdpIdentityPacket()
 
 bool LanLinkProvider::isProtocolDowngrade(const QString &deviceId, int protocolVersion) const
 {
-    int lastKnownProtocolVersion = KdeConnectConfig::instance().getTrustedDeviceProtocolVersion(
+    int lastKnownProtocolVersion = KdeConnectConfig::instance()->getTrustedDeviceProtocolVersion(
         deviceId);
     return lastKnownProtocolVersion > protocolVersion;
 }
 
 QList<QHostAddress> LanLinkProvider::getBroadcastAddresses()
 {
-    const QStringList customDevices = KdeConnectConfig::instance().customDevices();
+    const QStringList customDevices = KdeConnectConfig::instance()->customDevices();
 
     QList<QHostAddress> destinations;
     destinations.reserve(customDevices.length() + 1);
@@ -212,7 +212,7 @@ void LanLinkProvider::sendUdpIdentityPacket(const QList<QHostAddress> &addresses
 
 void LanLinkProvider::sendUdpIdentityPacket(QUdpSocket &socket, const QList<QHostAddress> &addresses)
 {
-    DeviceInfo myDeviceInfo = KdeConnectConfig::instance().deviceInfo();
+    DeviceInfo myDeviceInfo = KdeConnectConfig::instance()->deviceInfo();
     NetworkPacket identityPacket = myDeviceInfo.toIdentityPacket();
     identityPacket.set(QStringLiteral("tcpPort"), m_tcpPort);
     const QByteArray payload = identityPacket.serialize();
@@ -266,7 +266,7 @@ void LanLinkProvider::udpBroadcastReceived()
 
         QString deviceId = receivedPacket->get<QString>(QStringLiteral("deviceId"));
 
-        if (deviceId == KdeConnectConfig::instance().deviceId()) {
+        if (deviceId == KdeConnectConfig::instance()->deviceId()) {
             // qCDebug(KDECONNECT_CORE) << "Ignoring my own broadcast";
             delete receivedPacket;
             continue;
@@ -288,7 +288,7 @@ void LanLinkProvider::udpBroadcastReceived()
             continue;
         }
 
-        bool isDeviceTrusted = KdeConnectConfig::instance().trustedDevices().contains(deviceId);
+        bool isDeviceTrusted = KdeConnectConfig::instance()->trustedDevices().contains(deviceId);
         int protocolVersion = receivedPacket->get<int>(QStringLiteral("protocolVersion"), 0);
         if (isDeviceTrusted && isProtocolDowngrade(deviceId, protocolVersion)) {
             qCritical(KDECONNECT_CORE)
@@ -330,7 +330,7 @@ void LanLinkProvider::connectError(QAbstractSocket::SocketError socketError)
     qCritical(KDECONNECT_CORE) << "Socket error" << socketError;
     qCritical(KDECONNECT_CORE) << "Fallback (1), try reverse connection (send udp packet)"
                                << socket->errorString();
-    NetworkPacket np = KdeConnectConfig::instance().deviceInfo().toIdentityPacket();
+    NetworkPacket np = KdeConnectConfig::instance()->deviceInfo().toIdentityPacket();
     np.set(QStringLiteral("tcpPort"), m_tcpPort);
     m_udpSocket.writeDatagram(np.serialize(), m_receivedIdentityPackets[socket].sender, UDP_PORT);
 
@@ -360,7 +360,7 @@ void LanLinkProvider::tcpSocketConnected()
     // qCDebug(KDECONNECT_CORE) << "tcpSocketConnected" << socket->isWritable();
 
     // If network is on ssl, do not believe when they are connected, believe when handshake is completed
-    NetworkPacket np2 = KdeConnectConfig::instance().deviceInfo().toIdentityPacket();
+    NetworkPacket np2 = KdeConnectConfig::instance()->deviceInfo().toIdentityPacket();
     socket->write(np2.serialize());
     bool success = socket->waitForBytesWritten();
 
@@ -368,7 +368,7 @@ void LanLinkProvider::tcpSocketConnected()
         qCDebug(KDECONNECT_CORE) << "TCP connection done (i'm the existing device)";
 
         // if ssl supported
-        bool isDeviceTrusted = KdeConnectConfig::instance().trustedDevices().contains(deviceId);
+        bool isDeviceTrusted = KdeConnectConfig::instance()->trustedDevices().contains(deviceId);
         configureSslSocket(socket, deviceId, isDeviceTrusted);
 
         qCDebug(KDECONNECT_CORE) << "Starting server ssl (I'm the client TCP socket)";
@@ -406,7 +406,7 @@ void LanLinkProvider::encrypted()
     if (protocolVersion >= 8) {
         delete m_receivedIdentityPackets.take(socket).np;
 
-        NetworkPacket myIdentity = KdeConnectConfig::instance().deviceInfo().toIdentityPacket();
+        NetworkPacket myIdentity = KdeConnectConfig::instance()->deviceInfo().toIdentityPacket();
         socket->write(myIdentity.serialize());
         socket->flush();
         connect(socket, &QIODevice::readyRead, this, [this, socket, protocolVersion]() {
@@ -540,7 +540,7 @@ void LanLinkProvider::dataReceived()
         return;
     }
 
-    bool isDeviceTrusted = KdeConnectConfig::instance().trustedDevices().contains(deviceId);
+    bool isDeviceTrusted = KdeConnectConfig::instance()->trustedDevices().contains(deviceId);
     int protocolVersion = np->get<int>(QStringLiteral("protocolVersion"), 0);
     if (isDeviceTrusted && isProtocolDowngrade(deviceId, protocolVersion)) {
         qCritical(KDECONNECT_CORE)
@@ -585,11 +585,11 @@ void LanLinkProvider::configureSslSocket(QSslSocket *socket, const QString &devi
 {
     // Configure for ssl
     QSslConfiguration sslConfig;
-    sslConfig.setLocalCertificate(KdeConnectConfig::instance().certificate());
-    sslConfig.setPrivateKey(KdeConnectConfig::instance().privateKey());
+    sslConfig.setLocalCertificate(KdeConnectConfig::instance()->certificate());
+    sslConfig.setPrivateKey(KdeConnectConfig::instance()->privateKey());
 
     if (isDeviceTrusted) {
-        QSslCertificate certificate = KdeConnectConfig::instance().getTrustedDeviceCertificate(deviceId);
+        QSslCertificate certificate = KdeConnectConfig::instance()->getTrustedDeviceCertificate(deviceId);
         sslConfig.setCaCertificates({certificate});
         sslConfig.setPeerVerifyMode(QSslSocket::VerifyPeer);
     } else {
@@ -647,7 +647,7 @@ void LanLinkProvider::addLink(QSslSocket *socket, const DeviceInfo &deviceInfo)
         // qCDebug(KDECONNECT_CORE) << "Reusing link to" << deviceId;
         deviceLink->reset(socket);
     } else {
-        bool isDeviceTrusted = KdeConnectConfig::instance().trustedDevices().contains(deviceInfo.id);
+        bool isDeviceTrusted = KdeConnectConfig::instance()->trustedDevices().contains(deviceInfo.id);
         if (!isDeviceTrusted && m_links.size() > MAX_UNPAIRED_CONNECTIONS) {
             qCWarning(KDECONNECT_CORE) << "Too many unpaired devices to remember them all. Ignoring " << deviceInfo.id;
             socket->disconnectFromHost();

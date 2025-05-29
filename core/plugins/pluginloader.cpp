@@ -89,7 +89,7 @@ QStringList PluginLoader::outgoingCapabilities() const
 QSet<QString> PluginLoader::pluginsForCapabilities(const QSet<QString> &incoming, const QSet<QString> &outgoing) const
 {
     QSet<QString> ret;
-    QString myDeviceType = KdeConnectConfig::instance().deviceType().toString();
+    QString myDeviceType = KdeConnectConfig::instance()->deviceType().toString();
 
     for (const PluginMetaData &service : plugins)
     {
