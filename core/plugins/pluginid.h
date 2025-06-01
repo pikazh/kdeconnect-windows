@@ -21,6 +21,8 @@ enum class PluginId {
     Sms,
     Contacts,
     RunCommand,
+    RemoteCommands,
+    Share,
 };
 
 QString KDECONNECTCORE_EXPORT pluginIdString(PluginId name);

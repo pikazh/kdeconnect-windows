@@ -1,12 +1,12 @@
-#include "kdeconnectbufferdownloadtask.h"
+#include "peerbufferdownloadtask.h"
 #include "core_debug.h"
 
-KdeConnectBufferDownloadTask::KdeConnectBufferDownloadTask(QObject *parent)
-    : SocketTask(parent)
+PeerBufferDownloadTask::PeerBufferDownloadTask(QObject *parent)
+    : PeerSSLSocketTask(parent)
     , m_hashCal(QCryptographicHash::Sha1)
 {}
 
-QByteArray KdeConnectBufferDownloadTask::downloadedBuffer(QByteArray *sha1Result) const
+QByteArray PeerBufferDownloadTask::downloadedBuffer(QByteArray *sha1Result) const
 {
     if (sha1Result != nullptr) {
         sha1Result->assign(m_hashCal.result());
@@ -15,13 +15,14 @@ QByteArray KdeConnectBufferDownloadTask::downloadedBuffer(QByteArray *sha1Result
     return m_dlData;
 }
 
-void KdeConnectBufferDownloadTask::onAbort()
+void PeerBufferDownloadTask::onAbort()
 {
+    //Q_ASSERT(isRunning());
     m_aborted = true;
     closeSocket();
 }
 
-void KdeConnectBufferDownloadTask::finisheTask()
+void PeerBufferDownloadTask::finisheTask()
 {
     if (m_aborted) {
         emitAborted();
@@ -32,12 +33,7 @@ void KdeConnectBufferDownloadTask::finisheTask()
     }
 }
 
-void KdeConnectBufferDownloadTask::socketConnected()
-{
-    m_connected = true;
-}
-
-void KdeConnectBufferDownloadTask::sslErrors(const QList<QSslError> &errors)
+void PeerBufferDownloadTask::sslErrors(const QList<QSslError> &errors)
 {
     for (const QSslError &error : errors) {
         if (error.error() != QSslError::SelfSignedCertificate) {
@@ -55,7 +51,7 @@ void KdeConnectBufferDownloadTask::sslErrors(const QList<QSslError> &errors)
     }
 }
 
-void KdeConnectBufferDownloadTask::connectError(QAbstractSocket::SocketError socketError)
+void PeerBufferDownloadTask::connectError(QAbstractSocket::SocketError socketError)
 {
     if (socketError != QAbstractSocket::RemoteHostClosedError) {
         m_errorOccured = true;
@@ -64,27 +60,31 @@ void KdeConnectBufferDownloadTask::connectError(QAbstractSocket::SocketError soc
         qWarning(KDECONNECT_CORE) << "connectError:" << socketError << ", error str:" << m_errorStr;
     }
 
-    if (!m_connected) {
+    if (socketConnectState() != SocketState::Connected) {
         finisheTask();
     }
 }
 
-void KdeConnectBufferDownloadTask::socketDisconnected()
+void PeerBufferDownloadTask::socketDisconnected()
 {
-    m_connected = false;
     finisheTask();
 }
 
-void KdeConnectBufferDownloadTask::socketEncrypted()
+void PeerBufferDownloadTask::socketEncrypted()
 {
+    setTaskStatus(TaskStatus::Transfering);
     m_hashCal.reset();
     m_dlData.clear();
+    m_downloadedSize = 0;
 }
 
-void KdeConnectBufferDownloadTask::dataReceived()
+void PeerBufferDownloadTask::dataReceived()
 {
     auto s = socket();
     auto newData = s->readAll();
     m_dlData.append(newData);
     m_hashCal.addData(newData);
+    m_downloadedSize += newData.size();
+
+    setProgress(m_downloadedSize, contentSize());
 }

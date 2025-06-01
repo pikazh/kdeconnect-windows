@@ -14,9 +14,11 @@ qt_add_executable(kdeconnect-app
     contactprovider.cpp
     smshelper.h
     smshelper.cpp
-    smsitemdata.h
+    uicommon.h
     smsmanager.h
     smsmanager.cpp
+    language.h
+    language.cpp
 
     ui/mainwindow.cpp
     ui/mainwindow.h
@@ -69,6 +71,11 @@ qt_add_executable(kdeconnect-app
     ui/pages/mprisremotepage.ui
     ui/pages/mprisremotepage.h
     ui/pages/mprisremotepage.cpp
+    ui/pages/remotecommandspage.ui
+    ui/pages/remotecommandspage.h
+    ui/pages/remotecommandspage.cpp
+    ui/pages/remotecommandslistmodel.h
+    ui/pages/remotecommandslistmodel.cpp
     ui/pages/BasePage.h
     ui/pages/BasePageContainer.h
     ui/pages/BasePageProvider.h
@@ -111,6 +118,16 @@ qt_add_executable(kdeconnect-app
     plugin/smspluginwrapper.cpp
     plugin/contactspluginwrapper.h
     plugin/contactspluginwrapper.cpp
+    plugin/sharepluginwrapper.h
+    plugin/sharepluginwrapper.cpp
+    plugin/remotecommandspluginwrapper.h plugin/remotecommandspluginwrapper.cpp
+    ui/textlayoututils.h
+    ui/textlayoututils.cpp
+    ui/pages/remotecommandslistitemdelegate.h ui/pages/remotecommandslistitemdelegate.cpp
+    plugin/runcommandpluginwrapper.h plugin/runcommandpluginwrapper.cpp
+    runcommandsetuplistener.h runcommandsetuplistener.cpp
+
+
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

@@ -64,7 +64,7 @@ protected:
     }
 
     template<typename T>
-    void invokeMethod(const char *methodName, T p1)
+    void invokeMethod(const char *methodName, const T &p1)
     {
         auto plugin = sourcePlugin();
         if (plugin != nullptr) {
@@ -73,7 +73,7 @@ protected:
     }
 
     template<typename T1, typename T2>
-    void invokeMethod(const char *methodName, T1 p1, T2 p2)
+    void invokeMethod(const char *methodName, const T1 &p1, const T2 &p2)
     {
         auto plugin = sourcePlugin();
         if (plugin != nullptr) {
@@ -86,7 +86,7 @@ protected:
     }
 
     template<typename T1, typename T2, typename T3>
-    void invokeMethod(const char *methodName, T1 p1, T2 p2, T3 p3)
+    void invokeMethod(const char *methodName, const T1 &p1, const T2 &p2, const T3 &p3)
     {
         auto plugin = sourcePlugin();
         if (plugin != nullptr) {
@@ -100,7 +100,7 @@ protected:
     }
 
     template<typename T1, typename T2, typename T3, typename T4>
-    void invokeMethod(const char *methodName, T1 p1, T2 p2, T3 p3, T4 p4)
+    void invokeMethod(const char *methodName, const T1 &p1, const T2 &p2, const T3 &p3, const T4 &p4)
     {
         auto plugin = sourcePlugin();
         if (plugin != nullptr) {
@@ -115,7 +115,8 @@ protected:
     }
 
     template<typename T1, typename T2, typename T3, typename T4, typename T5>
-    void invokeMethod(const char *methodName, T1 p1, T2 p2, T3 p3, T4 p4, T5 p5)
+    void invokeMethod(
+        const char *methodName, const T1 &p1, const T2 &p2, const T3 &p3, const T4 &p4, const T5 &p5)
     {
         auto plugin = sourcePlugin();
         if (plugin != nullptr) {
@@ -131,7 +132,13 @@ protected:
     }
 
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-    void invokeMethod(const char *methodName, T1 p1, T2 p2, T3 p3, T4 p4, T5 p5, T6 p6)
+    void invokeMethod(const char *methodName,
+                      const T1 &p1,
+                      const T2 &p2,
+                      const T3 &p3,
+                      const T4 &p4,
+                      const T5 &p5,
+                      const T6 &p6)
     {
         auto plugin = sourcePlugin();
         if (plugin != nullptr) {

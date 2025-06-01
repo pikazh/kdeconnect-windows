@@ -2,9 +2,9 @@
 #include "smsconversationcontentwidget.h"
 #include "smsconversationlistitemdelegate.h"
 #include "smshelper.h"
-#include "smsitemdata.h"
 #include "smslistitemsortfilterproxymodel.h"
 #include "ui_smswidget.h"
+#include "uicommon.h"
 
 #include "core/imageutil.h"
 

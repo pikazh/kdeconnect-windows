@@ -1,14 +1,15 @@
-#include "kdeconnectfiledownloadtask.h"
+#include "peerfiledownloadtask.h"
 #include "core_debug.h"
 
+#include <QDir>
 #include <QFileInfo>
 
-KdeConnectFileDownloadTask::KdeConnectFileDownloadTask(QObject *parent)
-    : SocketTask(parent)
+PeerFileDownloadTask::PeerFileDownloadTask(QObject *parent)
+    : PeerSSLSocketTask(parent)
     , m_hashCal(QCryptographicHash::Sha1)
 {}
 
-QString KdeConnectFileDownloadTask::downloadedFilePath(QByteArray *sha1Result) const
+QString PeerFileDownloadTask::downloadedFilePath(QByteArray *sha1Result) const
 {
     if (sha1Result != nullptr) {
         sha1Result->assign(m_hashCal.result());
@@ -17,14 +18,15 @@ QString KdeConnectFileDownloadTask::downloadedFilePath(QByteArray *sha1Result) c
     return m_downloadFilePath;
 }
 
-void KdeConnectFileDownloadTask::setDownloadFilePath(const QString &filePath)
+void PeerFileDownloadTask::setDownloadFilePath(const QString &filePath)
 {
     QString newFilePath = filePath;
     int i = 1;
+    QFileInfo fileInfo(filePath);
     while (QFileInfo::exists(newFilePath)) {
-        QFileInfo fileInfo(newFilePath);
-        newFilePath = fileInfo.absolutePath() + fileInfo.completeBaseName() + QStringLiteral("_");
-        newFilePath += QString::number(i++);
+        newFilePath = fileInfo.absolutePath() + QDir::separator() + fileInfo.completeBaseName()
+                      + QStringLiteral("(");
+        newFilePath.append(QString::number(i++)).append(QStringLiteral(")"));
         if (!fileInfo.suffix().isEmpty()) {
             newFilePath += QStringLiteral(".");
             newFilePath += fileInfo.suffix();
@@ -33,13 +35,14 @@ void KdeConnectFileDownloadTask::setDownloadFilePath(const QString &filePath)
     m_downloadFilePath = newFilePath;
 }
 
-void KdeConnectFileDownloadTask::onAbort()
+void PeerFileDownloadTask::onAbort()
 {
+    //Q_ASSERT(isRunning());
     m_aborted = true;
     closeSocket();
 }
 
-void KdeConnectFileDownloadTask::finisheTask()
+void PeerFileDownloadTask::finisheTask()
 {
     if (m_aborted || m_errorOccured) {
         if (m_downloadedFile.isOpen()) {
@@ -60,12 +63,7 @@ void KdeConnectFileDownloadTask::finisheTask()
     }
 }
 
-void KdeConnectFileDownloadTask::socketConnected()
-{
-    m_connected = true;
-}
-
-void KdeConnectFileDownloadTask::sslErrors(const QList<QSslError> &errors)
+void PeerFileDownloadTask::sslErrors(const QList<QSslError> &errors)
 {
     for (const QSslError &error : errors) {
         if (error.error() != QSslError::SelfSignedCertificate) {
@@ -83,7 +81,7 @@ void KdeConnectFileDownloadTask::sslErrors(const QList<QSslError> &errors)
     }
 }
 
-void KdeConnectFileDownloadTask::connectError(QAbstractSocket::SocketError socketError)
+void PeerFileDownloadTask::connectError(QAbstractSocket::SocketError socketError)
 {
     if (socketError != QAbstractSocket::RemoteHostClosedError) {
         m_errorOccured = true;
@@ -92,20 +90,21 @@ void KdeConnectFileDownloadTask::connectError(QAbstractSocket::SocketError socke
         qWarning(KDECONNECT_CORE) << "connectError:" << socketError << ", error str:" << m_errorStr;
     }
 
-    if (!m_connected) {
+    if (socketConnectState() != SocketState::Connected) {
         finisheTask();
     }
 }
 
-void KdeConnectFileDownloadTask::socketDisconnected()
+void PeerFileDownloadTask::socketDisconnected()
 {
-    m_connected = false;
     finisheTask();
 }
 
-void KdeConnectFileDownloadTask::socketEncrypted()
+void PeerFileDownloadTask::socketEncrypted()
 {
+    setTaskStatus(TaskStatus::Transfering);
     m_hashCal.reset();
+    m_downloadedSize = 0;
 
     m_downloadedFile.setFileName(m_downloadFilePath);
     if (!m_downloadedFile.open(QIODeviceBase::WriteOnly | QIODeviceBase::Truncate)) {
@@ -113,25 +112,29 @@ void KdeConnectFileDownloadTask::socketEncrypted()
             << "open file" << m_downloadFilePath << "for downloading failed.";
 
         m_errorOccured = true;
-        m_errorStr = "Can not open file to write";
+        m_errorStr = tr("Can not open file to write");
 
         closeSocket();
     }
 }
 
-void KdeConnectFileDownloadTask::dataReceived()
+void PeerFileDownloadTask::dataReceived()
 {
     auto s = socket();
     auto newData = s->readAll();
     if (newData.size() != m_downloadedFile.write(newData)) {
         m_errorOccured = true;
-        m_errorStr = "Can not write buffer to the specified file";
+        m_errorStr = tr("Can not write buffer to the specified file");
 
         qCritical(KDECONNECT_CORE) << m_errorStr;
 
         closeSocket();
-        return;
-    }
 
-    m_hashCal.addData(newData);
+    } else {
+        m_hashCal.addData(newData);
+
+        m_downloadedSize += newData.size();
+
+        setProgress(m_downloadedSize, contentSize());
+    }
 }

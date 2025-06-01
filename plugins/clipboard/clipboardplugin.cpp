@@ -34,7 +34,7 @@ void ClipboardPlugin::onPluginEnabled()
 void ClipboardPlugin::onClipboardChanged(const QString &content,
                                          ClipboardListener::ClipboardContentType contentType)
 {
-    if (!m_autoSync) {
+    if (!m_autoShare) {
         return;
     }
 
@@ -49,7 +49,7 @@ void ClipboardPlugin::onClipboardChanged(const QString &content,
 
 void ClipboardPlugin::reloadConfig()
 {
-    m_autoSync = config()->getBool(QStringLiteral("autoSync"), false);
+    m_autoShare = config()->getBool(QStringLiteral("autoShare"), false);
     m_sharePasswords = config()->getBool(QStringLiteral("sendPassword"), false);
 }
 
@@ -67,7 +67,7 @@ void ClipboardPlugin::sendClipboard(const QString &content)
 
 void ClipboardPlugin::sendConnectPacket()
 {
-    if (!m_autoSync
+    if (!m_autoShare
         || (!m_sharePasswords
             && ClipboardListener::instance()->currentContentType()
                    == ClipboardListener::ClipboardContentTypePassword)) {
@@ -83,10 +83,6 @@ void ClipboardPlugin::sendConnectPacket()
 
 void ClipboardPlugin::receivePacket(const NetworkPacket &np)
 {
-    if (!m_autoSync) {
-        return;
-    }
-
     if (np.type() == PACKET_TYPE_CLIPBOARD) {
         QString content = np.get<QString>(QStringLiteral("content"));
         ClipboardListener::instance()->setText(content);

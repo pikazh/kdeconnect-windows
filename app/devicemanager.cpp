@@ -68,6 +68,7 @@ void DeviceManager::refreshNetwokState()
 
 void DeviceManager::addDevice(Device::Ptr device)
 {
+    Q_ASSERT(device);
     QString id = device->id();
     connect(device.get(), &Device::reachableChanged, this, &DeviceManager::onDeviceReachableChanged);
     connect(device.get(), &Device::pairStateChanged, this, &DeviceManager::onDevicePairStateChanged);
@@ -81,6 +82,7 @@ void DeviceManager::addDevice(Device::Ptr device)
 
 void DeviceManager::removeDevice(Device::Ptr device)
 {
+    Q_ASSERT(device);
     m_devices.remove(device->id());
     Q_EMIT deviceRemoved(device->id());
     Q_EMIT deviceListChanged();

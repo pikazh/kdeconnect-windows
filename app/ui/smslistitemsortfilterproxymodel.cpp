@@ -1,5 +1,5 @@
 #include "smslistitemsortfilterproxymodel.h"
-#include "smsitemdata.h"
+#include "uicommon.h"
 
 SmsListItemSortFilterProxyModel::SmsListItemSortFilterProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)

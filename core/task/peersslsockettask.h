@@ -1,19 +1,20 @@
 #pragma once
 
-#include "QObjectPtr.h"
 #include "kdeconnectcore_export.h"
+
+#include "QObjectPtr.h"
 #include "task.h"
 
 #include <QSslSocket>
 
-class KDECONNECTCORE_EXPORT SocketTask : public Task
+class KDECONNECTCORE_EXPORT PeerSSLSocketTask : public Task
 {
     Q_OBJECT
 public:
-    using Ptr = shared_qobject_ptr<SocketTask>;
+    using Ptr = shared_qobject_ptr<PeerSSLSocketTask>;
 
-    explicit SocketTask(QObject *parent = nullptr);
-    virtual ~SocketTask() override = default;
+    explicit PeerSSLSocketTask(QObject *parent = nullptr);
+    virtual ~PeerSSLSocketTask() override = default;
 
     void setPeerHostAndPort(const QString &host, quint16 port)
     {
@@ -22,12 +23,20 @@ public:
     }
 
     void setPeerDeviceId(const QString &deviceId) { m_peerDeviceId = deviceId; }
+    void setContentSize(qint64 size) { m_contentSize = size; }
+    qint64 contentSize() const { return m_contentSize; }
 
 protected:
+    enum class SocketState {
+        NotConnected = 0,
+        Connecting,
+        Connected,
+    };
+
     virtual void executeTask() override;
 
     QSharedPointer<QSslSocket> socket() const { return m_socket; }
-    bool isConnected() const;
+    SocketState socketConnectState() const;
     void closeSocket();
 
 protected Q_SLOTS:
@@ -43,4 +52,5 @@ private:
     QString m_peerHost;
     quint16 m_peerPort = 0;
     QString m_peerDeviceId;
+    qint64 m_contentSize = -1;
 };

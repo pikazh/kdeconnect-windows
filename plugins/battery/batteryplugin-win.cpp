@@ -50,8 +50,8 @@ void BatteryPlugin::sendLocalBatteryInfo()
 
 void BatteryPlugin::showNotification(const int chargePercent)
 {
-    QString title = QString(QStringLiteral("%1: Low Battery")).arg(device()->name());
-    QString text = QString(QStringLiteral("Battery at %1%")).arg(chargePercent);
+    QString title = QString(tr("%1: Low Battery")).arg(device()->name());
+    QString text = QString(tr("Battery at %1%")).arg(chargePercent);
     QString iconName;
     if (chargePercent <= 10) {
         iconName = QStringLiteral("battery-010");

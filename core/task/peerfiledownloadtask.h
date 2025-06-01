@@ -1,19 +1,19 @@
 #pragma once
 
-#include "sockettask.h"
+#include "peersslsockettask.h"
 
 #include <QByteArray>
 #include <QCryptographicHash>
 #include <QFile>
 
-class KDECONNECTCORE_EXPORT KdeConnectFileDownloadTask : public SocketTask
+class KDECONNECTCORE_EXPORT PeerFileDownloadTask : public PeerSSLSocketTask
 {
     Q_OBJECT
 public:
-    using Ptr = shared_qobject_ptr<KdeConnectFileDownloadTask>;
+    using Ptr = shared_qobject_ptr<PeerFileDownloadTask>;
 
-    KdeConnectFileDownloadTask(QObject *parent = nullptr);
-    virtual ~KdeConnectFileDownloadTask() override = default;
+    PeerFileDownloadTask(QObject *parent = nullptr);
+    virtual ~PeerFileDownloadTask() override = default;
 
     QString downloadedFilePath(QByteArray *sha1Result = nullptr) const;
     void setDownloadFilePath(const QString &filePath);
@@ -24,7 +24,6 @@ protected:
     void finisheTask();
 
 protected Q_SLOTS:
-    virtual void socketConnected() override;
     virtual void connectError(QAbstractSocket::SocketError socketError) override;
     virtual void sslErrors(const QList<QSslError> &errors) override;
     virtual void socketDisconnected() override;
@@ -34,9 +33,10 @@ protected Q_SLOTS:
 private:
     bool m_aborted = false;
     bool m_errorOccured = false;
-    bool m_connected = false;
+
     QString m_errorStr;
     QCryptographicHash m_hashCal;
     QFile m_downloadedFile;
     QString m_downloadFilePath;
+    qint64 m_downloadedSize = 0;
 };

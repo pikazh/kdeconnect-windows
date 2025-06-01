@@ -19,7 +19,6 @@ DeviceWindow::DeviceWindow(Device::Ptr device, QWidget *parent)
     , m_clipboardPluginWrapper(new ClipboardPluginWrapper(device, this))
     , m_pingPluginWrapper(new PingPluginWrapper(device, this))
     , m_findMyPhonePluginWrapper(new FindMyPhonePluginWrapper(device, this))
-    , m_smsPluginWrapper(new SmsPluginWrapper(device, this))
 {
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle(device->name());
@@ -45,8 +44,6 @@ DeviceWindow::DeviceWindow(Device::Ptr device, QWidget *parent)
     m_clipboardPluginWrapper->init();
     m_pingPluginWrapper->init();
     m_findMyPhonePluginWrapper->init();
-
-    m_smsPluginWrapper->init();
 
     QObject::connect(m_batteryPluginWrapper,
                      &BatteryPluginWrapper::refreshed,
@@ -77,10 +74,6 @@ DeviceWindow::DeviceWindow(Device::Ptr device, QWidget *parent)
 
     reloadPages();
     updateUI();
-
-    m_smsPluginWrapper->requestAllConversations();
-    QStringList addresses{"16762851943", "13168561293"};
-    m_smsPluginWrapper->sendSms(addresses, "hello", {});
 }
 
 void DeviceWindow::createToolBar()
@@ -243,21 +236,19 @@ void DeviceWindow::updateVisiblePages()
     refreshContainer();
 }
 
-void DeviceWindow::showPluginSettingsWindow()
+PluginSettingsDialog *DeviceWindow::showPluginSettingsWindow()
 {
     if (m_pluginSettingDlg == nullptr) {
         m_pluginSettingDlg = new PluginSettingsDialog(m_device, this);
-        QObject::connect(m_pluginSettingDlg, &PluginSettingsDialog::destroyed, this, [this]() {
+        QObject::connect(m_pluginSettingDlg, &PluginSettingsDialog::finished, this, [this]() {
             m_pluginSettingDlg = nullptr;
         });
-
-        QString title = tr("Plugins Configuration - ") + m_device->name();
-        m_pluginSettingDlg->setWindowTitle(title);
     }
 
     m_pluginSettingDlg->showNormal();
     m_pluginSettingDlg->raise();
     m_pluginSettingDlg->activateWindow();
+    return m_pluginSettingDlg;
 }
 
 template<typename T>

@@ -1,5 +1,6 @@
 #include "devicepluginpagesprovider.h"
 #include "mprisremotepage.h"
+#include "remotecommandspage.h"
 #include "remoteinputpage.h"
 
 DevicePluginPagesProvider::DevicePluginPagesProvider(Device::Ptr device)
@@ -10,6 +11,7 @@ DevicePluginPagesProvider::DevicePluginPagesProvider(Device::Ptr device)
 QList<BasePage *> DevicePluginPagesProvider::getPages()
 {
     QList<BasePage *> pages;
+    pages.append(new RemoteCommandsPage(m_device));
     pages.append(new MprisRemotePage(m_device));
     pages.append(new RemoteInputPage(m_device));
     return pages;

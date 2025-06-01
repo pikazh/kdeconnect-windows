@@ -11,7 +11,6 @@
 #include "plugin/findmyphonepluginwrapper.h"
 #include "plugin/pingpluginwrapper.h"
 #include "plugin/sftppluginwrapper.h"
-#include "plugin/smspluginwrapper.h"
 
 #include "ui/dialogs/pluginsettingsdialog.h"
 #include "ui/pages/BasePageContainer.h"
@@ -31,6 +30,9 @@ public:
     virtual bool requestClose() override;
 
     Device::Ptr device() { return m_device; }
+
+public Q_SLOTS:
+    PluginSettingsDialog *showPluginSettingsWindow();
 
 protected:
     void updateUI();
@@ -52,8 +54,6 @@ protected Q_SLOTS:
 
     void updateVisiblePages();
 
-    void showPluginSettingsWindow();
-
 Q_SIGNALS:
     void aboutToClose();
 
@@ -66,7 +66,6 @@ private:
     ClipboardPluginWrapper *m_clipboardPluginWrapper = nullptr;
     PingPluginWrapper *m_pingPluginWrapper = nullptr;
     FindMyPhonePluginWrapper *m_findMyPhonePluginWrapper = nullptr;
-    SmsPluginWrapper *m_smsPluginWrapper = nullptr;
 
     PageContainer *m_container = nullptr;
 

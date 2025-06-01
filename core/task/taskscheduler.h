@@ -16,24 +16,33 @@ public:
         Running,
         WaitingForStop,
     };
-    TaskScheduler(int maxConcurrentNum = 10, QObject *parent = nullptr);
+    explicit TaskScheduler(QObject *parent = nullptr,
+                           int maxConcurrentNum = 10,
+                           bool autoRemoveFinishedTask = true);
     virtual ~TaskScheduler() override = default;
 
     virtual bool start() override;
     virtual bool stop() override;
+    virtual bool abortTask(Task::Ptr task) override;
     virtual bool addTask(Task::Ptr task) override;
     virtual bool removeTask(Task::Ptr task) override;
+
+    QList<Task::Ptr> waitingTasks() const { return m_queue; }
+    QList<Task::Ptr> runningTasks() const { return m_doing.values(); }
+    QList<Task::Ptr> doneTasks() const { return m_done.values(); }
+
+    int maxConcurrentTaskNum() { return m_maxConcurrentTaskNum; }
+    int totalTaskNumber() { return m_doing.size() + m_done.size() + m_queue.size(); }
 
 protected:
     void setState(State state) { m_state = state; }
     State state() { return m_state; }
-    int maxConcurrentTaskNum() { return m_maxConcurrentTaskNum; }
-    int totalTaskNumber() { return m_doing.size() + m_done.size() + m_queue.size(); }
 
     void scheduleTask();
     void runTask(Task::Ptr task);
     bool stopCheck();
     bool removeTaskFromScheduleQueue(Task *task);
+    void updateScheduleProgress();
 
     void onTaskStarted(Task::Ptr task);
     void onTaskFailed(Task::Ptr task, const QString &msg);
@@ -46,6 +55,8 @@ protected Q_SLOTS:
     void executeNextTask();
 
 Q_SIGNALS:
+    void taskAdded(Task::Ptr task);
+    void taskRemoved(Task::Ptr task);
     void taskStarted(Task::Ptr task);
     void taskFailed(Task::Ptr task, const QString &reason);
     void taskSucceeded(Task::Ptr task);
@@ -58,6 +69,7 @@ private:
     int m_maxConcurrentTaskNum;
     State m_state;
 
+    QSet<Task *> m_taskIndexs;
     QList<Task::Ptr> m_queue;
     QHash<Task *, Task::Ptr> m_doing;
     QHash<Task *, Task::Ptr> m_done;
@@ -66,5 +78,5 @@ private:
     QHash<Task *, Task::Ptr> m_failed;
     QHash<Task *, Task::Ptr> m_aborted;
 
-    QSet<Task *> m_taskIndexs;
+    bool m_autoRemoveFinishedTask;
 };

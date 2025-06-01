@@ -581,7 +581,9 @@ void LanLinkProvider::onLinkDestroyed(const QString &deviceId, DeviceLink *oldPt
     Q_ASSERT(link == oldPtr);
 }
 
-void LanLinkProvider::configureSslSocket(QSslSocket *socket, const QString &deviceId, bool isDeviceTrusted)
+void LanLinkProvider::configureSslSocket(QSslSocket *socket,
+                                         const QString &deviceId,
+                                         bool isDeviceTrusted)
 {
     // Configure for ssl
     QSslConfiguration sslConfig;

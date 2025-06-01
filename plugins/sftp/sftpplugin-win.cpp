@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
  */
 #include "sftpplugin-win.h"
-#include "core/plugins/pluginfactory.h"
 #include "plugin_sftp_debug.h"
+
+#include "core/plugins/pluginfactory.h"
 
 #include <QCoreApplication>
 #include <QDir>

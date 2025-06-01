@@ -1,9 +1,10 @@
 #include "taskscheduler.h"
 #include "core_debug.h"
 
-TaskScheduler::TaskScheduler(int maxConcurrentNum, QObject *parent)
+TaskScheduler::TaskScheduler(QObject *parent, int maxConcurrentNum, bool autoRemoveFinishedTask)
     : ITaskScheduler(parent)
     , m_maxConcurrentTaskNum(maxConcurrentNum)
+    , m_autoRemoveFinishedTask(autoRemoveFinishedTask)
     , m_state(State::Stopped)
 {}
 
@@ -34,6 +35,16 @@ bool TaskScheduler::stop()
     return allAborted;
 }
 
+bool TaskScheduler::abortTask(Task::Ptr task)
+{
+    Task *taskPtr = task.get();
+    if (m_taskIndexs.contains(taskPtr)) {
+        return taskPtr->abort();
+    }
+
+    return false;
+}
+
 bool TaskScheduler::addTask(Task::Ptr task)
 {
     Task *taskPtr = task.get();
@@ -43,7 +54,10 @@ bool TaskScheduler::addTask(Task::Ptr task)
     } else {
         m_taskIndexs.insert(taskPtr);
         m_queue.append(task);
+        Q_EMIT taskAdded(task);
+        updateScheduleProgress();
         scheduleTask();
+
         return true;
     }
 }
@@ -54,19 +68,25 @@ bool TaskScheduler::removeTask(Task::Ptr task)
     if (m_taskIndexs.contains(taskPtr)) {
         m_taskIndexs.remove(taskPtr);
 
-        if (removeTaskFromScheduleQueue(taskPtr)) {
-            return true;
-        } else if (m_doing.remove(taskPtr)) {
+        if (task->isRunning() && m_doing.remove(taskPtr)) {
             QObject::disconnect(taskPtr, nullptr, this, nullptr);
             taskPtr->abort();
             if (state() == State::Running) {
                 scheduleTask();
             }
+            Q_EMIT taskRemoved(task);
+            updateScheduleProgress();
             return true;
-        } else if (m_done.remove(taskPtr)) {
+        } else if (removeTaskFromScheduleQueue(taskPtr)) {
+            Q_EMIT taskRemoved(task);
+            updateScheduleProgress();
+            return true;
+        } else if (!m_autoRemoveFinishedTask && m_done.remove(taskPtr)) {
             m_failed.remove(taskPtr);
             m_succeeded.remove(taskPtr);
             m_aborted.remove(taskPtr);
+            Q_EMIT taskRemoved(task);
+            updateScheduleProgress();
             return true;
         } else {
             Q_ASSERT(0);
@@ -132,6 +152,11 @@ bool TaskScheduler::removeTaskFromScheduleQueue(Task *taskPtr)
     return false;
 }
 
+void TaskScheduler::updateScheduleProgress()
+{
+    Q_EMIT scheduleProgress(m_doing.size(), totalTaskNumber());
+}
+
 void TaskScheduler::onTaskStarted(Task::Ptr task)
 {
     emit taskStarted(task);
@@ -156,30 +181,40 @@ void TaskScheduler::onTaskFinished(Task::Ptr task, Task::State state, const QStr
 {
     Task *taskPtr = task.get();
     m_doing.remove(taskPtr);
-    m_done.insert(taskPtr, task);
+    if (!m_autoRemoveFinishedTask) {
+        m_done.insert(taskPtr, task);
+    }
 
     QObject::disconnect(taskPtr, nullptr, this, nullptr);
 
     switch (state) {
     case Task::State::Aborted:
-        m_aborted.insert(taskPtr, task);
-        emit taskAborted(task);
+        if (!m_autoRemoveFinishedTask)
+            m_aborted.insert(taskPtr, task);
+        Q_EMIT taskAborted(task);
         break;
     case Task::State::Failed:
-        m_failed.insert(taskPtr, task);
-        emit taskFailed(task, msg);
+        if (!m_autoRemoveFinishedTask)
+            m_failed.insert(taskPtr, task);
+        Q_EMIT taskFailed(task, msg);
         break;
     case Task::State::Succeeded:
-        m_succeeded.insert(taskPtr, task);
-        emit taskSucceeded(task);
+        if (!m_autoRemoveFinishedTask)
+            m_succeeded.insert(taskPtr, task);
+        Q_EMIT taskSucceeded(task);
         break;
     default:
         qCritical(KDECONNECT_CORE) << "onTaskFinished was call with improper task state" << state;
         break;
     }
 
-    emit taskFinished(task);
-    emit scheduleProgress(m_doing.size(), totalTaskNumber());
+    Q_EMIT taskFinished(task);
+
+    if (m_autoRemoveFinishedTask) {
+        Q_EMIT taskRemoved(task);
+    }
+
+    updateScheduleProgress();
 
     if (!stopCheck()) {
         scheduleTask();
@@ -188,7 +223,7 @@ void TaskScheduler::onTaskFinished(Task::Ptr task, Task::State state, const QStr
 
 void TaskScheduler::onTaskProgress(Task::Ptr task, qint64 currentProgress, qint64 totalProgress)
 {
-    emit taskProgress(task, currentProgress, totalProgress);
+    Q_EMIT taskProgress(task, currentProgress, totalProgress);
 }
 
 void TaskScheduler::executeNextTask()
@@ -204,6 +239,7 @@ void TaskScheduler::executeNextTask()
     if (!m_queue.isEmpty()) {
         auto task = m_queue.takeFirst();
         m_doing.insert(task.get(), task);
+        updateScheduleProgress();
         runTask(task);
 
         scheduleTask();

@@ -1,5 +1,6 @@
 #include "application.h"
 #include "devicepairnotify.h"
+#include "runcommandsetuplistener.h"
 
 #include "ui/devicewindow.h"
 #include "ui/dialogs/appsettingsdialog.h"
@@ -11,6 +12,7 @@
 #include "icons.h"
 
 #include <QAction>
+#include <QEvent>
 #include <QIcon>
 #include <QMenu>
 #include <QStyle>
@@ -19,6 +21,7 @@
 Application::Application(int &argc, char **argv)
     : QApplication(argc, argv)
     , m_deviceManager(new DeviceManager(this))
+    , m_language(new Language(this))
 {
     qSetMessagePattern(QStringLiteral(
         "[%{time yyyy-MM-ddTHH:mm:ss.zzz} "
@@ -29,6 +32,8 @@ Application::Application(int &argc, char **argv)
     setApplicationDisplayName(tr("KDE Connect"));
 
     new DevicePairNotify(m_deviceManager, this);
+    new RunCommandSetupListener(m_deviceManager, this);
+
     QObject::connect(this, SIGNAL(aboutToQuit()), this, SLOT(cleanUp()));
 }
 
@@ -45,9 +50,12 @@ void Application::init()
     Icons::initIcons();
     QIcon::setThemeName(QStringLiteral("breeze"));
     setWindowIcon(QIcon(":/kdeconnect.ico"));
+    initStyle();
+    initLanguage();
+
     m_deviceManager->init();
     createSystemTrayIcon();
-    initStyle();
+
     this->setQuitOnLastWindowClosed(false);
 
     auto kdeConnectConfig = KdeConnectConfig::instance();
@@ -71,23 +79,27 @@ void Application::showMainWindow()
     m_MainWindow->activateWindow();
 }
 
-void Application::showDeviceWindow(Device::Ptr device)
+DeviceWindow *Application::showDeviceWindow(Device::Ptr device)
 {
     auto deviceId = device->id();
     auto it = m_deviceWindows.constFind(deviceId);
     if (it == m_deviceWindows.constEnd()) {
         DeviceWindow *deviceWindow = new DeviceWindow(device);
+        QObject::connect(deviceWindow, SIGNAL(aboutToClose()), this, SLOT(deviceWindowClosing()));
         deviceWindow->showNormal();
         deviceWindow->raise();
         deviceWindow->activateWindow();
         m_deviceWindows.insert(deviceId, deviceWindow);
-        QObject::connect(deviceWindow, SIGNAL(aboutToClose()), this, SLOT(deviceWindowClosing()));
+
+        return deviceWindow;
     } else {
         auto deviceWindow = it.value();
         deviceWindow->setWindowState((deviceWindow->windowState() & ~Qt::WindowMinimized)
                                      | Qt::WindowActive);
         deviceWindow->raise();
         deviceWindow->activateWindow();
+
+        return deviceWindow;
     }
 }
 
@@ -119,6 +131,32 @@ void Application::showAppSettingsDialog()
     m_appSetingsDlg->showNormal();
     m_appSetingsDlg->raise();
     m_appSetingsDlg->activateWindow();
+}
+
+void Application::showSystemTrayBalloonMessage(const QString &text, const QString &title)
+{
+    if (m_sysTrayIcon != nullptr) {
+        m_sysTrayIcon->showMessage(title, text);
+    }
+}
+
+bool Application::event(QEvent *evt)
+{
+    if (evt->type() == QEvent::LanguageChange) {
+        languageChangeEvent();
+    }
+
+    return __super::event(evt);
+}
+
+void Application::languageChangeEvent()
+{
+    if (m_sysTrayIcon != nullptr) {
+        QMetaObject::invokeMethod(this,
+                                  &Application::createSystemTrayIconMenu,
+                                  Qt::QueuedConnection,
+                                  m_sysTrayIcon);
+    }
 }
 
 void Application::cleanUp()
@@ -169,6 +207,11 @@ DeviceManager *Application::deviceManager() const
     return m_deviceManager;
 }
 
+Language *Application::language() const
+{
+    return m_language;
+}
+
 void Application::createSystemTrayIcon()
 {
     if (m_sysTrayIcon == nullptr) {
@@ -178,26 +221,36 @@ void Application::createSystemTrayIcon()
                          this,
                          &Application::onSystemTrayIconActivated);
 
-        m_trayIconMenu = new QMenu();
-        auto showMainWndAction = new QAction(tr("&Show main window"), m_trayIconMenu);
-        QObject::connect(showMainWndAction, &QAction::triggered, this, [this]() {
-            this->showMainWindow();
-        });
-        auto quitAction = new QAction(tr("&Quit"), m_trayIconMenu);
-        QObject::connect(quitAction,
-                         &QAction::triggered,
-                         this,
-                         &QCoreApplication::quit,
-                         Qt::QueuedConnection);
-
-        m_trayIconMenu->addAction(showMainWndAction);
-        m_trayIconMenu->addSeparator();
-        m_trayIconMenu->addAction(quitAction);
-        m_sysTrayIcon->setContextMenu(m_trayIconMenu);
+        createSystemTrayIconMenu(m_sysTrayIcon);
         m_sysTrayIcon->setIcon(windowIcon());
         m_sysTrayIcon->setToolTip(QStringLiteral("KDE Connect"));
         m_sysTrayIcon->show();
     }
+}
+
+void Application::createSystemTrayIconMenu(QSystemTrayIcon *trayIcon)
+{
+    auto menu = new QMenu();
+    auto showMainWndAction = new QAction(tr("&Show main window"), menu);
+    QObject::connect(showMainWndAction, &QAction::triggered, this, [this]() {
+        this->showMainWindow();
+    });
+    auto quitAction = new QAction(tr("&Quit"), menu);
+    QObject::connect(quitAction,
+                     &QAction::triggered,
+                     this,
+                     &QCoreApplication::quit,
+                     Qt::QueuedConnection);
+
+    menu->addAction(showMainWndAction);
+    menu->addSeparator();
+    menu->addAction(quitAction);
+    trayIcon->setContextMenu(menu);
+
+    if (m_trayIconMenu) {
+        delete m_trayIconMenu;
+    }
+    m_trayIconMenu = menu;
 }
 
 void Application::initStyle()
@@ -212,23 +265,14 @@ void Application::initStyle()
             }
         }
     }
-
-    KdeConnectConfig::instance()->setStyle(this->style()->name());
 }
 
 void Application::initLanguage()
 {
-    // QTranslator translator;
-    // const QStringList uiLanguages = QLocale::system().uiLanguages();
-    // for (const QString &locale : uiLanguages) {
-    //     const QString baseName = "XConnect_" + QLocale(locale).name();
-    //     if (translator.load(":/i18n/" + baseName)) {
-    //         app.installTranslator(&translator);
-    //         break;
-    //     }
-    // }
-    // QLocale::setDefault() QString local = QLocale::languageToString(
-    //     QLocale::system().nativeLanguageName());
+    QString lang = KdeConnectConfig::instance()->language();
+    if (!lang.isEmpty()) {
+        m_language->loadTranslation(lang);
+    }
 }
 
 void Application::onSystemTrayIconActivated(QSystemTrayIcon::ActivationReason reason)

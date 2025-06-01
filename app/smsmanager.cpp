@@ -13,7 +13,7 @@
 SmsManager::SmsManager(Device::Ptr dev, QObject *parent)
     : QObject(parent)
     , m_smsPluginWrapper(new SmsPluginWrapper(dev, this))
-    , m_taskSchedule(new TaskScheduler(3, this))
+    , m_taskSchedule(new TaskScheduler(this, 3))
     , m_device(dev)
 {
     m_smsPluginWrapper->init();
@@ -191,14 +191,14 @@ void SmsManager::onAttachmentDownloadInfoReceived(const QString &uniqueIdentifie
                 if (!suffix.isEmpty()) {
                     downloadFileName.append(QChar('.')).append(suffix);
                 }
-                auto dlTaskPtr = new KdeConnectFileDownloadTask();
+                auto dlTaskPtr = new PeerFileDownloadTask();
                 dlTaskPtr->setPeerDeviceId(m_device->id());
                 dlTaskPtr->setPeerHostAndPort(host, port);
                 dlTaskPtr->setDownloadFilePath(m_attachmentDownloadDir + QDir::separator()
                                                + downloadFileName);
-                dlTaskPtr->setProperty("fileSize", fileSize);
+                dlTaskPtr->setContentSize(fileSize);
 
-                KdeConnectFileDownloadTask::Ptr dlTask(dlTaskPtr);
+                PeerFileDownloadTask::Ptr dlTask(dlTaskPtr);
                 m_taskSchedule->addTask(dlTask);
                 m_downloadTasks.append(
                     {messageId, attachment.partID(), attachment.uniqueIdentifier(), dlTask});
@@ -211,28 +211,24 @@ void SmsManager::onAttachmentDownloadInfoReceived(const QString &uniqueIdentifie
 
 void SmsManager::onDlTaskFinished(Task::Ptr task)
 {
-    KdeConnectFileDownloadTask *taskPtr = qobject_cast<KdeConnectFileDownloadTask *>(task.get());
+    PeerFileDownloadTask *taskPtr = qobject_cast<PeerFileDownloadTask *>(task.get());
     if (taskPtr != nullptr) {
-        qint64 dataSize = qvariant_cast<qint64>(taskPtr->property("fileSize"));
-        Q_ASSERT(dataSize > 0);
-        if (dataSize > 0) {
-            m_taskSchedule->removeTask(task);
-            for (int i = 0; i < m_downloadTasks.size(); ++i) {
-                const auto [msgId, partId, uniqueIdenfier, dlTask] = m_downloadTasks[i];
+        //m_taskSchedule->removeTask(task);
+        for (int i = 0; i < m_downloadTasks.size(); ++i) {
+            const auto [msgId, partId, uniqueIdenfier, dlTask] = m_downloadTasks[i];
 
-                if (dlTask.get() == taskPtr) {
-                    m_downloadTasks.removeAt(i);
-                    if (taskPtr->isSuccessful()) {
-                        QString filePath = taskPtr->downloadedFilePath();
-                        QFileInfo fileInfo(filePath);
-                        Q_ASSERT(fileInfo.size() == dataSize);
-                        Q_EMIT attachmentDownloadFinished(msgId, partId, true, fileInfo.fileName());
-                    } else {
-                        Q_EMIT attachmentDownloadFinished(msgId, partId, false, {});
-                    }
-
-                    return;
+            if (dlTask.get() == taskPtr) {
+                m_downloadTasks.removeAt(i);
+                if (taskPtr->isSuccessful()) {
+                    QString filePath = taskPtr->downloadedFilePath();
+                    QFileInfo fileInfo(filePath);
+                    Q_ASSERT(fileInfo.size() == taskPtr->contentSize());
+                    Q_EMIT attachmentDownloadFinished(msgId, partId, true, fileInfo.fileName());
+                } else {
+                    Q_EMIT attachmentDownloadFinished(msgId, partId, false, {});
                 }
+
+                return;
             }
         }
     }
@@ -240,7 +236,7 @@ void SmsManager::onDlTaskFinished(Task::Ptr task)
 
 void SmsManager::onDlTaskFailed(Task::Ptr task, const QString &reason)
 {
-    KdeConnectFileDownloadTask *taskPtr = qobject_cast<KdeConnectFileDownloadTask *>(task.get());
+    PeerFileDownloadTask *taskPtr = qobject_cast<PeerFileDownloadTask *>(task.get());
     if (taskPtr != nullptr) {
         qWarning(KDECONNECT_APP) << "download attachment to path:" << taskPtr->downloadedFilePath()
                                  << "failed:" << reason;

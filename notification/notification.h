@@ -75,7 +75,9 @@ public:
     bool isClosed() const;
 
     static Notification *exec(StandardEvent event, const QString &title, const QString &text);
-    static Notification *exec(const QString &title, const QString &text, const QString &iconName);
+    static Notification *exec(const QString &title,
+                              const QString &text,
+                              const QString &iconName = QString());
 
 public Q_SLOTS:
     void close();

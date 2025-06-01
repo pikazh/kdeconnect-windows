@@ -41,23 +41,42 @@
         <source>&amp;Device Name</source>
         <translation>设备名</translation>
     </message>
+    <message>
+        <location filename="../app/ui/dialogs/appsettingsdialog.ui" line="108"/>
+        <source>* You should restart the application to fully apply the language change.</source>
+        <translation>* 你需要重启应用以便使语言切换完全生效.</translation>
+    </message>
 </context>
 <context>
     <name>Application</name>
     <message>
-        <location filename="../app/application.cpp" line="29"/>
+        <location filename="../app/application.h" line="36"/>
+        <location filename="../app/application.cpp" line="32"/>
         <source>KDE Connect</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../app/application.cpp" line="182"/>
+        <location filename="../app/application.cpp" line="234"/>
         <source>&amp;Show main window</source>
         <translation>显示主界面</translation>
     </message>
     <message>
-        <location filename="../app/application.cpp" line="186"/>
+        <location filename="../app/application.cpp" line="238"/>
         <source>&amp;Quit</source>
         <translation>退出</translation>
+    </message>
+</context>
+<context>
+    <name>BatteryPlugin</name>
+    <message>
+        <location filename="../plugins/battery/batteryplugin-win.cpp" line="53"/>
+        <source>%1: Low Battery</source>
+        <translation>%1： 低电量</translation>
+    </message>
+    <message>
+        <location filename="../plugins/battery/batteryplugin-win.cpp" line="54"/>
+        <source>Battery at %1%</source>
+        <translation>当前电量只剩下%1%了</translation>
     </message>
 </context>
 <context>
@@ -85,8 +104,8 @@
     <name>ClipboardPluginConfigDialog</name>
     <message>
         <location filename="../app/ui/dialogs/clipboardpluginconfigdialog.ui" line="33"/>
-        <source>Automatically sync the clipboard with other trusted devices</source>
-        <translation>自动与配对的设备同步剪切板</translation>
+        <source>Automatically share the clipboard with peer device</source>
+        <translation>自动将剪切板的内容同步给配对设备</translation>
     </message>
     <message>
         <location filename="../app/ui/dialogs/clipboardpluginconfigdialog.ui" line="40"/>
@@ -112,17 +131,12 @@
         <translation>设备不在线</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicelistmodel.cpp" line="75"/>
+        <location filename="../app/ui/devicelistmodel.cpp" line="80"/>
         <source>Name</source>
         <translation>名字</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicelistmodel.cpp" line="77"/>
-        <source>Type</source>
-        <translation>类型</translation>
-    </message>
-    <message>
-        <location filename="../app/ui/devicelistmodel.cpp" line="79"/>
+        <location filename="../app/ui/devicelistmodel.cpp" line="82"/>
         <source>State</source>
         <translation>状态</translation>
     </message>
@@ -169,49 +183,44 @@
 <context>
     <name>DeviceWindow</name>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="96"/>
+        <location filename="../app/ui/devicewindow.cpp" line="89"/>
         <source>Browser Device</source>
         <translation>浏览文件系统</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="104"/>
+        <location filename="../app/ui/devicewindow.cpp" line="97"/>
         <source>Send Clipboard</source>
         <translation>发送剪切板</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="112"/>
+        <location filename="../app/ui/devicewindow.cpp" line="105"/>
         <source>Send Ping</source>
         <translation>发送Ping</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="120"/>
+        <location filename="../app/ui/devicewindow.cpp" line="113"/>
         <source>Ring device</source>
         <translation>响铃</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="128"/>
+        <location filename="../app/ui/devicewindow.cpp" line="121"/>
         <source>Plugin Settings</source>
         <translation>插件设置</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="205"/>
+        <location filename="../app/ui/devicewindow.cpp" line="198"/>
         <source> (Battery: %1%</source>
-        <translation> (当前电量: %1</translation>
+        <translation> (当前电量: %1%</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="208"/>
+        <location filename="../app/ui/devicewindow.cpp" line="201"/>
         <source>, charging</source>
         <translation>, 充电中</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="211"/>
+        <location filename="../app/ui/devicewindow.cpp" line="204"/>
         <source>)</source>
         <translation></translation>
-    </message>
-    <message>
-        <location filename="../app/ui/devicewindow.cpp" line="254"/>
-        <source>Plugins Configuration - </source>
-        <translation>插件设置 - </translation>
     </message>
 </context>
 <context>
@@ -352,39 +361,34 @@
         <translation>刷新</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow.ui" line="81"/>
+        <location filename="../app/ui/mainwindow.ui" line="90"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow.ui" line="88"/>
-        <location filename="../app/ui/mainwindow.cpp" line="166"/>
+        <location filename="../app/ui/mainwindow.ui" line="97"/>
+        <location filename="../app/ui/mainwindow.cpp" line="198"/>
         <source>Pair</source>
         <translation>配对</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow.ui" line="108"/>
+        <location filename="../app/ui/mainwindow.ui" line="117"/>
         <source>SMS Messages</source>
         <translation>SMS短信</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow.ui" line="129"/>
+        <location filename="../app/ui/mainwindow.ui" line="138"/>
         <source>Device Name: </source>
         <translation>设备名: </translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow.ui" line="148"/>
-        <source>kdeconnect</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../app/ui/mainwindow.ui" line="168"/>
+        <location filename="../app/ui/mainwindow.ui" line="177"/>
         <source>Settings</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow.cpp" line="163"/>
-        <location filename="../app/ui/mainwindow.cpp" line="171"/>
+        <location filename="../app/ui/mainwindow.cpp" line="195"/>
+        <location filename="../app/ui/mainwindow.cpp" line="203"/>
         <source>Unpair</source>
         <translation>取消配对</translation>
     </message>
@@ -405,8 +409,8 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/mprisremotepage.ui" line="85"/>
-        <location filename="../app/ui/pages/mprisremotepage.ui" line="99"/>
+        <location filename="../app/ui/pages/mprisremotepage.ui" line="91"/>
+        <location filename="../app/ui/pages/mprisremotepage.ui" line="105"/>
         <source>00:00</source>
         <translation></translation>
     </message>
@@ -443,37 +447,37 @@
         <translation>设备配对</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/pairpage.ui" line="39"/>
+        <location filename="../app/ui/pages/pairpage.ui" line="45"/>
         <source>The device is not paired.</source>
         <translation>设备未配对</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/pairpage.ui" line="63"/>
+        <location filename="../app/ui/pages/pairpage.ui" line="69"/>
         <source>Pair requested</source>
         <translation>配对请求</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/pairpage.ui" line="79"/>
+        <location filename="../app/ui/pages/pairpage.ui" line="85"/>
         <source>Key: xxxxxxxx</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/pairpage.ui" line="91"/>
+        <location filename="../app/ui/pages/pairpage.ui" line="97"/>
         <source>Waiting for the peer to process...</source>
         <translation>等待对方处理中...</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/pairpage.ui" line="116"/>
+        <location filename="../app/ui/pages/pairpage.ui" line="122"/>
         <source>Accept</source>
         <translation>接受</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/pairpage.ui" line="123"/>
+        <location filename="../app/ui/pages/pairpage.ui" line="129"/>
         <source>Reject</source>
         <translation>拒绝</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/pairpage.ui" line="160"/>
+        <location filename="../app/ui/pages/pairpage.ui" line="166"/>
         <source>Pair</source>
         <translation>配对</translation>
     </message>
@@ -482,6 +486,27 @@
         <location filename="../app/ui/pages/pairpage.cpp" line="99"/>
         <source>Key: %1</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PeerFileDownloadTask</name>
+    <message>
+        <location filename="../core/task/peerfiledownloadtask.cpp" line="115"/>
+        <source>Can not open file to write</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../core/task/peerfiledownloadtask.cpp" line="127"/>
+        <source>Can not write buffer to the specified file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PeerSSLSocketTask</name>
+    <message>
+        <location filename="../core/task/peersslsockettask.cpp" line="21"/>
+        <source>Peer info is not set!</source>
+        <translation>配对设备的信息没有设置！</translation>
     </message>
 </context>
 <context>
@@ -495,27 +520,32 @@
 <context>
     <name>PluginSettingsDialog</name>
     <message>
-        <location filename="../app/ui/dialogs/pluginsettingsdialog.ui" line="44"/>
+        <location filename="../app/ui/dialogs/pluginsettingsdialog.ui" line="53"/>
         <source>Search</source>
         <translation>查找</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="20"/>
+        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="28"/>
+        <source>Plugins Configuration - </source>
+        <translation>插件设置 - </translation>
+    </message>
+    <message>
+        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="21"/>
         <source>Enable</source>
         <translation>启用</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="20"/>
+        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="21"/>
         <source>Name</source>
         <translation>名字</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="20"/>
+        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="21"/>
         <source>Description</source>
         <translation>描述</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="20"/>
+        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="21"/>
         <source>Configuration</source>
         <translation>设置</translation>
     </message>
@@ -1053,29 +1083,65 @@ It does not seem to contain an actual email address, i.e. something of the form 
     </message>
 </context>
 <context>
+    <name>RemoteCommandsListModel</name>
+    <message>
+        <location filename="../app/ui/pages/remotecommandslistmodel.cpp" line="40"/>
+        <source>Name: </source>
+        <translation>名字: </translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/remotecommandslistmodel.cpp" line="40"/>
+        <source>Command: </source>
+        <translation>命令: </translation>
+    </message>
+</context>
+<context>
+    <name>RemoteCommandsPage</name>
+    <message>
+        <location filename="../app/ui/pages/remotecommandspage.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/remotecommandspage.ui" line="60"/>
+        <source>Edit Commands</source>
+        <translation>编辑命令</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/remotecommandspage.h" line="22"/>
+        <source>Run Commands</source>
+        <translation>运行命令</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/remotecommandspage.cpp" line="66"/>
+        <source>You can edit commands on the connected device</source>
+        <translation>你可以在配对设备上编辑命令</translation>
+    </message>
+</context>
+<context>
     <name>RemoteInputPage</name>
     <message>
-        <location filename="../app/ui/pages/remoteinputpage.ui" line="48"/>
+        <location filename="../app/ui/pages/remoteinputpage.ui" line="54"/>
         <source>Lock</source>
         <translation>锁定</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/remoteinputpage.ui" line="85"/>
+        <location filename="../app/ui/pages/remoteinputpage.ui" line="91"/>
         <source>Click &quot;Lock&quot; to use your mouse as remote mousepad</source>
         <translation>点击”锁定“按钮后，可以使用你的鼠标操作远程设备</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/remoteinputpage.ui" line="122"/>
+        <location filename="../app/ui/pages/remoteinputpage.ui" line="128"/>
         <source>Press Alt+X or the left and right mouse buttons at the same time to unlock</source>
         <translation>按下”Alt+X&quot;或者同时按下鼠标左右键可以解锁</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/remoteinputpage.ui" line="159"/>
+        <location filename="../app/ui/pages/remoteinputpage.ui" line="165"/>
         <source>Use your keyboard device as remote keyboard:</source>
         <translation>将你的键盘当作远程设备的键盘进行输入:</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/remoteinputpage.ui" line="170"/>
+        <location filename="../app/ui/pages/remoteinputpage.ui" line="176"/>
         <source>Input here...</source>
         <translation>在此键入...</translation>
     </message>
@@ -1088,17 +1154,17 @@ It does not seem to contain an actual email address, i.e. something of the form 
 <context>
     <name>RunCommandPluginConfigDialog</name>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.ui" line="38"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.ui" line="53"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.ui" line="45"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.ui" line="60"/>
         <source>Import</source>
         <translation>导入</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.ui" line="56"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.ui" line="71"/>
         <source>Sample commands</source>
         <translation>示例命令</translation>
     </message>
@@ -1113,47 +1179,47 @@ It does not seem to contain an actual email address, i.e. something of the form 
         <translation>命令</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="38"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="39"/>
         <source>Schedule a shutdown</source>
         <translation>计划关机</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="39"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="40"/>
         <source>Shutdown now</source>
         <translation>现在关机</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="40"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="41"/>
         <source>Cancel last shutdown</source>
         <translation>取消计划中的关机</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="41"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="42"/>
         <source>Schedule a reboot</source>
         <translation>计划重启</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="43"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="44"/>
         <source>Suspend</source>
         <translation>挂起</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="46"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="47"/>
         <source>Lock Screen</source>
         <translation>锁定屏幕</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="49"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="50"/>
         <source>Say Hello</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="214"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="213"/>
         <source>Import Commands</source>
         <translation>导入命令</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="254"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="253"/>
         <source>Export Commands</source>
         <translation>导出命令</translation>
     </message>
@@ -1187,6 +1253,19 @@ It does not seem to contain an actual email address, i.e. something of the form 
         <location filename="../app/ui/smswindow.ui" line="20"/>
         <source>Sms</source>
         <translation>SMS短信</translation>
+    </message>
+</context>
+<context>
+    <name>SharePlugin</name>
+    <message>
+        <location filename="../plugins/share/shareplugin.cpp" line="46"/>
+        <source>Shared text from %1 copied to clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../plugins/share/shareplugin.cpp" line="48"/>
+        <source>Open in Text Editor</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1245,7 +1324,7 @@ It does not seem to contain an actual email address, i.e. something of the form 
         <location filename="../app/ui/smsconversationswidget.cpp" line="384"/>
         <location filename="../app/ui/smsconversationswidget.cpp" line="386"/>
         <source>[Attachment]</source>
-        <translation>附件</translation>
+        <translation>[附件]</translation>
     </message>
 </context>
 <context>
@@ -1290,19 +1369,11 @@ It does not seem to contain an actual email address, i.e. something of the form 
     </message>
 </context>
 <context>
-    <name>SocketTask</name>
-    <message>
-        <location filename="../core/task/sockettask.cpp" line="21"/>
-        <source>Peer info is not set!</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>TelephonyPlugin</name>
     <message>
         <location filename="../plugins/telephony/telephonyplugin.cpp" line="24"/>
         <source>unknown number</source>
-        <translation type="unfinished">未知号码</translation>
+        <translation>未知号码</translation>
     </message>
     <message>
         <location filename="../plugins/telephony/telephonyplugin.cpp" line="33"/>

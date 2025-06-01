@@ -454,3 +454,13 @@ QString Device::verificationKey() const
 {
     return d->m_pairingHandler->verificationKey();
 }
+
+QString Device::iconName() const
+{
+    return d->m_deviceInfo.type.icon();
+}
+
+QString Device::statusIconName() const
+{
+    return d->m_deviceInfo.type.iconForStatus(isReachable(), isPaired());
+}

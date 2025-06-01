@@ -10,7 +10,7 @@ class DeviceListModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    enum Column { Name = 0, Type, State };
+    enum Column { State = 0, Name };
     explicit DeviceListModel(QObject *parent = nullptr);
     virtual ~DeviceListModel() = default;
 

@@ -1,8 +1,10 @@
 #include "devicelistmodel.h"
 
+#include <QIcon>
+
 DeviceListModel::DeviceListModel(QObject *parent)
     : QAbstractListModel{parent}
-    , m_columns({Name, Type, State})
+    , m_columns({State, Name})
     , m_darkGreen(10, 10)
     , m_darkYellow(10, 10)
     , m_lightGray(10, 10)
@@ -29,15 +31,13 @@ int DeviceListModel::rowCount(const QModelIndex &parent) const
 QVariant DeviceListModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
-        return QVariant();
+        return {};
 
     int column = index.column();
     if (role == Qt::DisplayRole) {
         switch (m_columns[column]) {
         case Name:
             return m_deviceList.at(index.row())->name();
-        case Type:
-            return m_deviceList.at(index.row())->typeAsString();
         case State:
             auto device = m_deviceList.at(index.row());
             if (device->isPaired() && device->isReachable()) {
@@ -48,8 +48,13 @@ QVariant DeviceListModel::data(const QModelIndex &index, int role) const
                 return tr("Device disconnected");
             }
         }
+    } else if (role == Qt::ToolTipRole) {
+        switch (m_columns[column]) {
+        case Name:
+            return m_deviceList.at(index.row())->typeAsString();
+        }
     } else if (role == Qt::DecorationRole) {
-        if (m_columns[column] == Name) {
+        if (m_columns[column] == State) {
             auto device = m_deviceList.at(index.row());
             if (device->isPaired() && device->isReachable()) {
                 return m_darkGreen;
@@ -58,29 +63,27 @@ QVariant DeviceListModel::data(const QModelIndex &index, int role) const
             } else if (device->isPaired()) {
                 return m_lightGray;
             }
+        } else if (m_columns[column] == Name) {
+            auto device = m_deviceList.at(index.row());
+            return QIcon::fromTheme(device->iconName());
         }
     }
 
-    return QVariant();
+    return {};
 }
 
 QVariant DeviceListModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (orientation != Qt::Horizontal)
-        return QVariant();
-
-    if (role == Qt::DisplayRole) {
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
         switch (m_columns[section]) {
         case Name:
             return tr("Name");
-        case Type:
-            return tr("Type");
         case State:
             return tr("State");
         }
     }
 
-    return QAbstractListModel::headerData(section, orientation, role);
+    return __super::headerData(section, orientation, role);
 }
 
 void DeviceListModel::setDeviceList(const QList<Device::Ptr> list)
@@ -97,7 +100,7 @@ Device::Ptr DeviceListModel::at(size_t index)
 
 DeviceListProxyModel::DeviceListProxyModel(QObject *parent)
     : QSortFilterProxyModel{parent}
-    , m_columns({DeviceListModel::Name, DeviceListModel::Type, DeviceListModel::State})
+    , m_columns({DeviceListModel::Name, DeviceListModel::State})
 {}
 
 bool DeviceListProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const

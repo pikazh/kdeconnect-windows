@@ -36,13 +36,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->deviceList->setModel(proxyModel);
 
     ui->deviceList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    ui->deviceList->setAlternatingRowColors(false);
-    ui->deviceList->setRootIsDecorated(false);
-    ui->deviceList->setItemsExpandable(false);
     ui->deviceList->header()->setCascadingSectionResizes(true);
     ui->deviceList->header()->setStretchLastSection(true);
+    ui->deviceList->sortByColumn(0, Qt::DescendingOrder);
     ui->deviceList->setColumnWidth(0, 200);
-    ui->deviceList->sortByColumn(2, Qt::AscendingOrder);
     QObject::connect(ui->deviceList->selectionModel(),
                      SIGNAL(currentRowChanged(QModelIndex, QModelIndex)),
                      this,
@@ -53,6 +50,18 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(deviceManager, &DeviceManager::deviceListChanged, this, [this, deviceManager]() {
         m_deviceListModel->setDeviceList(deviceManager->devicesList());
     });
+    QObject::connect(deviceManager,
+                     &DeviceManager::deviceVisibilityChanged,
+                     this,
+                     &MainWindow::onDeviceStatusChanged);
+    QObject::connect(deviceManager,
+                     &DeviceManager::devicePairStateChanged,
+                     this,
+                     &MainWindow::onDeviceStatusChanged);
+    QObject::connect(deviceManager,
+                     &DeviceManager::deviceRemoved,
+                     this,
+                     &MainWindow::onDeviceRemoved);
 
     auto kdeConnectConfig = KdeConnectConfig::instance();
     auto localDeviceName = kdeConnectConfig->name();
@@ -129,6 +138,7 @@ void MainWindow::onDeviceListCurrentRowChanged(const QModelIndex &current)
     }
 
     auto device = deviceObjFromDeviceList(current);
+    m_currentSelectedDevice = device;
     qDebug(KDECONNECT_APP) << "current select device:" << device->name();
     changeButtonStateForDevice(device);
 }
@@ -140,8 +150,24 @@ void MainWindow::on_deviceList_activated(const QModelIndex &index)
     }
 
     auto device = deviceObjFromDeviceList(index);
+    m_currentSelectedDevice = device;
     if (device->isReachable()) {
         APPLICATION->showDeviceWindow(device);
+    }
+}
+
+void MainWindow::onDeviceStatusChanged(const QString &devId)
+{
+    if (m_currentSelectedDevice && m_currentSelectedDevice->id() == devId) {
+        changeButtonStateForDevice(m_currentSelectedDevice);
+    }
+}
+
+void MainWindow::onDeviceRemoved(const QString &devId)
+{
+    if (m_currentSelectedDevice && m_currentSelectedDevice->id() == devId) {
+        m_currentSelectedDevice.reset();
+        changeButtonStateForDevice(m_currentSelectedDevice);
     }
 }
 
@@ -157,6 +183,12 @@ Device::Ptr MainWindow::deviceObjFromDeviceList(const QModelIndex &index)
 
 void MainWindow::changeButtonStateForDevice(Device::Ptr dev)
 {
+    if (!dev) {
+        ui->pairButton->setEnabled(false);
+        ui->openDevicePageButton->setEnabled(false);
+        return;
+    }
+
     if (dev->isReachable()) {
         ui->pairButton->setEnabled(true);
         if (dev->isPaired()) {
@@ -177,8 +209,23 @@ void MainWindow::changeButtonStateForDevice(Device::Ptr dev)
     ui->openDevicePageButton->setEnabled(dev->isReachable());
 }
 
+void MainWindow::retranslateUi()
+{
+    ui->retranslateUi(this);
+    changeButtonStateForDevice(m_currentSelectedDevice);
+}
+
 void MainWindow::closeEvent(QCloseEvent *evt)
 {
     emit aboutToClose();
     evt->accept();
+}
+
+void MainWindow::changeEvent(QEvent *e)
+{
+    if (e->type() == QEvent::LanguageChange) {
+        retranslateUi();
+    }
+
+    __super::changeEvent(e);
 }

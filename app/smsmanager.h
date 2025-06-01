@@ -5,7 +5,7 @@
 #include "core/device.h"
 #include "core/sms/conversationmessage.h"
 
-#include "core/task/kdeconnectfiledownloadtask.h"
+#include "core/task/peerfiledownloadtask.h"
 #include "core/task/taskscheduler.h"
 
 #include <QHash>
@@ -72,7 +72,7 @@ private:
     QHash<qint64, QList<ConversationMessage>> m_conversations;
 
     TaskScheduler *m_taskSchedule = nullptr;
-    QList<std::tuple<qint32, qint64, QString, KdeConnectFileDownloadTask::Ptr>> m_downloadTasks;
+    QList<std::tuple<qint32, qint64, QString, PeerFileDownloadTask::Ptr>> m_downloadTasks;
     QList<std::tuple<qint32, Attachment>> m_downloadWaitingList;
 
     QString m_attachmentDownloadDir;

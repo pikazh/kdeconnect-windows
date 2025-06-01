@@ -53,6 +53,29 @@ struct DeviceType {
         return QStringLiteral("unknown");
     }
 
+    QString icon() const { return iconForStatus(true, false); }
+
+    QString iconForStatus(bool reachable, bool trusted) const
+    {
+        QString type;
+        switch (value) {
+        case DeviceType::Unknown:
+        case DeviceType::Phone:
+            type = QStringLiteral("smartphone");
+            break;
+        case DeviceType::Desktop: // We don't have desktop icon yet
+        case DeviceType::Laptop:
+            type = QStringLiteral("laptop");
+            break;
+        default:
+            type = toString();
+        }
+        QString status = (reachable ? (trusted ? QStringLiteral("connected")
+                                               : QStringLiteral("disconnected"))
+                                    : QStringLiteral("trusted"));
+        return type + status;
+    }
+
     constexpr DeviceType(Value value)
         : value(value)
     {

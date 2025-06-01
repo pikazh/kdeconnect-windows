@@ -1,7 +1,7 @@
 #pragma once
 
 #include "albumartdb.h"
-#include "task/kdeconnectbufferdownloadtask.h"
+#include "task/peerbufferdownloadtask.h"
 #include "task/taskscheduler.h"
 
 class AlbumArtManager : public QObject
@@ -32,7 +32,7 @@ Q_SIGNALS:
 
 private:
     TaskScheduler *m_taskSchedule;
-    QHash<QString, KdeConnectBufferDownloadTask::Ptr> m_albumArtDLTasks;
+    QHash<QString, PeerBufferDownloadTask::Ptr> m_albumArtDLTasks;
     AlbumArtDB *m_db;
     QString m_peerDeviceId;
 };

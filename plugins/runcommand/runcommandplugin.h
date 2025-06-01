@@ -19,4 +19,7 @@ protected:
 
 protected Q_SLOTS:
     void sendCommandList();
+
+Q_SIGNALS:
+    void setup();
 };

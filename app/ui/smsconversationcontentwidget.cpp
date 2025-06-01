@@ -2,7 +2,7 @@
 #include "app_debug.h"
 #include "smscontentitem.h"
 #include "smshelper.h"
-#include "smsitemdata.h"
+#include "uicommon.h"
 #include "ui_smsconversationcontentwidget.h"
 
 #include <QFileDialog>

@@ -85,6 +85,33 @@
     </spacer>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>1</width>
+         <height>1</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="languageChangedTipsLabel">
+       <property name="styleSheet">
+        <string notr="true">QLabel{ color: darkRed }</string>
+       </property>
+       <property name="text">
+        <string>* You should restart the application to fully apply the language change.</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="Line" name="line">
      <property name="orientation">
       <enum>Qt::Orientation::Horizontal</enum>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "devicemanager.h"
+#include "language.h"
 
 #include <QApplication>
 #include <QMap>
@@ -24,14 +25,20 @@ public:
 
     void init();
     DeviceManager *deviceManager() const;
+    Language *language() const;
 
 public Q_SLOTS:
     void showMainWindow();
-    void showDeviceWindow(Device::Ptr device);
+    DeviceWindow *showDeviceWindow(Device::Ptr device);
     void showSmsConversationsWindow();
     void showAppSettingsDialog();
 
+    void showSystemTrayBalloonMessage(const QString &text, const QString &title = tr("KDE Connect"));
+
 protected:
+    virtual bool event(QEvent *evt) override;
+    void languageChangeEvent();
+
     void createSystemTrayIcon();
 
     void initStyle();
@@ -39,6 +46,7 @@ protected:
 
 protected Q_SLOTS:
     void onSystemTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
+    void createSystemTrayIconMenu(QSystemTrayIcon *trayIcon);
     void cleanUp();
     void deviceWindowClosing();
     void mainWindowClosing();
@@ -47,6 +55,7 @@ protected Q_SLOTS:
 
 private:
     DeviceManager *m_deviceManager;
+    Language *m_language = nullptr;
 
     MainWindow *m_MainWindow = nullptr;
     SmsWindow *m_smsConversationWindow = nullptr;

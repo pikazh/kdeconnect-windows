@@ -8,6 +8,8 @@
 
 enum SmsListItemDataRoles { Data = Qt::UserRole + 1 };
 
+enum RemoteCommandsListItemDataRoles { Name = Qt::UserRole + 1, Command, Key };
+
 struct SmsListItemData
 {
     qint64 conversationId = -1;

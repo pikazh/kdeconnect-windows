@@ -1,4 +1,5 @@
 #include "appsettingsdialog.h"
+#include "application.h"
 #include "ui_appsettingsdialog.h"
 
 #include "app_debug.h"
@@ -18,6 +19,7 @@ AppSettingsDialog::AppSettingsDialog(QWidget *parent)
     setAttribute(Qt::WA_DeleteOnClose);
 
     ui->setupUi(this);
+    ui->languageChangedTipsLabel->hide();
 
     QObject::connect(this, &AppSettingsDialog::accepted, this, &AppSettingsDialog::saveConfig);
 
@@ -36,10 +38,22 @@ AppSettingsDialog::AppSettingsDialog(QWidget *parent)
     ui->styleComboBox->addItems(styleNames);
 
     auto currentStyleName = QApplication::style()->name();
-    ui->styleComboBox->setCurrentText(currentStyleName);
+    // on windows, QApplication::style()->name() returns the same name with that included in QStyleFactory::keys(),
+    // but they don't match case
+    for (auto &style : styleNames) {
+        if (style.compare(currentStyleName, Qt::CaseInsensitive) == 0)
+            ui->styleComboBox->setCurrentText(style);
+    }
 
     auto localDeviceName = KdeConnectConfig::instance()->name();
     ui->deviceNameLineEdit->setText(localDeviceName);
+
+    loadConfig();
+
+    QObject::connect(ui->languageComboBox,
+                     &QComboBox::currentIndexChanged,
+                     ui->languageChangedTipsLabel,
+                     &QLabel::show);
 }
 
 AppSettingsDialog::~AppSettingsDialog()
@@ -50,6 +64,22 @@ AppSettingsDialog::~AppSettingsDialog()
 void AppSettingsDialog::loadConfig()
 {
     auto config = KdeConnectConfig::instance();
+    auto language = APPLICATION->language();
+    QStringList localeNames = language->localeNames();
+    for (auto &localeName : localeNames) {
+        ui->languageComboBox->addItem(QLocale(localeName).nativeLanguageName(), localeName);
+    }
+
+    ui->languageComboBox->setCurrentText(
+        QLocale(language->currentLocaleName()).nativeLanguageName());
+}
+
+void AppSettingsDialog::changeEvent(QEvent *evt)
+{
+    if (evt->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+    }
+    __super::changeEvent(evt);
 }
 
 void AppSettingsDialog::saveConfig()
@@ -67,13 +97,18 @@ void AppSettingsDialog::saveConfig()
         }
     }
 
+    QString selectedLocaleName = ui->languageComboBox->currentData().toString();
+    if (APPLICATION->language()->loadTranslation(selectedLocaleName)) {
+        config->setLanguage(selectedLocaleName);
+    }
+
     auto localDeviceName = KdeConnectConfig::instance()->name();
     QString editDeviceName = ui->deviceNameLineEdit->text().trimmed();
     if (!editDeviceName.isEmpty() && editDeviceName != localDeviceName) {
         QString filteredName = DeviceInfo::filterName(editDeviceName);
         if (!filteredName.isEmpty()) {
             ui->deviceNameLineEdit->setText(filteredName);
-            KdeConnectConfig::instance()->setName(filteredName);
+            config->setName(filteredName);
         }
     }
 }

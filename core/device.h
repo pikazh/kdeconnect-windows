@@ -12,6 +12,8 @@
 #include <QObject>
 #include <QSettings>
 #include <QString>
+#include <QWeakPointer>
+
 #include <memory>
 
 #include "QObjectPtr.h"
@@ -37,6 +39,7 @@ class KDECONNECTCORE_EXPORT Device : public QObject, public QEnableSharedFromThi
 
 public:
     using Ptr = shared_qobject_ptr<Device>;
+    using WeakPtr = QWeakPointer<Device>;
 
     enum class PairState {
         NotPaired,
@@ -67,6 +70,9 @@ public:
     Q_SCRIPTABLE bool isPairRequested() const;
     Q_SCRIPTABLE bool isPairRequestedByPeer() const;
     virtual bool isReachable() const;
+
+    QString iconName() const;
+    QString statusIconName() const;
 
     Q_SCRIPTABLE QStringList loadedPlugins() const;
     Q_SCRIPTABLE bool hasPlugin(const QString &pluginId) const;

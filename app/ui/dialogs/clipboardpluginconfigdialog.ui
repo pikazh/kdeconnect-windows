@@ -28,9 +28,9 @@
     </spacer>
    </item>
    <item>
-    <widget class="QCheckBox" name="autoSyncCB">
+    <widget class="QCheckBox" name="autoShareCB">
      <property name="text">
-      <string>Automatically sync the clipboard with other trusted devices</string>
+      <string>Automatically share the clipboard with peer device</string>
      </property>
     </widget>
    </item>

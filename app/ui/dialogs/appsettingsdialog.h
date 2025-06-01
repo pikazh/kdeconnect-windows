@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QDialog>
+#include <QEvent>
 
 namespace Ui {
 class AppSettingsDialog;
@@ -15,6 +16,7 @@ public:
 
 protected:
     void loadConfig();
+    virtual void changeEvent(QEvent *evt) override;
 
 protected Q_SLOTS:
     void saveConfig();

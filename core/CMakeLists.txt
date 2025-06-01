@@ -1,20 +1,4 @@
 qt_add_library(kdeconnectcore SHARED
-    backends/lan/server.cpp
-    backends/lan/server.h
-    backends/lan/lanlinkprovider.cpp
-    backends/lan/lanlinkprovider.h
-    backends/lan/landevicelink.cpp
-    backends/lan/landevicelink.h
-    backends/lan/mdnsdiscovery.cpp
-    backends/lan/mdnsdiscovery.h
-    backends/lan/mdns_wrapper.cpp
-    backends/lan/mdns_wrapper.h
-    backends/linkprovider.cpp
-    backends/linkprovider.h
-    backends/devicelink.cpp
-    backends/devicelink.h
-    backends/pairinghandler.cpp
-    backends/pairinghandler.h
     networkpackettypes.h
     networkpacket.h
     networkpacket.cpp
@@ -33,6 +17,25 @@ qt_add_library(kdeconnectcore SHARED
     imageutil.cpp
     krandom.h
     krandom.cpp
+    closure.h
+    atexitmanager.h
+
+    backends/lan/server.cpp
+    backends/lan/server.h
+    backends/lan/lanlinkprovider.cpp
+    backends/lan/lanlinkprovider.h
+    backends/lan/landevicelink.cpp
+    backends/lan/landevicelink.h
+    backends/lan/mdnsdiscovery.cpp
+    backends/lan/mdnsdiscovery.h
+    backends/lan/mdns_wrapper.cpp
+    backends/lan/mdns_wrapper.h
+    backends/linkprovider.cpp
+    backends/linkprovider.h
+    backends/devicelink.cpp
+    backends/devicelink.h
+    backends/pairinghandler.cpp
+    backends/pairinghandler.h
 
     plugins/pluginloader.h
     plugins/pluginloader.cpp
@@ -53,12 +56,12 @@ qt_add_library(kdeconnectcore SHARED
     task/netaction.cpp
     task/taskscheduler.h
     task/taskscheduler.cpp
-    task/sockettask.h
-    task/sockettask.cpp
-    task/kdeconnectbufferdownloadtask.h
-    task/kdeconnectbufferdownloadtask.cpp
-    task/kdeconnectfiledownloadtask.h
-    task/kdeconnectfiledownloadtask.cpp
+    task/peersslsockettask.h
+    task/peersslsockettask.cpp
+    task/peerbufferdownloadtask.h
+    task/peerbufferdownloadtask.cpp
+    task/peerfiledownloadtask.h
+    task/peerfiledownloadtask.cpp
 
     sms/conversationmessage.h
     sms/conversationmessage.cpp
@@ -71,6 +74,7 @@ qt_add_library(kdeconnectcore SHARED
     locale/isocodes.cpp
     locale/kcountry.h
     locale/kcountry.cpp
+    task/taskstatus.h
 
 )
 

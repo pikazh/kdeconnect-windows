@@ -40,8 +40,8 @@ void ClipboardPluginConfigDialog::loadConfig()
 {
     auto pluginConfigPtr = pluginConfig();
 
-    bool autoSync = pluginConfigPtr->getBool(QStringLiteral("autoSync"), false);
-    ui->autoSyncCB->setChecked(autoSync);
+    bool autoSync = pluginConfigPtr->getBool(QStringLiteral("autoShare"), false);
+    ui->autoShareCB->setChecked(autoSync);
 
     bool sharePasswd = pluginConfigPtr->getBool(QStringLiteral("sendPassword"), false);
     ui->sharePasswordCB->setChecked(sharePasswd);
@@ -63,7 +63,7 @@ void ClipboardPluginConfigDialog::saveConfig()
 {
     auto pluginConfigPtr = pluginConfig();
 
-    pluginConfigPtr->set(QStringLiteral("autoSync"), ui->autoSyncCB->isChecked());
+    pluginConfigPtr->set(QStringLiteral("autoShare"), ui->autoShareCB->isChecked());
     pluginConfigPtr->set(QStringLiteral("sendPassword"), ui->sharePasswordCB->isChecked());
 
     pluginConfigPtr->notifyConfigChanged();

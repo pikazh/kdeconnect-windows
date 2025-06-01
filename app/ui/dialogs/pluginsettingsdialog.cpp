@@ -9,6 +9,7 @@
 #include "ui/dialogs/clipboardpluginconfigdialog.h"
 #include "ui/dialogs/runcommandpluginconfigdialog.h"
 
+#include <QEvent>
 #include <QIcon>
 #include <QPushButton>
 #include <QTreeWidgetItem>
@@ -21,6 +22,11 @@ PluginSettingsDialog::PluginSettingsDialog(Device::Ptr device, QWidget *parent)
     , m_delayFilterTimer(new QTimer(this))
 {
     setAttribute(Qt::WA_DeleteOnClose);
+
+    ui->setupUi(this);
+
+    QString title = tr("Plugins Configuration - ") + m_device->name();
+    setWindowTitle(title);
 
     m_pluginIdsWhichHasConfig.insert(pluginIdString(PluginId::BatteryMonitor));
     m_pluginIdsWhichHasConfig.insert(pluginIdString(PluginId::ClipBoard));
@@ -38,8 +44,6 @@ PluginSettingsDialog::PluginSettingsDialog(Device::Ptr device, QWidget *parent)
                      this,
                      &PluginSettingsDialog::filterAcceptPlugins);
 
-    ui->setupUi(this);
-
     ui->pluginList->setColumnCount(m_columnNames.size());
     ui->pluginList->setHeaderLabels(m_columnNames);
     ui->pluginList->sortItems(Name, Qt::AscendingOrder);
@@ -50,6 +54,11 @@ PluginSettingsDialog::PluginSettingsDialog(Device::Ptr device, QWidget *parent)
 PluginSettingsDialog::~PluginSettingsDialog()
 {
     delete ui;
+}
+
+void PluginSettingsDialog::showPluginConfigDialog(const PluginId &pluginID)
+{
+    showPluginConfigDialog(pluginIdString(pluginID));
 }
 
 void PluginSettingsDialog::initPluginList()
@@ -83,10 +92,13 @@ void PluginSettingsDialog::initPluginList()
 
             ui->pluginList->setItemWidget(item, Configuration, w);
 
-            QObject::connect(configBtn,
-                             &QPushButton::clicked,
-                             this,
-                             &PluginSettingsDialog::showPluginConfigDialog);
+            QObject::connect(configBtn, &QPushButton::clicked, this, [this]() {
+                auto btn = QObject::sender();
+                if (btn != nullptr) {
+                    QString pluginId = qvariant_cast<QString>(btn->property("pluginId"));
+                    showPluginConfigDialog(pluginId);
+                }
+            });
         }
     }
 
@@ -123,33 +135,44 @@ void PluginSettingsDialog::saveEnabledPluginList()
     m_device->reloadPlugins();
 }
 
-void PluginSettingsDialog::showPluginConfigDialog()
+void PluginSettingsDialog::showPluginConfigDialog(const QString &pluginIDStr)
 {
-    auto btn = QObject::sender();
-    if (btn == nullptr) {
+    if (!m_pluginIdsWhichHasConfig.contains(pluginIDStr)) {
         return;
     }
 
-    QString pluginId = qvariant_cast<QString>(btn->property("pluginId"));
-    if (!m_pluginIdsWhichHasConfig.contains(pluginId)) {
-        return;
-    }
+    auto it = m_pluginConfigWidgets.find(pluginIDStr);
+    if (it != m_pluginConfigWidgets.end()) {
+        it.value()->showNormal();
+        it.value()->raise();
+        it.value()->activateWindow();
+    } else {
+        auto pluginLoader = PluginLoader::instance();
+        auto pluginInfo = pluginLoader->getPluginInfo(pluginIDStr);
 
-    auto pluginLoader = PluginLoader::instance();
-    auto pluginInfo = pluginLoader->getPluginInfo(pluginId);
+        QDialog *dlg = nullptr;
+        if (pluginIDStr == pluginIdString(PluginId::BatteryMonitor)) {
+            dlg = new BatteryPluginConfigDialog(m_device, this);
+            dlg->setWindowTitle(pluginInfo.name() + QStringLiteral(" - ") + m_device->name());
 
-    if (pluginId == pluginIdString(PluginId::BatteryMonitor)) {
-        auto dlg = new BatteryPluginConfigDialog(m_device, this);
-        dlg->setWindowTitle(pluginInfo.name());
-        dlg->exec();
-    } else if (pluginId == pluginIdString(PluginId::ClipBoard)) {
-        auto dlg = new ClipboardPluginConfigDialog(m_device, this);
-        dlg->setWindowTitle(pluginInfo.name());
-        dlg->exec();
-    } else if (pluginId == pluginIdString(PluginId::RunCommand)) {
-        auto dlg = new RunCommandPluginConfigDialog(m_device, this);
-        dlg->setWindowTitle(pluginInfo.name());
-        dlg->exec();
+        } else if (pluginIDStr == pluginIdString(PluginId::ClipBoard)) {
+            dlg = new ClipboardPluginConfigDialog(m_device, this);
+            dlg->setWindowTitle(pluginInfo.name() + QStringLiteral(" - ") + m_device->name());
+
+        } else if (pluginIDStr == pluginIdString(PluginId::RunCommand)) {
+            dlg = new RunCommandPluginConfigDialog(m_device, this);
+            dlg->setWindowTitle(pluginInfo.name() + QStringLiteral(" - ") + m_device->name());
+        }
+
+        if (dlg != nullptr) {
+            m_pluginConfigWidgets[pluginIDStr] = dlg;
+            QObject::connect(dlg, &QDialog::finished, this, [this, pluginIDStr]() {
+                m_pluginConfigWidgets.remove(pluginIDStr);
+            });
+            dlg->showNormal();
+            dlg->raise();
+            dlg->activateWindow();
+        }
     }
 }
 

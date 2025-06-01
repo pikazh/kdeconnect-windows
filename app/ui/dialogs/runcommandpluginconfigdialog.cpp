@@ -28,6 +28,7 @@ RunCommandPluginConfigDialog::RunCommandPluginConfigDialog(Device::Ptr dev, QWid
 
     QList<QString> commandTableHeaderText = {tr("Name"), tr("Command"), tr("")};
     ui->commandTable->setColumnCount(commandTableHeaderText.size());
+    ui->commandTable->setColumnWidth(Columns::Command, 400);
     for (int i = 0; i < ui->commandTable->columnCount(); ++i) {
         ui->commandTable->setHorizontalHeaderItem(i,
                                                   new QTableWidgetItem(commandTableHeaderText[i]));
@@ -107,8 +108,6 @@ void RunCommandPluginConfigDialog::loadConfig()
 
         addCommandToTable(name, command, key);
     }
-
-    ui->commandTable->resizeColumnsToContents();
 }
 
 KdeConnectPluginConfig::Ptr RunCommandPluginConfigDialog::pluginConfig()

@@ -1,5 +1,5 @@
 #include "smsconversationlistitemdelegate.h"
-#include "smsitemdata.h"
+#include "textlayoututils.h"
 
 #include <QPaintDevice>
 #include <QPainter>
@@ -81,7 +81,7 @@ void SMSConversationListItemDelegate::paint(QPainter *painter,
         QTextLayout text_layout(description, opt.font);
 
         qreal height = 0;
-        auto cut_text = viewItemTextLayout(text_layout, remaining_width, height);
+        auto cut_text = TextLayoutUtils::viewItemTextLayout(text_layout, remaining_width, height);
 
         // Get first line unconditionally
         description = cut_text.first().second;
@@ -127,38 +127,4 @@ void SMSConversationListItemDelegate::paint(QPainter *painter,
     }
 
     painter->restore();
-}
-
-// Origin: Qt
-// More specifically, this is a trimmed down version on the algorithm in:
-// https://code.woboq.org/qt5/qtbase/src/widgets/styles/qcommonstyle.cpp.html#846
-QList<std::pair<qreal, QString>> SMSConversationListItemDelegate::viewItemTextLayout(
-    QTextLayout &textLayout, int lineWidth, qreal &height) const
-{
-    QList<std::pair<qreal, QString>> lines;
-    height = 0;
-
-    textLayout.beginLayout();
-
-    QString str = textLayout.text();
-    while (true) {
-        QTextLine line = textLayout.createLine();
-
-        if (!line.isValid())
-            break;
-        if (line.textLength() == 0)
-            break;
-
-        line.setLineWidth(lineWidth);
-        line.setPosition(QPointF(0, height));
-
-        height += line.height();
-
-        lines.append(
-            std::make_pair(line.naturalTextWidth(), str.mid(line.textStart(), line.textLength())));
-    }
-
-    textLayout.endLayout();
-
-    return lines;
 }

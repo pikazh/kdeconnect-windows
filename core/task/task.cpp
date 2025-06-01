@@ -10,14 +10,32 @@ Task::Task(QObject *parent)
     m_uid = QUuid::createUuid();
 }
 
+Task::~Task()
+{
+    qDebug(KDECONNECT_CORE) << "Task" << describe() << "now destroy";
+}
+
 void Task::setProgress(qint64 current, qint64 total)
 {
     if (current != m_currentProgress || total != m_totalProgress) {
         m_currentProgress = current;
         m_totalProgress = total;
 
-        emit progress(m_currentProgress, m_totalProgress);
+        Q_EMIT progress(m_currentProgress, m_totalProgress);
     }
+}
+
+void Task::setTaskStatus(int taskStatus)
+{
+    if (m_taskStatus != taskStatus) {
+        m_taskStatus = taskStatus;
+        Q_EMIT statusChanged(m_taskStatus);
+    }
+}
+
+bool Task::isInactive() const
+{
+    return m_state == Task::State::Inactive;
 }
 
 bool Task::isRunning() const
@@ -57,19 +75,19 @@ bool Task::start()
             << "Task" << describe() << "is already running, but app tried to start it again.";
         return false;
     case Task::State::Succeeded:
-        qDebug(KDECONNECT_CORE) << "Task" << describe() << "restarting after succeeding.";
+        qCWarning(KDECONNECT_CORE) << "Task" << describe() << "restarting after succeeding.";
         break;
     case Task::State::Failed:
-        qDebug(KDECONNECT_CORE) << "Task" << describe() << "restarting after failing.";
+        qCWarning(KDECONNECT_CORE) << "Task" << describe() << "restarting after failing.";
         break;
     case Task::State::Aborted:
-        qDebug(KDECONNECT_CORE) << "Task" << describe()
-                                << "restarting after being aborted by user.";
+        qCWarning(KDECONNECT_CORE)
+            << "Task" << describe() << "restarting after being aborted by user.";
         break;
     }
 
     setState(Task::State::Running);
-    emit started();
+    Q_EMIT started();
     return true;
 }
 
@@ -110,8 +128,8 @@ void Task::emitSucceeded()
 
     setState(Task::State::Succeeded);
 
-    emit succeeded();
-    emit finished();
+    Q_EMIT succeeded();
+    Q_EMIT finished();
 }
 
 void Task::emitAborted()
@@ -124,8 +142,8 @@ void Task::emitAborted()
 
     setState(Task::State::Aborted);
 
-    emit aborted();
-    emit finished();
+    Q_EMIT aborted();
+    Q_EMIT finished();
 }
 
 void Task::emitFailed(const QString &failReason)
@@ -137,6 +155,6 @@ void Task::emitFailed(const QString &failReason)
 
     setState(Task::State::Failed);
 
-    emit failed(failReason);
-    emit finished();
+    Q_EMIT failed(failReason);
+    Q_EMIT finished();
 }

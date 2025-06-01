@@ -7,7 +7,7 @@
 
 AlbumArtManager::AlbumArtManager(const QString &deviceID, QObject *parent)
     : QObject(parent)
-    , m_taskSchedule(new TaskScheduler(10, this))
+    , m_taskSchedule(new TaskScheduler(this, 10))
     , m_db(new AlbumArtDB(this))
     , m_peerDeviceId(deviceID)
 {
@@ -40,33 +40,32 @@ void AlbumArtManager::downloadAlbumArt(const QString &albumArtUrl,
                                        quint16 port,
                                        qint64 dataSize)
 {
-    auto dlTaskPtr = new KdeConnectBufferDownloadTask();
+    auto dlTaskPtr = new PeerBufferDownloadTask();
     dlTaskPtr->setPeerDeviceId(m_peerDeviceId);
     dlTaskPtr->setPeerHostAndPort(host, port);
+    dlTaskPtr->setContentSize(dataSize);
     dlTaskPtr->setProperty("albumArtUrl", albumArtUrl);
-    dlTaskPtr->setProperty("dataSize", dataSize);
 
-    KdeConnectBufferDownloadTask::Ptr dlTask(dlTaskPtr);
+    PeerBufferDownloadTask::Ptr dlTask(dlTaskPtr);
     m_taskSchedule->addTask(dlTask);
     m_albumArtDLTasks.insert(albumArtUrl, dlTask);
 }
 
 void AlbumArtManager::onAlbumDlTaskFinished(Task::Ptr task)
 {
-    KdeConnectBufferDownloadTask *taskPtr = qobject_cast<KdeConnectBufferDownloadTask *>(task.get());
+    PeerBufferDownloadTask *taskPtr = qobject_cast<PeerBufferDownloadTask *>(task.get());
     if (taskPtr != nullptr) {
         QString albumArtUrl = taskPtr->property("albumArtUrl").toString();
-        qint64 dataSize = qvariant_cast<qint64>(taskPtr->property("dataSize"));
-        if (!albumArtUrl.isEmpty() && dataSize > 0) {
+        if (!albumArtUrl.isEmpty()) {
             if (taskPtr->isSuccessful()) {
                 QByteArray data = taskPtr->downloadedBuffer();
-                Q_ASSERT(data.size() == dataSize);
-                if (data.size() == dataSize) {
+                Q_ASSERT(taskPtr->contentSize() == data.size());
+                if (taskPtr->contentSize() == data.size()) {
                     m_db->insert(albumArtUrl, data);
                 }
             }
 
-            m_taskSchedule->removeTask(task);
+            //m_taskSchedule->removeTask(task);
             m_albumArtDLTasks.remove(albumArtUrl);
 
             Q_EMIT albumArtDownloadFinished(albumArtUrl);
@@ -76,7 +75,7 @@ void AlbumArtManager::onAlbumDlTaskFinished(Task::Ptr task)
 
 void AlbumArtManager::onAlbumDlTaskFailed(Task::Ptr task, const QString &reason)
 {
-    KdeConnectBufferDownloadTask *taskPtr = qobject_cast<KdeConnectBufferDownloadTask *>(task.get());
+    PeerBufferDownloadTask *taskPtr = qobject_cast<PeerBufferDownloadTask *>(task.get());
     if (taskPtr != nullptr) {
         QString albumArtUrl = taskPtr->property("albumArtUrl").toString();
         qWarning(KDECONNECT_PLUGIN_MPRISREMOTE)
