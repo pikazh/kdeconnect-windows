@@ -42,6 +42,9 @@ include(GNUInstallDirs)
 install(FILES ${qm_files}
     DESTINATION "${CMAKE_INSTALL_BINDIR}/translations")
 
+# copy WinSCP
+install(DIRECTORY others/ DESTINATION ${CMAKE_INSTALL_BINDIR})
+
 qt_generate_deploy_script(
     TARGET kdeconnect-app
     OUTPUT_SCRIPT deploy_script
