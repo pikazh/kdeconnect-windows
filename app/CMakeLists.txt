@@ -19,6 +19,8 @@ qt_add_executable(kdeconnect-app
     smsmanager.cpp
     language.h
     language.cpp
+    runcommandsetuplistener.h
+    runcommandsetuplistener.cpp
 
     ui/mainwindow.cpp
     ui/mainwindow.h
@@ -49,7 +51,9 @@ qt_add_executable(kdeconnect-app
     ui/smstextbrowser.cpp
     ui/smsattachmentlistwidget.h
     ui/smsattachmentlistwidget.cpp
-	
+    ui/textlayoututils.h
+    ui/textlayoututils.cpp
+
     ui/widgets/PageContainer.h
     ui/widgets/PageContainer_p.h
     ui/widgets/PageContainer.cpp
@@ -79,6 +83,17 @@ qt_add_executable(kdeconnect-app
     ui/pages/BasePage.h
     ui/pages/BasePageContainer.h
     ui/pages/BasePageProvider.h
+    ui/pages/remotecommandslistitemdelegate.h
+    ui/pages/remotecommandslistitemdelegate.cpp
+    ui/pages/volumecontrolpage.h
+    ui/pages/volumecontrolpage.cpp
+    ui/pages/volumecontrolpage.ui
+    ui/pages/volumedeviceitem.ui
+    ui/pages/volumedeviceitem.h
+    ui/pages/volumedeviceitem.cpp
+    ui/pages/filetransferpage.h
+    ui/pages/filetransferpage.cpp
+    ui/pages/filetransferpage.ui
 
     ui/dialogs/pluginsettingsdialog.h
     ui/dialogs/pluginsettingsdialog.cpp
@@ -120,14 +135,12 @@ qt_add_executable(kdeconnect-app
     plugin/contactspluginwrapper.cpp
     plugin/sharepluginwrapper.h
     plugin/sharepluginwrapper.cpp
-    plugin/remotecommandspluginwrapper.h plugin/remotecommandspluginwrapper.cpp
-    ui/textlayoututils.h
-    ui/textlayoututils.cpp
-    ui/pages/remotecommandslistitemdelegate.h ui/pages/remotecommandslistitemdelegate.cpp
-    plugin/runcommandpluginwrapper.h plugin/runcommandpluginwrapper.cpp
-    runcommandsetuplistener.h runcommandsetuplistener.cpp
-
-
+    plugin/remotecommandspluginwrapper.h
+    plugin/remotecommandspluginwrapper.cpp
+    plugin/runcommandpluginwrapper.h
+    plugin/runcommandpluginwrapper.cpp
+    plugin/remotesystemvolumepluginwrapper.h
+    plugin/remotesystemvolumepluginwrapper.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

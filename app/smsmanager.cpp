@@ -220,7 +220,7 @@ void SmsManager::onDlTaskFinished(Task::Ptr task)
             if (dlTask.get() == taskPtr) {
                 m_downloadTasks.removeAt(i);
                 if (taskPtr->isSuccessful()) {
-                    QString filePath = taskPtr->downloadedFilePath();
+                    QString filePath = taskPtr->downloadFilePath();
                     QFileInfo fileInfo(filePath);
                     Q_ASSERT(fileInfo.size() == taskPtr->contentSize());
                     Q_EMIT attachmentDownloadFinished(msgId, partId, true, fileInfo.fileName());
@@ -238,7 +238,7 @@ void SmsManager::onDlTaskFailed(Task::Ptr task, const QString &reason)
 {
     PeerFileDownloadTask *taskPtr = qobject_cast<PeerFileDownloadTask *>(task.get());
     if (taskPtr != nullptr) {
-        qWarning(KDECONNECT_APP) << "download attachment to path:" << taskPtr->downloadedFilePath()
+        qWarning(KDECONNECT_APP) << "download attachment to path:" << taskPtr->downloadFilePath()
                                  << "failed:" << reason;
     }
 }

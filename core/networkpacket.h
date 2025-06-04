@@ -61,10 +61,8 @@ public:
     }
 
     bool hasPayload() const { return (m_payloadSize != 0); }
-    qint64 payloadSize() const
-    {
-        return m_payloadSize;
-    } //-1 means it is an endless stream
+    qint64 payloadSize() const { return m_payloadSize; }
+    void setPayloadSize(qint64 payloadSize) { m_payloadSize = payloadSize; }
 
     // To be called by a particular DeviceLink
     QVariantMap payloadTransferInfo() const

@@ -4,17 +4,16 @@
 #include <QDir>
 #include <QFileInfo>
 
+const int bufferSize = 8 * 1024 * 1024;
+const int padSize = 1024 * 1024;
+
 PeerFileDownloadTask::PeerFileDownloadTask(QObject *parent)
     : PeerSSLSocketTask(parent)
     , m_hashCal(QCryptographicHash::Sha1)
 {}
 
-QString PeerFileDownloadTask::downloadedFilePath(QByteArray *sha1Result) const
+QString PeerFileDownloadTask::downloadFilePath() const
 {
-    if (sha1Result != nullptr) {
-        sha1Result->assign(m_hashCal.result());
-    }
-
     return m_downloadFilePath;
 }
 
@@ -51,6 +50,19 @@ void PeerFileDownloadTask::finisheTask()
         }
     } else {
         Q_ASSERT(m_downloadedFile.isOpen());
+        if (!m_buffer.isEmpty()) {
+            if (m_buffer.size() != m_downloadedFile.write(m_buffer)) {
+                m_errorOccured = true;
+                m_errorStr = tr("Can not write buffer to the specified file");
+
+                qCritical(KDECONNECT_CORE) << m_errorStr;
+
+            } else {
+                m_hashCal.addData(m_buffer);
+                m_buffer.clear();
+            }
+        }
+
         m_downloadedFile.close();
     }
 
@@ -104,6 +116,9 @@ void PeerFileDownloadTask::socketEncrypted()
 {
     setTaskStatus(TaskStatus::Transfering);
     m_hashCal.reset();
+    m_buffer.clear();
+    m_buffer.reserve(bufferSize + padSize);
+
     m_downloadedSize = 0;
 
     m_downloadedFile.setFileName(m_downloadFilePath);
@@ -121,20 +136,23 @@ void PeerFileDownloadTask::socketEncrypted()
 void PeerFileDownloadTask::dataReceived()
 {
     auto s = socket();
-    auto newData = s->readAll();
-    if (newData.size() != m_downloadedFile.write(newData)) {
-        m_errorOccured = true;
-        m_errorStr = tr("Can not write buffer to the specified file");
+    m_downloadedSize += s->bytesAvailable();
+    updateProgressIntervally(m_downloadedSize, contentSize());
+    m_buffer.append(s->readAll());
 
-        qCritical(KDECONNECT_CORE) << m_errorStr;
+    if (m_buffer.size() >= bufferSize) {
+        if (m_buffer.size() != m_downloadedFile.write(m_buffer)) {
+            m_errorOccured = true;
+            m_errorStr = tr("Can not write buffer to the specified file");
 
-        closeSocket();
+            qCritical(KDECONNECT_CORE) << m_errorStr;
 
-    } else {
-        m_hashCal.addData(newData);
+            closeSocket();
 
-        m_downloadedSize += newData.size();
-
-        setProgress(m_downloadedSize, contentSize());
+        } else {
+            m_hashCal.addData(m_buffer);
+            m_buffer.clear();
+            m_buffer.reserve(bufferSize + padSize);
+        }
     }
 }

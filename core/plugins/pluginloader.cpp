@@ -54,7 +54,7 @@ KdeConnectPlugin *PluginLoader::instantiatePluginForDevice(const QString &plugin
     KdeConnectPlugin* plugin = PluginFactory::instantiatePlugin<KdeConnectPlugin>(data, device, args);
     if(plugin != nullptr)
     {
-        qInfo(KDECONNECT_CORE) << "Loaded plugin:" << data.id();
+        qWarning(KDECONNECT_CORE) << "Loaded plugin:" << data.id();
     }
     else
     {

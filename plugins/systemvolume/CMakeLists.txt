@@ -1,4 +1,3 @@
-
 qt_add_library(kdeconnect_systemvolume SHARED
     kdeconnect_systemvolume.json
     PolicyConfig.h

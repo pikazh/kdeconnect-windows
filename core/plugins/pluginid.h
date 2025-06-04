@@ -13,6 +13,7 @@ enum class PluginId {
     Sftp,
     ClipBoard,
     SystemVolume,
+    RemoteSystemVolume,
     Presenter,
     VirtualInput,
     RemoteMousePad,

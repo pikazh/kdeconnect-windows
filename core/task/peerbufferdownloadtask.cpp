@@ -86,5 +86,5 @@ void PeerBufferDownloadTask::dataReceived()
     m_hashCal.addData(newData);
     m_downloadedSize += newData.size();
 
-    setProgress(m_downloadedSize, contentSize());
+    updateProgressIntervally(m_downloadedSize, contentSize());
 }

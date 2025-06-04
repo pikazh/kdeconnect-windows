@@ -211,6 +211,7 @@ void TaskScheduler::onTaskFinished(Task::Ptr task, Task::State state, const QStr
     Q_EMIT taskFinished(task);
 
     if (m_autoRemoveFinishedTask) {
+        m_taskIndexs.remove(task.get());
         Q_EMIT taskRemoved(task);
     }
 

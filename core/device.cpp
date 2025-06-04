@@ -121,8 +121,11 @@ void Device::reloadPlugins()
                 KdeConnectPlugin *plugin = d->m_plugins.take(pluginId);
 
                 if (plugin == nullptr) {
+                    qCDebug(KDECONNECT_CORE) << "loading plugin:" << pluginId;
                     plugin = loader->instantiatePluginForDevice(pluginId, this);
                     plugin->enable();
+                } else {
+                    qCDebug(KDECONNECT_CORE) << "plugin:" << pluginId << "is loaded.";
                 }
                 Q_ASSERT(plugin);
 

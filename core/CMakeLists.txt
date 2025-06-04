@@ -52,8 +52,10 @@ qt_add_library(kdeconnectcore SHARED
 
     task/task.h
     task/task.cpp
+    task/taskstatus.h
     task/netaction.h
     task/netaction.cpp
+    task/taskstatus.cpp
     task/taskscheduler.h
     task/taskscheduler.cpp
     task/peersslsockettask.h
@@ -62,6 +64,9 @@ qt_add_library(kdeconnectcore SHARED
     task/peerbufferdownloadtask.cpp
     task/peerfiledownloadtask.h
     task/peerfiledownloadtask.cpp
+    task/peerfileuploadtask.h
+    task/peerfileuploadtask.cpp
+
 
     sms/conversationmessage.h
     sms/conversationmessage.cpp
@@ -74,8 +79,6 @@ qt_add_library(kdeconnectcore SHARED
     locale/isocodes.cpp
     locale/kcountry.h
     locale/kcountry.cpp
-    task/taskstatus.h
-
 )
 
 include(GenerateExportHeader)

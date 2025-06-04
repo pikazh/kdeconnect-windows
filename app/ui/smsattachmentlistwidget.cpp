@@ -42,9 +42,9 @@ void SmsAttachmentListWidget::addAttachmentList(const QStringList &list)
             removeButton->setProperty("filePath", canonicalizedLowerCaseFilePath);
             removeButton->setIcon(QIcon::fromTheme(QStringLiteral("edit-delete")));
             removeButton->setToolTip(tr("Delete"));
-            layout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed));
+            layout->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
             layout->addWidget(removeButton);
-            layout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed));
+            layout->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
             w->setFixedWidth(BUTTON_COLUMN_WIDTH);
             this->setItemWidget(item, Columns::Button, w);
 

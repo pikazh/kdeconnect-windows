@@ -56,12 +56,12 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../app/application.cpp" line="234"/>
+        <location filename="../app/application.cpp" line="235"/>
         <source>&amp;Show main window</source>
         <translation>显示主界面</translation>
     </message>
     <message>
-        <location filename="../app/application.cpp" line="238"/>
+        <location filename="../app/application.cpp" line="239"/>
         <source>&amp;Quit</source>
         <translation>退出</translation>
     </message>
@@ -221,6 +221,63 @@
         <location filename="../app/ui/devicewindow.cpp" line="204"/>
         <source>)</source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>FileTransferPage</name>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.ui" line="26"/>
+        <source>Queue</source>
+        <translation>传输队列</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.ui" line="60"/>
+        <source>History</source>
+        <translation>传输记录</translation>
+    </message>
+    <message>
+        <source>File Transfer</source>
+        <translation type="vanished">文件传输</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="65"/>
+        <source>Operation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="66"/>
+        <source>File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="67"/>
+        <source>Transferred</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="68"/>
+        <source>Progress</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="69"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="177"/>
+        <source>Receiving</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="224"/>
+        <source>Delete</source>
+        <translation type="unfinished">删除</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.h" line="23"/>
+        <source>File Share</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -491,12 +548,13 @@
 <context>
     <name>PeerFileDownloadTask</name>
     <message>
-        <location filename="../core/task/peerfiledownloadtask.cpp" line="115"/>
+        <location filename="../core/task/peerfiledownloadtask.cpp" line="130"/>
         <source>Can not open file to write</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../core/task/peerfiledownloadtask.cpp" line="127"/>
+        <location filename="../core/task/peerfiledownloadtask.cpp" line="56"/>
+        <location filename="../core/task/peerfiledownloadtask.cpp" line="146"/>
         <source>Can not write buffer to the specified file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -504,7 +562,7 @@
 <context>
     <name>PeerSSLSocketTask</name>
     <message>
-        <location filename="../core/task/peersslsockettask.cpp" line="21"/>
+        <location filename="../core/task/peersslsockettask.cpp" line="27"/>
         <source>Peer info is not set!</source>
         <translation>配对设备的信息没有设置！</translation>
     </message>
@@ -1258,12 +1316,12 @@ It does not seem to contain an actual email address, i.e. something of the form 
 <context>
     <name>SharePlugin</name>
     <message>
-        <location filename="../plugins/share/shareplugin.cpp" line="46"/>
+        <location filename="../plugins/share/shareplugin.cpp" line="87"/>
         <source>Shared text from %1 copied to clipboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/share/shareplugin.cpp" line="48"/>
+        <location filename="../plugins/share/shareplugin.cpp" line="89"/>
         <source>Open in Text Editor</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1408,6 +1466,33 @@ It does not seem to contain an actual email address, i.e. something of the form 
     </message>
 </context>
 <context>
+    <name>VolumeControlPage</name>
+    <message>
+        <location filename="../app/ui/pages/volumecontrolpage.h" line="23"/>
+        <source>Volume Control</source>
+        <translation>音量控制</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/volumecontrolpage.cpp" line="100"/>
+        <source>Device disabled</source>
+        <translation>设备已禁用</translation>
+    </message>
+</context>
+<context>
+    <name>VolumeDeviceItem</name>
+    <message>
+        <location filename="../app/ui/pages/volumedeviceitem.cpp" line="22"/>
+        <location filename="../app/ui/pages/volumedeviceitem.cpp" line="51"/>
+        <source>Mute</source>
+        <translation>静音</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/volumedeviceitem.cpp" line="51"/>
+        <source>Unmute</source>
+        <translation>取消静音</translation>
+    </message>
+</context>
+<context>
     <name>Work phone</name>
     <message>
         <location filename="../kcontacts/phonenumber.cpp" line="175"/>
@@ -1476,6 +1561,24 @@ It does not seem to contain an actual email address, i.e. something of the form 
     <message>
         <location filename="../kcontacts/addressee.cpp" line="1139"/>
         <source>Role</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>taskStatus</name>
+    <message>
+        <location filename="../core/task/taskstatus.cpp" line="10"/>
+        <source>Waiting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../core/task/taskstatus.cpp" line="12"/>
+        <source>Connecting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../core/task/taskstatus.cpp" line="14"/>
+        <source>Transfering</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

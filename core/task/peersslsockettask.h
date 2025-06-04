@@ -7,6 +7,8 @@
 
 #include <QSslSocket>
 
+#include <chrono>
+
 class KDECONNECTCORE_EXPORT PeerSSLSocketTask : public Task
 {
     Q_OBJECT
@@ -35,6 +37,8 @@ protected:
 
     virtual void executeTask() override;
 
+    void updateProgressIntervally(qint64 current, qint64 total);
+
     QSharedPointer<QSslSocket> socket() const { return m_socket; }
     SocketState socketConnectState() const;
     void closeSocket();
@@ -53,4 +57,5 @@ private:
     quint16 m_peerPort = 0;
     QString m_peerDeviceId;
     qint64 m_contentSize = -1;
+    std::chrono::time_point<std::chrono::system_clock> m_lastUpdateProgressTimePoint;
 };

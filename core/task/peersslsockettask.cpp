@@ -2,10 +2,16 @@
 #include "backends/lan/lanlinkprovider.h"
 #include "core_debug.h"
 
+#include <QNetworkProxy>
+
+using namespace std::chrono_literals;
+
 PeerSSLSocketTask::PeerSSLSocketTask(QObject *parent)
     : Task(parent)
     , m_socket(new QSslSocket)
+    , m_lastUpdateProgressTimePoint(std::chrono::system_clock::now())
 {
+    m_socket->setProxy(QNetworkProxy::NoProxy);
     auto socket = m_socket.get();
     connect(socket, &QAbstractSocket::connected, this, &PeerSSLSocketTask::socketConnected);
     connect(socket, &QAbstractSocket::errorOccurred, this, &PeerSSLSocketTask::connectError);
@@ -25,6 +31,16 @@ void PeerSSLSocketTask::executeTask()
     LanLinkProvider::configureSslSocket(m_socket.get(), m_peerDeviceId, true);
     m_socket->connectToHostEncrypted(m_peerHost, m_peerPort);
     setTaskStatus(TaskStatus::ConnectingToPeer);
+}
+
+void PeerSSLSocketTask::updateProgressIntervally(qint64 current, qint64 total)
+{
+    std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+    std::chrono::duration<double, std::milli> dur = now - m_lastUpdateProgressTimePoint;
+    if (dur > 500ms) {
+        setProgress(current, total);
+        m_lastUpdateProgressTimePoint = now;
+    }
 }
 
 PeerSSLSocketTask::SocketState PeerSSLSocketTask::socketConnectState() const

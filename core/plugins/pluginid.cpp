@@ -13,6 +13,7 @@ QHash<PluginId, QString> initPluginNameHashTable()
     pluginNames.insert(PluginId::Sftp, QLatin1StringView("Remote filesystem browser"));
     pluginNames.insert(PluginId::ClipBoard, QLatin1StringView("Clipboard"));
     pluginNames.insert(PluginId::SystemVolume, QLatin1StringView("System volume"));
+    pluginNames.insert(PluginId::RemoteSystemVolume, QLatin1StringView("Remote system volume"));
     pluginNames.insert(PluginId::Presenter, QLatin1StringView("Presenter"));
     pluginNames.insert(PluginId::VirtualInput, QLatin1StringView("Virtual input"));
     pluginNames.insert(PluginId::RemoteMousePad, QLatin1StringView("RemoteControl"));

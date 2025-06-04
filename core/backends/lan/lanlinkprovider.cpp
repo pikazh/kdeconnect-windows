@@ -409,18 +409,14 @@ void LanLinkProvider::encrypted()
         NetworkPacket myIdentity = KdeConnectConfig::instance()->deviceInfo().toIdentityPacket();
         socket->write(myIdentity.serialize());
         socket->flush();
-        connect(socket, &QIODevice::readyRead, this, [this, socket, protocolVersion]() {
-            if (!socket->canReadLine()) {
-                // This can happen if the packet is large enough to be split in two chunks
-                return;
-            }
-            disconnect(socket, &QIODevice::readyRead, nullptr, nullptr);
+
+        auto addLinkFunctor = [this, socket, protocolVersion]() {
             QByteArray identityString = socket->readLine();
             NetworkPacket secureIdentityPacket;
             bool success = NetworkPacket::unserialize(identityString, &secureIdentityPacket);
             if (!success || !DeviceInfo::isValidIdentityPacket(&secureIdentityPacket)) {
-                qCritical(KDECONNECT_CORE,
-                          "Remote device doesn't correctly implement protocol version 8");
+                qCritical(KDECONNECT_CORE)
+                    << "Remote device doesn't correctly implement protocol version 8";
                 return;
             }
             int newProtocolVersion = secureIdentityPacket.get<int>(QStringLiteral(
@@ -435,7 +431,21 @@ void LanLinkProvider::encrypted()
                                                                           socket->peerCertificate());
 
             addLink(socket, deviceInfo);
-        });
+        };
+
+        if (socket->canReadLine()) {
+            addLinkFunctor();
+        } else {
+            connect(socket, &QIODevice::readyRead, this, [this, socket, addLinkFunctor]() {
+                if (!socket->canReadLine()) {
+                    // This can happen if the packet is large enough to be split in two chunks
+                    return;
+                }
+                disconnect(socket, &QIODevice::readyRead, nullptr, nullptr);
+                addLinkFunctor();
+            });
+        }
+
     } else {
         DeviceInfo deviceInfo = DeviceInfo::FromIdentityPacketAndCert(*identityPacket,
                                                                       socket->peerCertificate());

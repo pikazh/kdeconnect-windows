@@ -15,7 +15,7 @@ public:
     PeerFileDownloadTask(QObject *parent = nullptr);
     virtual ~PeerFileDownloadTask() override = default;
 
-    QString downloadedFilePath(QByteArray *sha1Result = nullptr) const;
+    QString downloadFilePath() const;
     void setDownloadFilePath(const QString &filePath);
 
 protected:
@@ -38,5 +38,6 @@ private:
     QCryptographicHash m_hashCal;
     QFile m_downloadedFile;
     QString m_downloadFilePath;
+    QByteArray m_buffer;
     qint64 m_downloadedSize = 0;
 };

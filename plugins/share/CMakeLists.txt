@@ -4,6 +4,9 @@ qt_add_library(kdeconnect_share SHARED
     shareplugin.cpp
     plugin_share_debug.h
     plugin_share_debug.cpp
+    fileshareserver.h
+    fileshareserver.cpp
+    common.h
 )
 
 target_link_libraries(kdeconnect_share PRIVATE Qt::Gui Qt::Core Qt::Network kdeconnectcore notification)
