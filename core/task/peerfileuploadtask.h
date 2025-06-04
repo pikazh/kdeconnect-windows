@@ -20,6 +20,10 @@ public:
     void startUploadFileWithSocket(shared_qobject_ptr<QSslSocket> socket);
     void setUploadFile(const QString &filePath);
 
+protected:
+    void encryptedBytesWritten(qint64 written);
+    void socketDisconnected();
+
 private:
     shared_qobject_ptr<QSslSocket> m_socket;
     QFile m_uploadFile;

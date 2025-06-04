@@ -560,6 +560,14 @@
     </message>
 </context>
 <context>
+    <name>PeerFileUploadTask</name>
+    <message>
+        <location filename="../core/task/peerfileuploadtask.cpp" line="28"/>
+        <source>Can not open upload file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>PeerSSLSocketTask</name>
     <message>
         <location filename="../core/task/peersslsockettask.cpp" line="27"/>
@@ -1578,6 +1586,11 @@ It does not seem to contain an actual email address, i.e. something of the form 
     </message>
     <message>
         <location filename="../core/task/taskstatus.cpp" line="14"/>
+        <source>Waiting for peer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../core/task/taskstatus.cpp" line="16"/>
         <source>Transfering</source>
         <translation type="unfinished"></translation>
     </message>

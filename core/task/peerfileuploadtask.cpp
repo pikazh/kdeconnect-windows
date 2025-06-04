@@ -25,7 +25,7 @@ void PeerFileUploadTask::startUploadFileWithSocket(shared_qobject_ptr<QSslSocket
 
     Q_ASSERT(!m_uploadFile.fileName().isEmpty() && !m_uploadFile.isOpen());
     if (!m_uploadFile.open(QIODeviceBase::ReadOnly | QIODeviceBase::ExistingOnly)) {
-        QString errStr = tr("Can not open upload file:").append(filePath);
+        QString errStr = tr("Can not open upload file:").append(m_uploadFile.fileName());
         emitFailed(errStr);
     }
 }
@@ -34,3 +34,7 @@ void PeerFileUploadTask::setUploadFile(const QString &filePath)
 {
     m_uploadFile.setFileName(filePath);
 }
+
+void PeerFileUploadTask::encryptedBytesWritten(qint64 written) {}
+
+void PeerFileUploadTask::socketDisconnected() {}
