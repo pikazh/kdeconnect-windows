@@ -9,6 +9,8 @@
 #include "core/core_debug.h"
 #include "lanlinkprovider.h"
 
+#include <QTimer>
+
 LanDeviceLink::LanDeviceLink(const DeviceInfo &deviceInfo, LanLinkProvider *parent, QSslSocket *socket)
     : DeviceLink(deviceInfo.id, parent)
     , m_socket(nullptr)
@@ -21,7 +23,17 @@ void LanDeviceLink::reset(QSslSocket *socket)
 {
     if (m_socket) {
         disconnect(m_socket, &QAbstractSocket::disconnected, this, &QObject::deleteLater);
-        delete m_socket;
+
+        // give some time to m_socket to handle not-written-yet and received data
+        QObject::connect(m_socket, &QSslSocket::disconnected, m_socket, &QSslSocket::deleteLater);
+        QTimer *delayDeleteTimer = new QTimer(m_socket);
+        QSslSocket *dalayDeleteSocket = m_socket;
+        QObject::connect(delayDeleteTimer, &QTimer::timeout, this, [dalayDeleteSocket]() {
+            dalayDeleteSocket->disconnectFromHost();
+        });
+        delayDeleteTimer->setSingleShot(true);
+        delayDeleteTimer->setInterval(10 * 1000);
+        delayDeleteTimer->start();
     }
 
     m_socket = socket;
@@ -89,8 +101,12 @@ bool LanDeviceLink::sendPacket(NetworkPacket &np)
 
 void LanDeviceLink::dataReceived()
 {
-    while (m_socket->canReadLine()) {
-        const QByteArray serializedPacket = m_socket->readLine();
+    QSslSocket *socket = qobject_cast<QSslSocket *>(QObject::sender());
+    if (socket == nullptr)
+        return;
+
+    while (socket->canReadLine()) {
+        const QByteArray serializedPacket = socket->readLine();
         NetworkPacket packet;
         NetworkPacket::unserialize(serializedPacket, &packet);
 
@@ -98,7 +114,7 @@ void LanDeviceLink::dataReceived()
 
         if (packet.hasPayloadTransferInfo()) {
             QVariantMap transferInfo = packet.payloadTransferInfo();
-            QString address = m_socket->peerAddress().toString();
+            QString address = socket->peerAddress().toString();
             //const quint16 port = transferInfo[QStringLiteral("port")].toInt();
             transferInfo[QStringLiteral("host")] = address;
             packet.setPayloadTransferInfo(transferInfo);

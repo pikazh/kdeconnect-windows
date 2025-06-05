@@ -9,7 +9,11 @@ int main(int argc, char *argv[])
     QLocale::setDefault(QLocale(QLocale::Language::English, QLocale::Territory::UnitedStates));
 
     Application app(argc, argv);
-    SingleApplication single(argc, argv);
+    SingleApplication single(argc,
+                             argv,
+                             false,
+                             SingleApplication::Mode::User | SingleApplication::Mode::ExcludeAppPath
+                                 | SingleApplication::Mode::ExcludeAppVersion);
     if (!single.isPrimary()) {
         return 0;
     }

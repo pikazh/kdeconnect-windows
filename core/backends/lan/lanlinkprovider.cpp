@@ -661,9 +661,6 @@ void LanLinkProvider::addLink(QSslSocket *socket, const DeviceInfo &deviceInfo)
             << ", expected" << NetworkPacket::s_protocolVersion;
     }
 
-    // Socket disconnection will now be handled by LanDeviceLink
-    disconnect(socket, &QAbstractSocket::disconnected, socket, &QObject::deleteLater);
-
     LanDeviceLink *deviceLink;
     // Do we have a link for this device already?
     QMap<QString, LanDeviceLink *>::iterator linkIterator = m_links.find(deviceInfo.id);
@@ -673,9 +670,11 @@ void LanLinkProvider::addLink(QSslSocket *socket, const DeviceInfo &deviceInfo)
             qCritical(KDECONNECT_CORE) << "LanLink was asked to replace a socket but the "
                                           "certificate doesn't match, aborting";
             socket->disconnectFromHost();
-            socket->deleteLater();
             return;
         }
+
+        // Socket disconnection will now be handled by LanDeviceLink
+        disconnect(socket, &QAbstractSocket::disconnected, socket, &QObject::deleteLater);
         // qCDebug(KDECONNECT_CORE) << "Reusing link to" << deviceId;
         deviceLink->reset(socket);
     } else {
@@ -683,9 +682,11 @@ void LanLinkProvider::addLink(QSslSocket *socket, const DeviceInfo &deviceInfo)
         if (!isDeviceTrusted && m_links.size() > MAX_UNPAIRED_CONNECTIONS) {
             qCWarning(KDECONNECT_CORE) << "Too many unpaired devices to remember them all. Ignoring " << deviceInfo.id;
             socket->disconnectFromHost();
-            socket->deleteLater();
             return;
         }
+
+        // Socket disconnection will now be handled by LanDeviceLink
+        disconnect(socket, &QAbstractSocket::disconnected, socket, &QObject::deleteLater);
         deviceLink = new LanDeviceLink(deviceInfo, this, socket);
         m_links[deviceInfo.id] = deviceLink;
     }
