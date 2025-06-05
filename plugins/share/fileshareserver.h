@@ -1,8 +1,11 @@
 #pragma once
 
+#include "core/networkpacket.h"
+#include "core/task/peerfileuploadtask.h"
 #include "core/task/taskscheduler.h"
 
 #include <QFileInfo>
+#include <QHash>
 #include <QObject>
 #include <QSharedPointer>
 #include <QSslServer>
@@ -21,8 +24,12 @@ public:
 protected Q_SLOTS:
     void newConnectionEstablished();
     void onPeerVerifyError(QSslSocket *socket, const QSslError &error);
-    void socketErrorOccured(QAbstractSocket::SocketError error);
-    void socketEncrypted();
+
+    void onTaskStarted(Task::Ptr task);
+    void onTaskFinished(Task::Ptr task);
+
+Q_SIGNALS:
+    void requestSendPacket(NetworkPacket &packet);
 
 private:
     QSslServer *m_sslServer;
@@ -30,4 +37,7 @@ private:
     QString m_deviceId;
 
     QSharedPointer<TaskScheduler> m_sendFilesTaskSchedule;
+
+    PeerFileUploadTask::Ptr m_currentTask;
+    QHash<Task *, NetworkPacket *> m_taskToNetworkPackets;
 };

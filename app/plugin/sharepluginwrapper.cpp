@@ -23,3 +23,8 @@ void SharePluginWrapper::shareUrl(const QUrl &url)
 {
     invokeMethod("shareUrl", url);
 }
+
+void SharePluginWrapper::shareFiles(const QStringList &filePaths)
+{
+    invokeMethod("shareFiles", filePaths);
+}

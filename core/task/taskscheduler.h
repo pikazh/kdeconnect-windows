@@ -48,7 +48,7 @@ protected:
     void onTaskFailed(Task::Ptr task, const QString &msg);
     void onTaskSucceeded(Task::Ptr task);
     void onTaskAbortd(Task::Ptr task);
-    void onTaskFinished(Task::Ptr task, Task::State state, const QString &msg = QString());
+    void onTaskFinished(Task::Ptr task);
     void onTaskProgress(Task::Ptr task, qint64 currentProgress, qint64 totalProgress);
 
 protected Q_SLOTS:

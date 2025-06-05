@@ -9,6 +9,7 @@
 
 #include <QNetworkInformation>
 #include <QObject>
+#include <QSslServer>
 #include <QSslSocket>
 #include <QTcpServer>
 #include <QTimer>
@@ -41,6 +42,9 @@ public:
     void sendUdpIdentityPacket(const QList<QHostAddress> &addresses);
 
     static void configureSslSocket(QSslSocket *socket, const QString &deviceId, bool isDeviceTrusted);
+    static void configureSslServer(QSslServer *server,
+                                   const QString &deviceId,
+                                   bool isDeviceTrusted);
     static void configureSocket(QSslSocket *socket);
 
     /**

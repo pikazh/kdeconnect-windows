@@ -619,6 +619,26 @@ void LanLinkProvider::configureSslSocket(QSslSocket *socket,
     // });
 }
 
+void LanLinkProvider::configureSslServer(QSslServer *server,
+                                         const QString &deviceId,
+                                         bool isDeviceTrusted)
+{
+    // Configure for ssl
+    QSslConfiguration sslConfig;
+    sslConfig.setLocalCertificate(KdeConnectConfig::instance()->certificate());
+    sslConfig.setPrivateKey(KdeConnectConfig::instance()->privateKey());
+
+    if (isDeviceTrusted) {
+        QSslCertificate certificate = KdeConnectConfig::instance()->getTrustedDeviceCertificate(
+            deviceId);
+        sslConfig.setCaCertificates({certificate});
+        sslConfig.setPeerVerifyMode(QSslSocket::VerifyPeer);
+    } else {
+        sslConfig.setPeerVerifyMode(QSslSocket::QueryPeer);
+    }
+    server->setSslConfiguration(sslConfig);
+}
+
 void LanLinkProvider::configureSocket(QSslSocket *socket)
 {
     socket->setProxy(QNetworkProxy::NoProxy);

@@ -11,6 +11,7 @@
 #include "plugin/findmyphonepluginwrapper.h"
 #include "plugin/pingpluginwrapper.h"
 #include "plugin/sftppluginwrapper.h"
+#include "plugin/sharepluginwrapper.h"
 
 #include "ui/dialogs/pluginsettingsdialog.h"
 #include "ui/pages/BasePageContainer.h"
@@ -50,9 +51,12 @@ protected Q_SLOTS:
     void updateClipBoardButtonState();
     void updatePingButtonState();
     void updateFindMyPhoneButtonState();
+    void updateSendFilesButtonState();
     void updatePluginSettingsButtonState();
 
     void updateVisiblePages();
+
+    void selectFilesToSend();
 
 Q_SIGNALS:
     void aboutToClose();
@@ -66,6 +70,7 @@ private:
     ClipboardPluginWrapper *m_clipboardPluginWrapper = nullptr;
     PingPluginWrapper *m_pingPluginWrapper = nullptr;
     FindMyPhonePluginWrapper *m_findMyPhonePluginWrapper = nullptr;
+    SharePluginWrapper *m_sharePluginWrapper = nullptr;
 
     PageContainer *m_container = nullptr;
 
@@ -75,6 +80,7 @@ private:
     QAction *m_pingAction = nullptr;
     QAction *m_findMyPhoneAction = nullptr;
     QAction *m_pluginSettingsAction = nullptr;
+    QAction *m_sendFilesAction = nullptr;
 
     PluginSettingsDialog *m_pluginSettingDlg = nullptr;
 };

@@ -4,6 +4,7 @@
 #include "volumedeviceitem.h"
 
 #include "core/task/peerfiledownloadtask.h"
+#include "core/task/peerfileuploadtask.h"
 
 #include <QFileInfo>
 #include <QHBoxLayout>
@@ -71,6 +72,7 @@ FileTransferPage::FileTransferPage(Device::Ptr device, QWidget *parent)
 
     auto initFunctor = [this]() {
         m_recvFilesTaskSchedule = m_sharePluginWrapper->recvFilesTaskSchedule();
+        m_sendFilesTaskSchedule = m_sharePluginWrapper->sendFilesTaskSchedule();
         QObject::connect(m_recvFilesTaskSchedule.get(),
                          &TaskScheduler::taskAdded,
                          this,
@@ -87,9 +89,29 @@ FileTransferPage::FileTransferPage(Device::Ptr device, QWidget *parent)
                          &TaskScheduler::taskRemoved,
                          this,
                          [this](Task::Ptr task) {
-                             PeerFileDownloadTask *t = qobject_cast<PeerFileDownloadTask *>(
+                             int rowIndex = findListRowIndexByTask(task.get());
+                             Q_ASSERT(rowIndex > -1);
+                             if (rowIndex > -1)
+                                 ui->transferingList->removeRow(rowIndex);
+                         });
+
+        QObject::connect(m_sendFilesTaskSchedule.get(),
+                         &TaskScheduler::taskAdded,
+                         this,
+                         [this](Task::Ptr task) {
+                             PeerFileUploadTask *fileUploadTask = qobject_cast<PeerFileUploadTask *>(
                                  task.get());
-                             int rowIndex = findListRowIndexByTask(t);
+                             Q_ASSERT(fileUploadTask != nullptr);
+                             if (fileUploadTask != nullptr) {
+                                 addTransferingListItem(fileUploadTask);
+                             }
+                         });
+
+        QObject::connect(m_sendFilesTaskSchedule.get(),
+                         &TaskScheduler::taskRemoved,
+                         this,
+                         [this](Task::Ptr task) {
+                             int rowIndex = findListRowIndexByTask(task.get());
                              Q_ASSERT(rowIndex > -1);
                              if (rowIndex > -1)
                                  ui->transferingList->removeRow(rowIndex);
@@ -160,6 +182,24 @@ void FileTransferPage::initTransferingList()
             addTransferingListItem(fileDlTask);
         }
     }
+
+    waitingTaskList = m_sendFilesTaskSchedule->waitingTasks();
+    for (auto task : waitingTaskList) {
+        PeerFileUploadTask *fileUploadTask = qobject_cast<PeerFileUploadTask *>(task.get());
+        Q_ASSERT(fileUploadTask != nullptr);
+        if (fileUploadTask != nullptr) {
+            addTransferingListItem(fileUploadTask);
+        }
+    }
+
+    runningTasks = m_recvFilesTaskSchedule->runningTasks();
+    for (auto task : runningTasks) {
+        PeerFileUploadTask *fileUploadTask = qobject_cast<PeerFileUploadTask *>(task.get());
+        Q_ASSERT(fileUploadTask != nullptr);
+        if (fileUploadTask != nullptr) {
+            addTransferingListItem(fileUploadTask);
+        }
+    }
 }
 
 void FileTransferPage::deleteAllRowsFromTransferingList()
@@ -197,24 +237,18 @@ void FileTransferPage::addTransferingListItem(PeerFileDownloadTask *fileDlTask)
     QTableWidgetItem *transferredItem = new QTableWidgetItem(transferredStr);
     transferredItem->setFlags(opItem->flags() & ~Qt::ItemIsEditable);
     ui->transferingList->setItem(rowIndex, Columns::Transferred, transferredItem);
-    QObject::connect(fileDlTask,
-                     &PeerFileDownloadTask::progress,
-                     this,
-                     [this, transferredItem, fileDlTask]() {
-                         qint64 totalProgress = fileDlTask->totalProgress();
-                         qint64 currentProgress = fileDlTask->currentProgress();
-                         transferredItem->setText(transferredString(currentProgress, totalProgress));
-                     });
+    QObject::connect(fileDlTask, &Task::progress, this, [this, transferredItem, fileDlTask]() {
+        qint64 totalProgress = fileDlTask->totalProgress();
+        qint64 currentProgress = fileDlTask->currentProgress();
+        transferredItem->setText(transferredString(currentProgress, totalProgress));
+    });
 
     QTableWidgetItem *statusItem = new QTableWidgetItem(taskStatusString(fileDlTask->taskStatus()));
     statusItem->setFlags(opItem->flags() & ~Qt::ItemIsEditable);
     ui->transferingList->setItem(rowIndex, Columns::Progress, statusItem);
-    QObject::connect(fileDlTask,
-                     &PeerFileDownloadTask::statusChanged,
-                     this,
-                     [this, statusItem, fileDlTask]() {
-                         statusItem->setText(taskStatusString(fileDlTask->taskStatus()));
-                     });
+    QObject::connect(fileDlTask, &Task::statusChanged, this, [this, statusItem, fileDlTask]() {
+        statusItem->setText(taskStatusString(fileDlTask->taskStatus()));
+    });
 
     QWidget *w = new QWidget(ui->transferingList);
     QHBoxLayout *layout = new QHBoxLayout(w);
@@ -235,12 +269,79 @@ void FileTransferPage::addTransferingListItem(PeerFileDownloadTask *fileDlTask)
     });
 }
 
-int FileTransferPage::findListRowIndexByTask(PeerFileDownloadTask *task)
+void FileTransferPage::addTransferingListItem(PeerFileUploadTask *fileUploadTask)
+{
+    int rowIndex = ui->transferingList->rowCount();
+    ui->transferingList->insertRow(rowIndex);
+
+    QTableWidgetItem *opItem = new QTableWidgetItem(tr("Sending"));
+    opItem->setFlags(opItem->flags() & ~Qt::ItemIsEditable);
+    opItem->setData(Qt::UserRole, QVariant::fromValue(fileUploadTask));
+    ui->transferingList->setItem(rowIndex, Columns::Operation, opItem);
+
+    QString dlFilePath = fileUploadTask->uploadFilePath();
+    QFileInfo fileInfo(dlFilePath);
+    QTableWidgetItem *filePathItem = new QTableWidgetItem(fileInfo.fileName());
+    filePathItem->setToolTip(dlFilePath);
+    filePathItem->setFlags(opItem->flags() & ~Qt::ItemIsEditable);
+    ui->transferingList->setItem(rowIndex, Columns::File, filePathItem);
+
+    qint64 totalProgress = fileUploadTask->totalProgress();
+    qint64 currentProgress = fileUploadTask->currentProgress();
+    QString transferredStr;
+    if (totalProgress > 0) {
+        transferredStr = transferredString(currentProgress, totalProgress);
+    } else {
+        transferredStr = transferredString(0, fileUploadTask->uploadFileSize());
+    }
+    QTableWidgetItem *transferredItem = new QTableWidgetItem(transferredStr);
+    transferredItem->setFlags(opItem->flags() & ~Qt::ItemIsEditable);
+    ui->transferingList->setItem(rowIndex, Columns::Transferred, transferredItem);
+    QObject::connect(fileUploadTask,
+                     &Task::progress,
+                     this,
+                     [this, transferredItem, fileUploadTask]() {
+                         qint64 totalProgress = fileUploadTask->totalProgress();
+                         qint64 currentProgress = fileUploadTask->currentProgress();
+                         transferredItem->setText(transferredString(currentProgress, totalProgress));
+                     });
+
+    QTableWidgetItem *statusItem = new QTableWidgetItem(
+        taskStatusString(fileUploadTask->taskStatus()));
+    statusItem->setFlags(opItem->flags() & ~Qt::ItemIsEditable);
+    ui->transferingList->setItem(rowIndex, Columns::Progress, statusItem);
+    QObject::connect(fileUploadTask,
+                     &Task::statusChanged,
+                     this,
+                     [this, statusItem, fileUploadTask]() {
+                         statusItem->setText(taskStatusString(fileUploadTask->taskStatus()));
+                     });
+
+    QWidget *w = new QWidget(ui->transferingList);
+    QHBoxLayout *layout = new QHBoxLayout(w);
+    layout->setContentsMargins(0, 0, 0, 0);
+    QPushButton *removeButton = new QPushButton(w);
+    removeButton->setIcon(QIcon::fromTheme(QStringLiteral("edit-delete")));
+    removeButton->setToolTip(tr("Delete"));
+    layout->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
+    layout->addWidget(removeButton);
+    layout->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
+    w->setFixedWidth(40);
+    ui->transferingList->setCellWidget(rowIndex, Columns::Cancel, w);
+    QObject::connect(removeButton, &QPushButton::clicked, this, [this, fileUploadTask]() {
+        if (!fileUploadTask->isRunning())
+            m_sendFilesTaskSchedule->removeTask(fileUploadTask->sharedFromThis());
+        else
+            m_sendFilesTaskSchedule->abortTask(fileUploadTask->sharedFromThis());
+    });
+}
+
+int FileTransferPage::findListRowIndexByTask(Task *task)
 {
     int rowCount = ui->transferingList->rowCount();
     for (int i = 0; i < rowCount; i++) {
         auto item = ui->transferingList->item(i, Columns::Operation);
-        PeerFileDownloadTask *t = qvariant_cast<PeerFileDownloadTask *>(item->data(Qt::UserRole));
+        Task *t = qvariant_cast<Task *>(item->data(Qt::UserRole));
         if (t == task) {
             return i;
         }

@@ -21,6 +21,8 @@ protected:
 
     void finisheTask();
 
+    void verifyDownloadedSize();
+
 protected Q_SLOTS:
 
     virtual void connectError(QAbstractSocket::SocketError socketError) override;

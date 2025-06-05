@@ -114,6 +114,7 @@ void TaskScheduler::runTask(Task::Ptr task)
         onTaskFailed(task, reason);
     });
     QObject::connect(taskPtr, &Task::aborted, this, [this, task]() { onTaskAbortd(task); });
+    QObject::connect(taskPtr, &Task::finished, this, [this, task]() { onTaskFinished(task); });
     QObject::connect(taskPtr, &Task::progress, this, [this, task](qint64 current, qint64 total) {
         onTaskProgress(task, current, total);
     });
@@ -164,20 +165,20 @@ void TaskScheduler::onTaskStarted(Task::Ptr task)
 
 void TaskScheduler::onTaskFailed(Task::Ptr task, const QString &msg)
 {
-    onTaskFinished(task, Task::State::Failed, msg);
+    Q_EMIT taskFailed(task, msg);
 }
 
 void TaskScheduler::onTaskSucceeded(Task::Ptr task)
 {
-    onTaskFinished(task, Task::State::Succeeded);
+    Q_EMIT taskSucceeded(task);
 }
 
 void TaskScheduler::onTaskAbortd(Task::Ptr task)
 {
-    onTaskFinished(task, Task::State::Aborted);
+    Q_EMIT taskAborted(task);
 }
 
-void TaskScheduler::onTaskFinished(Task::Ptr task, Task::State state, const QString &msg)
+void TaskScheduler::onTaskFinished(Task::Ptr task)
 {
     Task *taskPtr = task.get();
     m_doing.remove(taskPtr);
@@ -187,24 +188,25 @@ void TaskScheduler::onTaskFinished(Task::Ptr task, Task::State state, const QStr
 
     QObject::disconnect(taskPtr, nullptr, this, nullptr);
 
-    switch (state) {
+    switch (task->state()) {
     case Task::State::Aborted:
         if (!m_autoRemoveFinishedTask)
             m_aborted.insert(taskPtr, task);
-        Q_EMIT taskAborted(task);
+
         break;
     case Task::State::Failed:
         if (!m_autoRemoveFinishedTask)
             m_failed.insert(taskPtr, task);
-        Q_EMIT taskFailed(task, msg);
+
         break;
     case Task::State::Succeeded:
         if (!m_autoRemoveFinishedTask)
             m_succeeded.insert(taskPtr, task);
-        Q_EMIT taskSucceeded(task);
+
         break;
     default:
-        qCritical(KDECONNECT_CORE) << "onTaskFinished was call with improper task state" << state;
+        qCritical(KDECONNECT_CORE)
+            << "onTaskFinished was call with improper task state" << task->state();
         break;
     }
 

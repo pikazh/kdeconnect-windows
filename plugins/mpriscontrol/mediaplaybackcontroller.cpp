@@ -51,11 +51,8 @@ void MediaPlaybackImpl::executeCommand(QString playerId, QString cmd, QVariantHa
     } else if (cmd == QStringLiteral("Seek")) {
         winrt::TimeSpan offset = std::chrono::microseconds(
             qvariant_cast<qint64>(params[QStringLiteral("offset")]));
-        qWarning(KDECONNECT_PLUGIN_MPRISCONTROL)
-            << "Seeking" << offset.count() << "ns to" << playerId;
         session
-            .TryChangePlaybackPositionAsync(
-                (session.GetTimelineProperties().Position() + offset).count())
+            .TryChangePlaybackPositionAsync((getSessionTimelinePosition(session) + offset).count())
             .get();
     } else if (cmd == QStringLiteral("SetPosition")) {
         winrt::TimeSpan position = std::chrono::milliseconds(
@@ -270,6 +267,19 @@ void MediaPlaybackImpl::updateTimelinePropertiesForSession(
     vals.insert(QStringLiteral("length"), length);
 
     Q_EMIT timeLinePropertiesUpdated(playerId, vals);
+}
+
+winrt::TimeSpan MediaPlaybackImpl::getSessionTimelinePosition(
+    winrt::GlobalSystemMediaTransportControlsSession session)
+{
+    auto playbackInfo = session.GetPlaybackInfo();
+    bool isPlaying = playbackInfo.PlaybackStatus()
+                     == winrt::GlobalSystemMediaTransportControlsSessionPlaybackStatus::Playing;
+    auto position = session.GetTimelineProperties().Position();
+    if (isPlaying)
+        return position + winrt::clock::now() - session.GetTimelineProperties().LastUpdatedTime();
+    else
+        return position;
 }
 
 void MediaPlaybackImpl::updatePlaybackInfoForSession(

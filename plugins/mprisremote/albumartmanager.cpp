@@ -60,12 +60,9 @@ void AlbumArtManager::onAlbumDlTaskFinished(Task::Ptr task)
             if (taskPtr->isSuccessful()) {
                 QByteArray data = taskPtr->downloadedBuffer();
                 Q_ASSERT(taskPtr->contentSize() == data.size());
-                if (taskPtr->contentSize() == data.size()) {
-                    m_db->insert(albumArtUrl, data);
-                }
+                m_db->insert(albumArtUrl, data);
             }
 
-            //m_taskSchedule->removeTask(task);
             m_albumArtDLTasks.remove(albumArtUrl);
 
             Q_EMIT albumArtDownloadFinished(albumArtUrl);

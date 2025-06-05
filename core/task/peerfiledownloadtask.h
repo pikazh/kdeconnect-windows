@@ -23,6 +23,8 @@ protected:
 
     void finisheTask();
 
+    void verifyDownloadedSize();
+
 protected Q_SLOTS:
     virtual void connectError(QAbstractSocket::SocketError socketError) override;
     virtual void sslErrors(const QList<QSslError> &errors) override;

@@ -74,6 +74,9 @@ protected:
     void updateTimelinePropertiesForSession(winrt::GlobalSystemMediaTransportControlsSession session,
                                             const QString &playerId);
 
+    winrt::TimeSpan getSessionTimelinePosition(
+        winrt::GlobalSystemMediaTransportControlsSession session);
+
 Q_SIGNALS:
     void sessionListUpdated(QHash<QString, QString> playerIdtoNames);
     void playbackInfoUpdated(QString playerId, QVariantHash infos);

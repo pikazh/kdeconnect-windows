@@ -3,11 +3,13 @@
 #include <QSharedPointer>
 #include <QWidget>
 
-#include "core/device.h"
+#include "plugin/sharepluginwrapper.h"
 #include "ui/pages/BasePage.h"
 
+#include "core/device.h"
+
 #include "core/task/peerfiledownloadtask.h"
-#include "plugin/sharepluginwrapper.h"
+#include "core/task/peerfileuploadtask.h"
 
 namespace Ui {
 class FileTransferPage;
@@ -39,9 +41,13 @@ protected:
     };
 
     void initTransferingList();
-    void deleteAllRowsFromTransferingList();
+
     void addTransferingListItem(PeerFileDownloadTask *task);
-    int findListRowIndexByTask(PeerFileDownloadTask *task);
+    void addTransferingListItem(PeerFileUploadTask *task);
+
+    int findListRowIndexByTask(Task *task);
+
+    void deleteAllRowsFromTransferingList();
 
     QString transferredString(qint64 current, qint64 total);
     QString formatedSizeString(qint64 val);

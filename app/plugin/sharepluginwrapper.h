@@ -21,4 +21,5 @@ public:
 public Q_SLOTS:
     void shareText(const QString &text);
     void shareUrl(const QUrl &url);
+    void shareFiles(const QStringList &filePaths);
 };

@@ -213,7 +213,6 @@ void SmsManager::onDlTaskFinished(Task::Ptr task)
 {
     PeerFileDownloadTask *taskPtr = qobject_cast<PeerFileDownloadTask *>(task.get());
     if (taskPtr != nullptr) {
-        //m_taskSchedule->removeTask(task);
         for (int i = 0; i < m_downloadTasks.size(); ++i) {
             const auto [msgId, partId, uniqueIdenfier, dlTask] = m_downloadTasks[i];
 

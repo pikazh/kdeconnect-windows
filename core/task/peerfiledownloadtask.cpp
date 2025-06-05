@@ -64,6 +64,8 @@ void PeerFileDownloadTask::finisheTask()
         }
 
         m_downloadedFile.close();
+
+        verifyDownloadedSize();
     }
 
     if (m_aborted) {
@@ -72,6 +74,15 @@ void PeerFileDownloadTask::finisheTask()
         emitFailed(m_errorStr);
     } else {
         emitSucceeded();
+    }
+}
+
+void PeerFileDownloadTask::verifyDownloadedSize()
+{
+    Q_ASSERT(!m_aborted && !m_errorOccured);
+    if (m_downloadedSize != contentSize()) {
+        m_errorOccured = true;
+        m_errorStr = tr("Connection closed before download is complete");
     }
 }
 
@@ -99,7 +110,8 @@ void PeerFileDownloadTask::connectError(QAbstractSocket::SocketError socketError
         m_errorOccured = true;
         m_errorStr = socket()->errorString();
 
-        qWarning(KDECONNECT_CORE) << "connectError:" << socketError << ", error str:" << m_errorStr;
+        qWarning(KDECONNECT_CORE) << describe() << "connectError:" << socketError
+                                  << ", error str:" << m_errorStr;
     }
 
     if (socketConnectState() != SocketState::Connected) {

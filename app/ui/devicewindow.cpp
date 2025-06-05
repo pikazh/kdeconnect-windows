@@ -5,6 +5,7 @@
 
 #include <QCloseEvent>
 #include <QDialogButtonBox>
+#include <QFileDialog>
 #include <QPushButton>
 
 #include <memory>
@@ -19,6 +20,7 @@ DeviceWindow::DeviceWindow(Device::Ptr device, QWidget *parent)
     , m_clipboardPluginWrapper(new ClipboardPluginWrapper(device, this))
     , m_pingPluginWrapper(new PingPluginWrapper(device, this))
     , m_findMyPhonePluginWrapper(new FindMyPhonePluginWrapper(device, this))
+    , m_sharePluginWrapper(new SharePluginWrapper(device, this))
 {
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle(device->name());
@@ -44,6 +46,7 @@ DeviceWindow::DeviceWindow(Device::Ptr device, QWidget *parent)
     m_clipboardPluginWrapper->init();
     m_pingPluginWrapper->init();
     m_findMyPhonePluginWrapper->init();
+    m_sharePluginWrapper->init();
 
     QObject::connect(m_batteryPluginWrapper,
                      &BatteryPluginWrapper::refreshed,
@@ -71,6 +74,10 @@ DeviceWindow::DeviceWindow(Device::Ptr device, QWidget *parent)
                      &FindMyPhonePluginWrapper::pluginLoadedChange,
                      this,
                      &DeviceWindow::updateFindMyPhoneButtonState);
+    QObject::connect(m_sharePluginWrapper,
+                     &SharePluginWrapper::pluginLoadedChange,
+                     this,
+                     &DeviceWindow::updateSendFilesButtonState);
 
     reloadPages();
     updateUI();
@@ -101,6 +108,11 @@ void DeviceWindow::createToolBar()
                      m_clipboardPluginWrapper,
                      &ClipboardPluginWrapper::sendClipboard);
 
+    m_sendFilesAction = new QAction(m_mainToolBar);
+    m_sendFilesAction->setText(tr("Send Files"));
+    m_sendFilesAction->setIcon(RETRIEVE_THEME_ICON("folder-network"));
+    QObject::connect(m_sendFilesAction, &QAction::triggered, this, &DeviceWindow::selectFilesToSend);
+
     m_pingAction = new QAction(m_mainToolBar);
     m_pingAction->setText(tr("Send Ping"));
     m_pingAction->setIcon(RETRIEVE_THEME_ICON("hands-free"));
@@ -126,6 +138,7 @@ void DeviceWindow::createToolBar()
                      &DeviceWindow::showPluginSettingsWindow);
 
     m_mainToolBar->addAction(m_sftpAction);
+    m_mainToolBar->addAction(m_sendFilesAction);
     m_mainToolBar->addAction(m_sendClipboardAction);
     m_mainToolBar->addAction(m_pingAction);
     m_mainToolBar->addAction(m_findMyPhoneAction);
@@ -168,6 +181,7 @@ void DeviceWindow::updateUI()
     updateClipBoardButtonState();
     updatePingButtonState();
     updateFindMyPhoneButtonState();
+    updateSendFilesButtonState();
     updatePluginSettingsButtonState();
 }
 
@@ -226,6 +240,11 @@ void DeviceWindow::updateFindMyPhoneButtonState()
     m_findMyPhoneAction->setVisible(m_findMyPhonePluginWrapper->isPluginLoaded());
 }
 
+void DeviceWindow::updateSendFilesButtonState()
+{
+    m_sendFilesAction->setVisible(m_sharePluginWrapper->isPluginLoaded());
+}
+
 void DeviceWindow::updatePluginSettingsButtonState()
 {
     m_pluginSettingsAction->setVisible(m_device->isReachable() && m_device->isPaired());
@@ -234,6 +253,12 @@ void DeviceWindow::updatePluginSettingsButtonState()
 void DeviceWindow::updateVisiblePages()
 {
     refreshContainer();
+}
+
+void DeviceWindow::selectFilesToSend()
+{
+    QStringList selected = QFileDialog::getOpenFileNames(this);
+    m_sharePluginWrapper->shareFiles(selected);
 }
 
 PluginSettingsDialog *DeviceWindow::showPluginSettingsWindow()

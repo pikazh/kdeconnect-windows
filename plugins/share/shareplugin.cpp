@@ -36,6 +36,11 @@ SharePlugin::SharePlugin(QObject *parent, const QVariantList &args)
                      this,
                      &SharePlugin::reloadConfig);
 
+    QObject::connect(m_fileShareServer,
+                     &FileShareServer::requestSendPacket,
+                     this,
+                     [this](NetworkPacket &packet) { sendPacket(packet); });
+
     reloadConfig();
 
     m_recvFilesTaskSchedule->start();
@@ -149,6 +154,7 @@ void SharePlugin::shareFiles(const QStringList &filePaths)
     for (auto filePath : filePaths) {
         QFileInfo fileInfo(filePath);
         if (fileInfo.isFile()) {
+            m_fileShareServer->addFileShareTask(fileInfo);
         }
     }
 }

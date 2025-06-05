@@ -183,42 +183,47 @@
 <context>
     <name>DeviceWindow</name>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="89"/>
+        <location filename="../app/ui/devicewindow.cpp" line="96"/>
         <source>Browser Device</source>
         <translation>浏览文件系统</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="97"/>
+        <location filename="../app/ui/devicewindow.cpp" line="104"/>
         <source>Send Clipboard</source>
         <translation>发送剪切板</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="105"/>
+        <location filename="../app/ui/devicewindow.cpp" line="112"/>
+        <source>Send Files</source>
+        <translation>发送文件</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/devicewindow.cpp" line="117"/>
         <source>Send Ping</source>
         <translation>发送Ping</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="113"/>
+        <location filename="../app/ui/devicewindow.cpp" line="125"/>
         <source>Ring device</source>
         <translation>响铃</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="121"/>
+        <location filename="../app/ui/devicewindow.cpp" line="133"/>
         <source>Plugin Settings</source>
         <translation>插件设置</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="198"/>
+        <location filename="../app/ui/devicewindow.cpp" line="212"/>
         <source> (Battery: %1%</source>
         <translation> (当前电量: %1%</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="201"/>
+        <location filename="../app/ui/devicewindow.cpp" line="215"/>
         <source>, charging</source>
         <translation>, 充电中</translation>
     </message>
     <message>
-        <location filename="../app/ui/devicewindow.cpp" line="204"/>
+        <location filename="../app/ui/devicewindow.cpp" line="218"/>
         <source>)</source>
         <translation></translation>
     </message>
@@ -236,48 +241,50 @@
         <translation>传输记录</translation>
     </message>
     <message>
-        <source>File Transfer</source>
-        <translation type="vanished">文件传输</translation>
-    </message>
-    <message>
-        <location filename="../app/ui/pages/filetransferpage.cpp" line="65"/>
-        <source>Operation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../app/ui/pages/filetransferpage.cpp" line="66"/>
-        <source>File</source>
-        <translation type="unfinished"></translation>
+        <source>Operation</source>
+        <translation>操作</translation>
     </message>
     <message>
         <location filename="../app/ui/pages/filetransferpage.cpp" line="67"/>
-        <source>Transferred</source>
-        <translation type="unfinished"></translation>
+        <source>File</source>
+        <translation>文件名</translation>
     </message>
     <message>
         <location filename="../app/ui/pages/filetransferpage.cpp" line="68"/>
-        <source>Progress</source>
-        <translation type="unfinished"></translation>
+        <source>Transferred</source>
+        <translation>已传输</translation>
     </message>
     <message>
         <location filename="../app/ui/pages/filetransferpage.cpp" line="69"/>
+        <source>Progress</source>
+        <translation>当前进度</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="70"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>取消</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/filetransferpage.cpp" line="177"/>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="217"/>
         <source>Receiving</source>
-        <translation type="unfinished"></translation>
+        <translation>接收文件</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/filetransferpage.cpp" line="224"/>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="258"/>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="325"/>
         <source>Delete</source>
-        <translation type="unfinished">删除</translation>
+        <translation>删除</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/filetransferpage.h" line="23"/>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="277"/>
+        <source>Sending</source>
+        <translation>发送文件</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.h" line="25"/>
         <source>File Share</source>
-        <translation type="unfinished"></translation>
+        <translation>文件共享</translation>
     </message>
 </context>
 <context>
@@ -546,15 +553,28 @@
     </message>
 </context>
 <context>
+    <name>PeerBufferDownloadTask</name>
+    <message>
+        <location filename="../core/task/peerbufferdownloadtask.cpp" line="45"/>
+        <source>Connection closed before download is complete</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>PeerFileDownloadTask</name>
     <message>
-        <location filename="../core/task/peerfiledownloadtask.cpp" line="130"/>
+        <location filename="../core/task/peerfiledownloadtask.cpp" line="85"/>
+        <source>Connection closed before download is complete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../core/task/peerfiledownloadtask.cpp" line="142"/>
         <source>Can not open file to write</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../core/task/peerfiledownloadtask.cpp" line="56"/>
-        <location filename="../core/task/peerfiledownloadtask.cpp" line="146"/>
+        <location filename="../core/task/peerfiledownloadtask.cpp" line="158"/>
         <source>Can not write buffer to the specified file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -562,8 +582,18 @@
 <context>
     <name>PeerFileUploadTask</name>
     <message>
-        <location filename="../core/task/peerfileuploadtask.cpp" line="28"/>
+        <location filename="../core/task/peerfileuploadtask.cpp" line="51"/>
         <source>Can not open upload file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../core/task/peerfileuploadtask.cpp" line="135"/>
+        <source>Connection closed before upload is complete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../core/task/peerfileuploadtask.cpp" line="165"/>
+        <source>Connection times out</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1324,12 +1354,12 @@ It does not seem to contain an actual email address, i.e. something of the form 
 <context>
     <name>SharePlugin</name>
     <message>
-        <location filename="../plugins/share/shareplugin.cpp" line="87"/>
+        <location filename="../plugins/share/shareplugin.cpp" line="92"/>
         <source>Shared text from %1 copied to clipboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/share/shareplugin.cpp" line="89"/>
+        <location filename="../plugins/share/shareplugin.cpp" line="94"/>
         <source>Open in Text Editor</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1577,22 +1607,22 @@ It does not seem to contain an actual email address, i.e. something of the form 
     <message>
         <location filename="../core/task/taskstatus.cpp" line="10"/>
         <source>Waiting</source>
-        <translation type="unfinished"></translation>
+        <translation>排队中</translation>
     </message>
     <message>
         <location filename="../core/task/taskstatus.cpp" line="12"/>
         <source>Connecting</source>
-        <translation type="unfinished"></translation>
+        <translation>正在连接</translation>
     </message>
     <message>
         <location filename="../core/task/taskstatus.cpp" line="14"/>
         <source>Waiting for peer</source>
-        <translation type="unfinished"></translation>
+        <translation>等待对方连接</translation>
     </message>
     <message>
         <location filename="../core/task/taskstatus.cpp" line="16"/>
         <source>Transfering</source>
-        <translation type="unfinished"></translation>
+        <translation>传输中</translation>
     </message>
 </context>
 <context>
