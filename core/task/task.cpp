@@ -63,6 +63,11 @@ bool Task::isAborted() const
     return m_state == Task::State::Aborted;
 }
 
+QString Task::failedReasson() const
+{
+    return m_failedReason;
+}
+
 bool Task::start()
 {
     auto curentState = state();

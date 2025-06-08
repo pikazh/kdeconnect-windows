@@ -14,6 +14,11 @@ QSharedPointer<TaskScheduler> SharePluginWrapper::sendFilesTaskSchedule()
     return propertyValue<QSharedPointer<TaskScheduler>>("sendFilesTaskSchedule");
 }
 
+QSharedPointer<ITransferHistoryManager> SharePluginWrapper::transferHistoryManager()
+{
+    return propertyValue<QSharedPointer<ITransferHistoryManager>>("transferHistoryManager");
+}
+
 void SharePluginWrapper::shareText(const QString &text)
 {
     invokeMethod("shareText", text);

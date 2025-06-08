@@ -257,8 +257,12 @@ void DeviceWindow::updateVisiblePages()
 
 void DeviceWindow::selectFilesToSend()
 {
-    QStringList selected = QFileDialog::getOpenFileNames(this);
-    m_sharePluginWrapper->shareFiles(selected);
+    auto dirSelectDialog = new QFileDialog(this, tr("Select files to send"));
+    dirSelectDialog->setFileMode(QFileDialog::ExistingFiles);
+    if (dirSelectDialog->exec() == QDialog::Accepted) {
+        QStringList selected = dirSelectDialog->selectedFiles();
+        m_sharePluginWrapper->shareFiles(selected);
+    }
 }
 
 PluginSettingsDialog *DeviceWindow::showPluginSettingsWindow()

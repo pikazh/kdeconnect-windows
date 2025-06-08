@@ -1,6 +1,6 @@
 #include "remotecommandslistitemdelegate.h"
 #include "ui/textlayoututils.h"
-#include "uicommon.h"
+#include "ui/uicommon.h"
 
 #include <QPainter>
 

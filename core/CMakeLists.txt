@@ -50,6 +50,10 @@ qt_add_library(kdeconnectcore SHARED
     plugins/pluginmetadata.h
     plugins/pluginmetadata.cpp
 
+    plugins/share/itransferhistorymanager.h
+    plugins/share/transferhistoryrecord.h
+    plugins/share/itransferhistorychangelistener.h
+
     task/task.h
     task/task.cpp
     task/taskstatus.h
@@ -66,7 +70,6 @@ qt_add_library(kdeconnectcore SHARED
     task/peerfiledownloadtask.cpp
     task/peerfileuploadtask.h
     task/peerfileuploadtask.cpp
-
 
     sms/conversationmessage.h
     sms/conversationmessage.cpp

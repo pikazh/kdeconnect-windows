@@ -14,7 +14,6 @@ qt_add_executable(kdeconnect-app
     contactprovider.cpp
     smshelper.h
     smshelper.cpp
-    uicommon.h
     smsmanager.h
     smsmanager.cpp
     language.h
@@ -22,6 +21,7 @@ qt_add_executable(kdeconnect-app
     runcommandsetuplistener.h
     runcommandsetuplistener.cpp
 
+    ui/uicommon.h
     ui/mainwindow.cpp
     ui/mainwindow.h
     ui/mainwindow.ui
@@ -94,6 +94,8 @@ qt_add_executable(kdeconnect-app
     ui/pages/filetransferpage.h
     ui/pages/filetransferpage.cpp
     ui/pages/filetransferpage.ui
+    ui/pages/transferhistorylistmodel.h
+    ui/pages/transferhistorylistmodel.cpp
 
     ui/dialogs/pluginsettingsdialog.h
     ui/dialogs/pluginsettingsdialog.cpp
@@ -110,6 +112,9 @@ qt_add_executable(kdeconnect-app
     ui/dialogs/appsettingsdialog.ui
     ui/dialogs/appsettingsdialog.h
     ui/dialogs/appsettingsdialog.cpp
+    ui/dialogs/filesharepluginconfigdialog.ui
+    ui/dialogs/filesharepluginconfigdialog.h
+    ui/dialogs/filesharepluginconfigdialog.cpp
 
     plugin/pluginwrapperbase.h
     plugin/pluginwrapperbase.cpp
@@ -141,6 +146,7 @@ qt_add_executable(kdeconnect-app
     plugin/runcommandpluginwrapper.cpp
     plugin/remotesystemvolumepluginwrapper.h
     plugin/remotesystemvolumepluginwrapper.cpp
+
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

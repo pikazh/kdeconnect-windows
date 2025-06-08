@@ -227,6 +227,24 @@
         <source>)</source>
         <translation></translation>
     </message>
+    <message>
+        <location filename="../app/ui/devicewindow.cpp" line="260"/>
+        <source>Select files to send</source>
+        <translation>选择要发送的文件</translation>
+    </message>
+</context>
+<context>
+    <name>FileSharePluginConfigDialog</name>
+    <message>
+        <location filename="../app/ui/dialogs/filesharepluginconfigdialog.ui" line="33"/>
+        <source>Receiving files save in:</source>
+        <translation>接收文件保存在:</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/dialogs/filesharepluginconfigdialog.ui" line="52"/>
+        <source>Browse...</source>
+        <translation>浏览...</translation>
+    </message>
 </context>
 <context>
     <name>FileTransferPage</name>
@@ -241,48 +259,68 @@
         <translation>传输记录</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/filetransferpage.cpp" line="66"/>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="72"/>
         <source>Operation</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/filetransferpage.cpp" line="67"/>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="73"/>
         <source>File</source>
         <translation>文件名</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/filetransferpage.cpp" line="68"/>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="74"/>
         <source>Transferred</source>
         <translation>已传输</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/filetransferpage.cpp" line="69"/>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="75"/>
         <source>Progress</source>
         <translation>当前进度</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/filetransferpage.cpp" line="70"/>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="76"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/filetransferpage.cpp" line="217"/>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="253"/>
         <source>Receiving</source>
         <translation>接收文件</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/filetransferpage.cpp" line="258"/>
-        <location filename="../app/ui/pages/filetransferpage.cpp" line="325"/>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="294"/>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="361"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/filetransferpage.cpp" line="277"/>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="313"/>
         <source>Sending</source>
         <translation>发送文件</translation>
     </message>
     <message>
-        <location filename="../app/ui/pages/filetransferpage.h" line="25"/>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="457"/>
+        <source>Open File</source>
+        <translation>打开文件</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="462"/>
+        <source>Open Folder</source>
+        <translation>打开目录</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="471"/>
+        <source>Remove this history item</source>
+        <translation>删除该历史记录</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.cpp" line="477"/>
+        <source>Clear all histories</source>
+        <translation>清空所有记录</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/filetransferpage.h" line="28"/>
         <source>File Share</source>
         <translation>文件共享</translation>
     </message>
@@ -621,27 +659,27 @@
         <translation>查找</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="28"/>
+        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="29"/>
         <source>Plugins Configuration - </source>
         <translation>插件设置 - </translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="21"/>
+        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="22"/>
         <source>Enable</source>
         <translation>启用</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="21"/>
+        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="22"/>
         <source>Name</source>
         <translation>名字</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="21"/>
+        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="22"/>
         <source>Description</source>
         <translation>描述</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="21"/>
+        <location filename="../app/ui/dialogs/pluginsettingsdialog.cpp" line="22"/>
         <source>Configuration</source>
         <translation>设置</translation>
     </message>
@@ -1310,12 +1348,12 @@ It does not seem to contain an actual email address, i.e. something of the form 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="213"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="212"/>
         <source>Import Commands</source>
         <translation>导入命令</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="253"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="255"/>
         <source>Export Commands</source>
         <translation>导出命令</translation>
     </message>
@@ -1354,12 +1392,12 @@ It does not seem to contain an actual email address, i.e. something of the form 
 <context>
     <name>SharePlugin</name>
     <message>
-        <location filename="../plugins/share/shareplugin.cpp" line="92"/>
+        <location filename="../plugins/share/shareplugin.cpp" line="124"/>
         <source>Shared text from %1 copied to clipboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/share/shareplugin.cpp" line="94"/>
+        <location filename="../plugins/share/shareplugin.cpp" line="126"/>
         <source>Open in Text Editor</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1485,6 +1523,54 @@ It does not seem to contain an actual email address, i.e. something of the form 
         <location filename="../plugins/telephony/telephonyplugin.cpp" line="64"/>
         <source>Mute Call</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TransferHistoryListModel</name>
+    <message>
+        <location filename="../app/ui/pages/transferhistorylistmodel.cpp" line="103"/>
+        <source>Type</source>
+        <translation>类型</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/transferhistorylistmodel.cpp" line="105"/>
+        <source>Result</source>
+        <translation>结果</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/transferhistorylistmodel.cpp" line="107"/>
+        <source>File</source>
+        <translation>文件名</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/transferhistorylistmodel.cpp" line="109"/>
+        <source>Finish Time</source>
+        <translation>完成时间</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/transferhistorylistmodel.cpp" line="139"/>
+        <source>Receive File</source>
+        <translation>接收文件</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/transferhistorylistmodel.cpp" line="141"/>
+        <source>Send File</source>
+        <translation>发送文件</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/transferhistorylistmodel.cpp" line="145"/>
+        <source>Successful</source>
+        <translation>成功</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/transferhistorylistmodel.cpp" line="147"/>
+        <source>Failed</source>
+        <translation>失败</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/pages/transferhistorylistmodel.cpp" line="149"/>
+        <source>Aborted</source>
+        <translation>被取消</translation>
     </message>
 </context>
 <context>

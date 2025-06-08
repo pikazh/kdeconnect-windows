@@ -75,8 +75,8 @@ void Application::showMainWindow()
     }
 
     m_MainWindow->show();
-    m_MainWindow->activateWindow();
     m_MainWindow->raise();
+    m_MainWindow->activateWindow();
 }
 
 DeviceWindow *Application::showDeviceWindow(Device::Ptr device)
@@ -87,8 +87,8 @@ DeviceWindow *Application::showDeviceWindow(Device::Ptr device)
         DeviceWindow *deviceWindow = new DeviceWindow(device);
         QObject::connect(deviceWindow, SIGNAL(aboutToClose()), this, SLOT(deviceWindowClosing()));
         deviceWindow->show();
-        deviceWindow->activateWindow();
         deviceWindow->raise();
+        deviceWindow->activateWindow();
 
         m_deviceWindows.insert(deviceId, deviceWindow);
 
@@ -97,8 +97,8 @@ DeviceWindow *Application::showDeviceWindow(Device::Ptr device)
         auto deviceWindow = it.value();
         deviceWindow->setWindowState((deviceWindow->windowState() & ~Qt::WindowMinimized)
                                      | Qt::WindowActive);
-        deviceWindow->activateWindow();
         deviceWindow->raise();
+        deviceWindow->activateWindow();
 
         return deviceWindow;
     }
@@ -115,8 +115,8 @@ void Application::showSmsConversationsWindow()
     }
 
     m_smsConversationWindow->showNormal();
-    m_smsConversationWindow->activateWindow();
     m_smsConversationWindow->raise();
+    m_smsConversationWindow->activateWindow();
 }
 
 void Application::showAppSettingsDialog()
@@ -130,8 +130,8 @@ void Application::showAppSettingsDialog()
     }
 
     m_appSetingsDlg->showNormal();
-    m_appSetingsDlg->activateWindow();
     m_appSetingsDlg->raise();
+    m_appSetingsDlg->activateWindow();
 }
 
 void Application::showSystemTrayBalloonMessage(const QString &text, const QString &title)

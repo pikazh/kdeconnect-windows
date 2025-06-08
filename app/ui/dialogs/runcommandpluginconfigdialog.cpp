@@ -209,16 +209,19 @@ void RunCommandPluginConfigDialog::saveConfig()
 
 void RunCommandPluginConfigDialog::on_importButton_clicked()
 {
-    QString filePath = QFileDialog::getOpenFileName(this,
-                                                    tr("Import Commands"),
-                                                    QDir::homePath(),
-                                                    QStringLiteral("JSON (*.json)"));
-    if (filePath.isEmpty())
+    auto fileSelectDialog = new QFileDialog(this, tr("Import Commands"), QDir::homePath());
+    fileSelectDialog->setNameFilters({"JSON (*.json)", "Any files (*)"});
+    fileSelectDialog->setFileMode(QFileDialog::ExistingFile);
+    if (fileSelectDialog->exec() != QDialog::Accepted) {
+        return;
+    }
+    QStringList selected = fileSelectDialog->selectedFiles();
+    if (selected.isEmpty())
         return;
 
-    QFile file(filePath);
+    QFile file(selected[0]);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        qWarning(KDECONNECT_APP) << "Could not read file:" << filePath;
+        qWarning(KDECONNECT_APP) << "Could not read file:" << selected[0];
         return;
     }
 
@@ -249,16 +252,20 @@ void RunCommandPluginConfigDialog::on_importButton_clicked()
 
 void RunCommandPluginConfigDialog::on_exportButton_clicked()
 {
-    QString filePath = QFileDialog::getSaveFileName(this,
-                                                    tr("Export Commands"),
-                                                    QDir::homePath(),
-                                                    QStringLiteral("JSON (*.json)"));
-    if (filePath.isEmpty())
+    auto fileSelectDialog = new QFileDialog(this, tr("Export Commands"), QDir::homePath());
+    fileSelectDialog->setNameFilters({"JSON (*.json)", "Any files (*)"});
+    fileSelectDialog->setDefaultSuffix(QStringLiteral("json"));
+    if (fileSelectDialog->exec() != QDialog::Accepted) {
+        return;
+    }
+
+    QStringList selected = fileSelectDialog->selectedFiles();
+    if (selected.isEmpty())
         return;
 
-    QFile file(filePath);
+    QFile file(selected[0]);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        qWarning(KDECONNECT_APP) << "Could not write to file:" << filePath;
+        qWarning(KDECONNECT_APP) << "Could not write to file:" << selected[0];
         return;
     }
 

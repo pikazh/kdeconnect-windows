@@ -10,10 +10,12 @@
 
 #include "core/plugins/pluginfactory.h"
 #include "core/task/peerfiledownloadtask.h"
+#include "core/task/peerfileuploadtask.h"
 
 #include "notification.h"
 
 #include <QClipboard>
+#include <QDateTime>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
@@ -27,6 +29,7 @@ SharePlugin::SharePlugin(QObject *parent, const QVariantList &args)
     : KdeConnectPlugin(parent, args)
     , m_recvFilesTaskSchedule(new TaskScheduler(nullptr, 1))
     , m_sendFilesTaskSchedule(new TaskScheduler(nullptr, 1))
+    , m_transferHistoryManager(new TransferHistoryManager(device()->id()))
 {
     m_fileShareServer = new FileShareServer(m_sendFilesTaskSchedule, device()->id(), this);
     Q_ASSERT(m_tempDir.isValid());
@@ -42,6 +45,16 @@ SharePlugin::SharePlugin(QObject *parent, const QVariantList &args)
                      [this](NetworkPacket &packet) { sendPacket(packet); });
 
     reloadConfig();
+
+    QObject::connect(m_recvFilesTaskSchedule.get(),
+                     &TaskScheduler::taskFinished,
+                     this,
+                     &SharePlugin::onTaskFinished);
+
+    QObject::connect(m_sendFilesTaskSchedule.get(),
+                     &TaskScheduler::taskFinished,
+                     this,
+                     &SharePlugin::onTaskFinished);
 
     m_recvFilesTaskSchedule->start();
     m_sendFilesTaskSchedule->start();
@@ -81,6 +94,25 @@ void SharePlugin::reloadConfig()
     }
 
     m_saveFileDir = defaultDownloadPath;
+}
+
+void SharePlugin::onTaskFinished(Task::Ptr task)
+{
+    if (PeerFileDownloadTask *dlTask = qobject_cast<PeerFileDownloadTask *>(task.get());
+        dlTask != nullptr) {
+        m_transferHistoryManager->addHistory(TransferHistoryRecord::TransferType::Receiving,
+                                             dlTask->downloadFilePath(),
+                                             QDateTime::currentSecsSinceEpoch(),
+                                             taskResult(task.get()),
+                                             dlTask->failedReasson());
+    } else if (PeerFileUploadTask *uploadTask = qobject_cast<PeerFileUploadTask *>(task.get());
+               uploadTask != nullptr) {
+        m_transferHistoryManager->addHistory(TransferHistoryRecord::TransferType::Sending,
+                                             uploadTask->uploadFilePath(),
+                                             QDateTime::currentSecsSinceEpoch(),
+                                             taskResult(task.get()),
+                                             uploadTask->failedReasson());
+    }
 }
 
 void SharePlugin::handleSharedText(const NetworkPacket &np)
@@ -131,6 +163,19 @@ void SharePlugin::handleSharedFile(const NetworkPacket &np)
                 << "add recv file task. filePath:" << task->downloadFilePath();
         }
     }
+}
+
+TransferHistoryRecord::Result SharePlugin::taskResult(Task *task)
+{
+    TransferHistoryRecord::Result result;
+    if (task->isSuccessful())
+        result = TransferHistoryRecord::Result::SuccessFul;
+    else if (task->isAborted())
+        result = TransferHistoryRecord::Result::Aborted;
+    else
+        result = TransferHistoryRecord::Result::Failed;
+
+    return result;
 }
 
 void SharePlugin::shareText(const QString &text)

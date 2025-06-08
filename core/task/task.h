@@ -32,6 +32,8 @@ public:
     bool isFailed() const;
     bool isAborted() const;
 
+    QString failedReasson() const;
+
     QUuid uid() const { return m_uid; }
     QString describe();
 
@@ -65,6 +67,7 @@ Q_SIGNALS:
     void aborted();
 
 private:
+    QString m_failedReason;
     State m_state = State::Inactive;
     int m_taskStatus = TaskStatus::WaitForStart;
     qint64 m_currentProgress = 0;

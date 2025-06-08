@@ -7,6 +7,7 @@
 
 #include "ui/dialogs/batterypluginconfigdialog.h"
 #include "ui/dialogs/clipboardpluginconfigdialog.h"
+#include "ui/dialogs/filesharepluginconfigdialog.h"
 #include "ui/dialogs/runcommandpluginconfigdialog.h"
 
 #include <QEvent>
@@ -31,6 +32,7 @@ PluginSettingsDialog::PluginSettingsDialog(Device::Ptr device, QWidget *parent)
     m_pluginIdsWhichHasConfig.insert(pluginIdString(PluginId::BatteryMonitor));
     m_pluginIdsWhichHasConfig.insert(pluginIdString(PluginId::ClipBoard));
     m_pluginIdsWhichHasConfig.insert(pluginIdString(PluginId::RunCommand));
+    m_pluginIdsWhichHasConfig.insert(pluginIdString(PluginId::Share));
 
     QObject::connect(this,
                      &PluginSettingsDialog::accepted,
@@ -143,7 +145,7 @@ void PluginSettingsDialog::showPluginConfigDialog(const QString &pluginIDStr)
 
     auto it = m_pluginConfigWidgets.find(pluginIDStr);
     if (it != m_pluginConfigWidgets.end()) {
-        it.value()->showNormal();
+        it.value()->show();
         it.value()->raise();
         it.value()->activateWindow();
     } else {
@@ -162,6 +164,9 @@ void PluginSettingsDialog::showPluginConfigDialog(const QString &pluginIDStr)
         } else if (pluginIDStr == pluginIdString(PluginId::RunCommand)) {
             dlg = new RunCommandPluginConfigDialog(m_device, this);
             dlg->setWindowTitle(pluginInfo.name() + QStringLiteral(" - ") + m_device->name());
+        } else if (pluginIDStr == pluginIdString(PluginId::Share)) {
+            dlg = new FileSharePluginConfigDialog(m_device, this);
+            dlg->setWindowTitle(pluginInfo.name() + QStringLiteral(" - ") + m_device->name());
         }
 
         if (dlg != nullptr) {
@@ -169,7 +174,7 @@ void PluginSettingsDialog::showPluginConfigDialog(const QString &pluginIDStr)
             QObject::connect(dlg, &QDialog::finished, this, [this, pluginIDStr]() {
                 m_pluginConfigWidgets.remove(pluginIDStr);
             });
-            dlg->showNormal();
+            dlg->show();
             dlg->raise();
             dlg->activateWindow();
         }

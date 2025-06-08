@@ -1,5 +1,5 @@
 #include "remotecommandslistmodel.h"
-#include "uicommon.h"
+#include "ui/uicommon.h"
 
 #include <QJsonDocument>
 #include <QJsonObject>

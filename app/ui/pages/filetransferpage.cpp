@@ -1,11 +1,13 @@
 #include "filetransferpage.h"
+#include "app_debug.h"
+#include "ui/uicommon.h"
 #include "ui_filetransferpage.h"
-
-#include "volumedeviceitem.h"
 
 #include "core/task/peerfiledownloadtask.h"
 #include "core/task/peerfileuploadtask.h"
 
+#include <QAction>
+#include <QDesktopServices>
 #include <QFileInfo>
 #include <QHBoxLayout>
 #include <QIcon>
@@ -13,7 +15,10 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QMenu>
 #include <QPushButton>
+#include <QScrollBar>
+#include <QSortFilterProxyModel>
 #include <QTableWidgetItem>
 #include <QWidget>
 
@@ -59,6 +64,7 @@ FileTransferPage::FileTransferPage(Device::Ptr device, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::FileTransferPage)
     , m_sharePluginWrapper(new SharePluginWrapper(device, this))
+    , m_transferHistoryListModel(new TransferHistoryListModel(this))
 {
     ui->setupUi(this);
     ui->transferingList->setColumnCount(Columns::Count);
@@ -70,9 +76,28 @@ FileTransferPage::FileTransferPage(Device::Ptr device, QWidget *parent)
     headerNames.push_back(tr("Cancel"));
     ui->transferingList->setHorizontalHeaderLabels(headerNames);
 
+    QSortFilterProxyModel *proxyModel = new QSortFilterProxyModel();
+    proxyModel->setSourceModel(m_transferHistoryListModel);
+    proxyModel->setSortRole(TransferHistoryListItemDataRoles::FinishTime);
+    proxyModel->sort(TransferHistoryListModel::Column::FinishTime, Qt::DescendingOrder);
+    ui->historyList->setModel(proxyModel);
+    ui->historyList->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    QObject::connect(ui->historyList,
+                     &QWidget::customContextMenuRequested,
+                     this,
+                     &FileTransferPage::createHistoryListMenu);
+
+    QObject::connect(ui->historyList,
+                     &QTreeView::activated,
+                     this,
+                     &FileTransferPage::onHistoryItemActivated);
+
     auto initFunctor = [this]() {
         m_recvFilesTaskSchedule = m_sharePluginWrapper->recvFilesTaskSchedule();
         m_sendFilesTaskSchedule = m_sharePluginWrapper->sendFilesTaskSchedule();
+        m_transferHistoryManager = m_sharePluginWrapper->transferHistoryManager();
+        m_transferHistoryManager->registerHistoryChangeListener(m_transferHistoryListModel);
         QObject::connect(m_recvFilesTaskSchedule.get(),
                          &TaskScheduler::taskAdded,
                          this,
@@ -117,7 +142,15 @@ FileTransferPage::FileTransferPage(Device::Ptr device, QWidget *parent)
                                  ui->transferingList->removeRow(rowIndex);
                          });
 
+        auto scrollBar = ui->historyList->verticalScrollBar();
+        QObject::connect(scrollBar,
+                         &QScrollBar::valueChanged,
+                         this,
+                         &FileTransferPage::onHistoryListVerticalScrollbarValueChanged,
+                         Qt::UniqueConnection);
+
         initTransferingList();
+        loadTransferHistoryList();
     };
 
     QObject::connect(m_sharePluginWrapper,
@@ -128,8 +161,10 @@ FileTransferPage::FileTransferPage(Device::Ptr device, QWidget *parent)
                              initFunctor();
                          } else {
                              deleteAllRowsFromTransferingList();
+                             clearTransferHistoryList();
                              m_recvFilesTaskSchedule.reset();
                              m_sendFilesTaskSchedule.reset();
+                             m_transferHistoryManager.reset();
                          }
                      });
 
@@ -140,6 +175,7 @@ FileTransferPage::FileTransferPage(Device::Ptr device, QWidget *parent)
 
 FileTransferPage::~FileTransferPage()
 {
+    m_transferHistoryManager->unRegisterHistoryChangeListener(m_transferHistoryListModel);
     delete ui;
 }
 
@@ -373,4 +409,115 @@ QString FileTransferPage::formatedSizeString(qint64 val)
     }
 
     return str;
+}
+
+void FileTransferPage::loadTransferHistoryList()
+{
+    if (m_transferHistoryManager) {
+        qint64 finishTime = -1;
+        if (m_transferHistoryListModel->rowCount() > 0) {
+            auto index = m_transferHistoryListModel->index(m_transferHistoryListModel->rowCount()
+                                                           - 1);
+            finishTime = qvariant_cast<qint64>(
+                m_transferHistoryListModel->data(index,
+                                                 TransferHistoryListItemDataRoles::FinishTime));
+        }
+
+        QList<TransferHistoryRecord> records = m_transferHistoryManager->getHistories(finishTime);
+
+        if (m_transferHistoryListModel->appendData(records) == 0) {
+            auto scrollBar = ui->historyList->verticalScrollBar();
+            QObject::disconnect(scrollBar,
+                                &QScrollBar::valueChanged,
+                                this,
+                                &FileTransferPage::onHistoryListVerticalScrollbarValueChanged);
+        }
+    }
+}
+
+void FileTransferPage::createHistoryListMenu(const QPoint &pos)
+{
+    auto index = ui->historyList->indexAt(pos);
+    if (index.isValid()) {
+        QMenu *menu = new QMenu();
+        QSortFilterProxyModel *proxyModel = qobject_cast<QSortFilterProxyModel *>(
+            ui->historyList->model());
+        if (proxyModel != nullptr) {
+            index = proxyModel->mapToSource(index);
+        }
+        QString filePath = m_transferHistoryListModel
+                               ->data(index, TransferHistoryListItemDataRoles::File)
+                               .toString();
+        qint64 id = qvariant_cast<qint64>(
+            m_transferHistoryListModel->data(index, TransferHistoryListItemDataRoles::Id));
+
+        int result = qvariant_cast<int>(
+            m_transferHistoryListModel->data(index, TransferHistoryListItemDataRoles::Result));
+        if (result == TransferHistoryRecord::Result::SuccessFul) {
+            auto fileOpenAction = menu->addAction(tr("Open File"));
+            QObject::connect(fileOpenAction, &QAction::triggered, this, [filePath]() {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
+            });
+
+            auto fileDirOpenAction = menu->addAction(tr("Open Folder"));
+            QObject::connect(fileDirOpenAction, &QAction::triggered, this, [filePath]() {
+                QFileInfo fileInfo(filePath);
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fileInfo.absolutePath()));
+            });
+
+            menu->addSeparator();
+        }
+
+        auto removeThisRecord = menu->addAction(tr("Remove this history item"));
+        QObject::connect(removeThisRecord, &QAction::triggered, this, [this, id]() {
+            if (m_transferHistoryManager)
+                m_transferHistoryManager->removeHistory(id);
+        });
+
+        auto clearAllRecords = menu->addAction(tr("Clear all histories"));
+        QObject::connect(clearAllRecords, &QAction::triggered, this, [this]() {
+            if (m_transferHistoryManager)
+                m_transferHistoryManager->clearHistories();
+        });
+
+        menu->exec(ui->historyList->mapToGlobal(pos));
+        menu->deleteLater();
+    }
+}
+
+void FileTransferPage::clearTransferHistoryList()
+{
+    m_transferHistoryListModel->onClear();
+}
+
+void FileTransferPage::onHistoryListVerticalScrollbarValueChanged(int value)
+{
+    if (QScrollBar *scrollBar = qobject_cast<QScrollBar *>(QObject::sender());
+        scrollBar != nullptr) {
+        float percent = (value - scrollBar->minimum())
+                        / static_cast<float>(scrollBar->maximum() - scrollBar->minimum());
+
+        if (percent >= 0.75f) {
+            QMetaObject::invokeMethod(this,
+                                      &FileTransferPage::loadTransferHistoryList,
+                                      Qt::QueuedConnection);
+        }
+    }
+}
+
+void FileTransferPage::onHistoryItemActivated(const QModelIndex &index)
+{
+    if (index.isValid()) {
+        auto sourceIndex = index;
+        QSortFilterProxyModel *proxyModel = qobject_cast<QSortFilterProxyModel *>(
+            ui->historyList->model());
+        if (proxyModel != nullptr) {
+            sourceIndex = proxyModel->mapToSource(index);
+        }
+
+        QString filePath = m_transferHistoryListModel
+                               ->data(sourceIndex, TransferHistoryListItemDataRoles::File)
+                               .toString();
+        QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
+    }
 }

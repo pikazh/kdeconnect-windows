@@ -7,9 +7,13 @@ qt_add_library(kdeconnect_share SHARED
     fileshareserver.h
     fileshareserver.cpp
     common.h
+    transferhistorydb.h
+    transferhistorydb.cpp
+    transferhistorymanager.h
+    transferhistorymanager.cpp
 )
 
-target_link_libraries(kdeconnect_share PRIVATE Qt::Gui Qt::Core Qt::Network kdeconnectcore notification)
+target_link_libraries(kdeconnect_share PRIVATE Qt::Gui Qt::Core Qt::Network Qt::Sql kdeconnectcore notification)
 
 include(GNUInstallDirs)
 install(TARGETS kdeconnect_share

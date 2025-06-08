@@ -160,8 +160,12 @@ void SmsConversationContentWidget::addMessage(const ConversationMessage &message
 
 void SmsConversationContentWidget::on_attachmentButton_clicked()
 {
-    QStringList selected = QFileDialog::getOpenFileNames(this);
-    ui->attachmentList->addAttachmentList(selected);
+    auto dirSelectDialog = new QFileDialog(this);
+    dirSelectDialog->setFileMode(QFileDialog::ExistingFiles);
+    if (dirSelectDialog->exec() == QDialog::Accepted) {
+        QStringList selected = dirSelectDialog->selectedFiles();
+        ui->attachmentList->addAttachmentList(selected);
+    }
 }
 
 void SmsConversationContentWidget::on_sendButton_clicked()
