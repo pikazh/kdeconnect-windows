@@ -166,6 +166,7 @@ void SmsConversationContentWidget::on_attachmentButton_clicked()
         QStringList selected = dirSelectDialog->selectedFiles();
         ui->attachmentList->addAttachmentList(selected);
     }
+    dirSelectDialog->deleteLater();
 }
 
 void SmsConversationContentWidget::on_sendButton_clicked()

@@ -209,13 +209,16 @@ void RunCommandPluginConfigDialog::saveConfig()
 
 void RunCommandPluginConfigDialog::on_importButton_clicked()
 {
-    auto fileSelectDialog = new QFileDialog(this, tr("Import Commands"), QDir::homePath());
+    QFileDialog *fileSelectDialog = new QFileDialog(this, tr("Import Commands"), QDir::homePath());
     fileSelectDialog->setNameFilters({"JSON (*.json)", "Any files (*)"});
     fileSelectDialog->setFileMode(QFileDialog::ExistingFile);
+
     if (fileSelectDialog->exec() != QDialog::Accepted) {
+        fileSelectDialog->deleteLater();
         return;
     }
     QStringList selected = fileSelectDialog->selectedFiles();
+    fileSelectDialog->deleteLater();
     if (selected.isEmpty())
         return;
 
@@ -252,14 +255,16 @@ void RunCommandPluginConfigDialog::on_importButton_clicked()
 
 void RunCommandPluginConfigDialog::on_exportButton_clicked()
 {
-    auto fileSelectDialog = new QFileDialog(this, tr("Export Commands"), QDir::homePath());
+    QFileDialog *fileSelectDialog = new QFileDialog(this, tr("Export Commands"), QDir::homePath());
     fileSelectDialog->setNameFilters({"JSON (*.json)", "Any files (*)"});
     fileSelectDialog->setDefaultSuffix(QStringLiteral("json"));
     if (fileSelectDialog->exec() != QDialog::Accepted) {
+        fileSelectDialog->deleteLater();
         return;
     }
 
     QStringList selected = fileSelectDialog->selectedFiles();
+    fileSelectDialog->deleteLater();
     if (selected.isEmpty())
         return;
 

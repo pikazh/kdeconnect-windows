@@ -1353,7 +1353,7 @@ It does not seem to contain an actual email address, i.e. something of the form 
         <translation>导入命令</translation>
     </message>
     <message>
-        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="255"/>
+        <location filename="../app/ui/dialogs/runcommandpluginconfigdialog.cpp" line="258"/>
         <source>Export Commands</source>
         <translation>导出命令</translation>
     </message>

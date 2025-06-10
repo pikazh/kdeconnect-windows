@@ -263,6 +263,7 @@ void DeviceWindow::selectFilesToSend()
         QStringList selected = dirSelectDialog->selectedFiles();
         m_sharePluginWrapper->shareFiles(selected);
     }
+    dirSelectDialog->deleteLater();
 }
 
 PluginSettingsDialog *DeviceWindow::showPluginSettingsWindow()

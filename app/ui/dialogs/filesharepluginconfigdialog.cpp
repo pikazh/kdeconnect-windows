@@ -27,6 +27,7 @@ FileSharePluginConfigDialog::FileSharePluginConfigDialog(Device::Ptr dev, QWidge
                 ui->filesavePathEdit->setText(selectedFiles[0]);
             }
         }
+        dirSelectDialog->deleteLater();
     });
 
     QObject::connect(this,
