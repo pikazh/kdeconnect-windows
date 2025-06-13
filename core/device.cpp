@@ -39,9 +39,15 @@ Device::Device(QObject *parent, const DeviceInfo &deviceInfo, bool isPaired)
     d->m_pairingHandler = new PairingHandler(this,
                                              isPaired ? PairState::Paired : PairState::NotPaired);
 
-    const auto supported = PluginLoader::instance()->getPluginList();
-    // Assume every plugin is supported until we get the capabilities
-    d->m_supportedPlugins = QSet(supported.begin(), supported.end());
+    if (!deviceInfo.incomingCapabilities.isEmpty() && !deviceInfo.outgoingCapabilities.isEmpty()) {
+        d->m_supportedPlugins = PluginLoader::instance()
+                                    ->pluginsForCapabilities(deviceInfo.incomingCapabilities,
+                                                             deviceInfo.outgoingCapabilities);
+
+    } else {
+        const auto supported = PluginLoader::instance()->getPluginList();
+        d->m_supportedPlugins = QSet(supported.begin(), supported.end());
+    }
 
     connect(d->m_pairingHandler,
             &PairingHandler::incomingPairRequest,
